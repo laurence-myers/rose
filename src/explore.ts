@@ -78,7 +78,6 @@ class MetadataClient {
 	}
 
 	getTableMetadata() : Promise<Map<string, TableMetadata>> {
-		console.log(`Querying the database...`);
 		const tablesMetadata : Map<string, TableMetadata> = new DefaultMap<string, TableMetadata>((key : string) => new TableMetadata(key));
 		return this.populateColumnTypes(tablesMetadata)
 			.then(() => {
@@ -101,6 +100,7 @@ function generateInterfaces(tablesMetadata : Map<string, TableMetadata>) : void 
 }
 
 function getTableMetadata(client : Client) {
+	console.log(`Querying the database...`);
 	const metadataClient = new MetadataClient(client);
 	return metadataClient.getTableMetadata();
 }
