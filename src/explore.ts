@@ -1,9 +1,10 @@
 import {Pool, Client, QueryResult} from "pg";
 // import R = require('ramda');
-import {DefaultMap} from "./lang";
+import {DefaultMap, makeDirs} from "./lang";
 import {TableTemplate} from "./templates/table";
 import fs = require('fs');
 import path = require('path');
+import {TableMetamodelTemplate} from "./templates/tableMetamodel";
 
 const config = {
 	user: 'postgres',
@@ -91,10 +92,19 @@ function generateInterfaces(tablesMetadata : Map<string, TableMetadata>) : void 
 	for (const tableMetadata of tablesMetadata.values()) {
 		const content = TableTemplate(tableMetadata);
 		const rootDir = 'out';
-		if (!fs.existsSync(rootDir)) {
-			fs.mkdir(rootDir);
-		}
+		makeDirs(rootDir);
 		const outName = path.join(rootDir, `${ tableMetadata.name }.ts`);
+		fs.writeFileSync(outName, content);
+	}
+}
+
+function generateTableMetamodel(tablesMetadata : Map<string, TableMetadata>) : void {
+	console.log(`Generating table metamodel for ${ tablesMetadata.size } tables...`);
+	for (const tableMetadata of tablesMetadata.values()) {
+		const content = TableMetamodelTemplate(tableMetadata);
+		const rootDir = 'out';
+		makeDirs(rootDir);
+		const outName = path.join(rootDir, `_${ tableMetadata.name }.ts`);
 		fs.writeFileSync(outName, content);
 	}
 }
@@ -115,8 +125,10 @@ function main() : Promise<any> {
 				client.release();
 			};
 			return getTableMetadata(client)
-				.then(generateInterfaces)
-				.then(cleanup, cleanup);
+				.then((tablesMetadata : Map<string, TableMetadata>) => {
+					generateInterfaces(tablesMetadata);
+					generateTableMetamodel(tablesMetadata);
+				}).then(cleanup, cleanup);
 		}).then(releasePool, releasePool)
 		.then(() => console.log("Done!"));
 }

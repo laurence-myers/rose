@@ -3,3 +3,4 @@ syntax: glob
 node_modules
 out/
 src/**.js
+npm-debug.log

@@ -1,4 +1,5 @@
-import R = require('ramda');
+const fs = require('fs');
+const path = require('path');
 
 export class DefaultMap<K, V> extends Map<K, V> {
 	constructor(private defaultValueFactory : (key : K) => V, iterable?: [K, V][]) {
@@ -16,6 +17,13 @@ export class DefaultMap<K, V> extends Map<K, V> {
 	}
 }
 
-export function objectToMap<T>(object : { [key : string] : T }) : Map<string, T> {
-	return new Map<string, T>(R.toPairs<string, T>(object));
+export function makeDirs(fullPath : string) : void {
+	const split = fullPath.split(path.sep);
+	let pathToMake = '';
+	for (let pathPart of split) {
+		pathToMake += pathPart;
+		if (!fs.existsSync(pathToMake)) {
+			fs.mkdirSync(pathToMake);
+		}
+	}
 }
