@@ -1,0 +1,5 @@
+syntax: glob
+.idea/
+node_modules
+out/
+src/**.js
