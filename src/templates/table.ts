@@ -1,4 +1,4 @@
-import {TableMetadata} from "../explore";
+import {TableMetadata} from "../dbmetadata";
 import {POSTGRES_TO_TYPESCRIPT_TYPE_MAP} from "../dbtypes";
 
 export function TableTemplate(tableMetadata : TableMetadata) : string {

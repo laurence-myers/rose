@@ -1,4 +1,4 @@
-import {TableMetadata} from "../explore";
+import {TableMetadata} from "../dbmetadata";
 
 export function TableMetamodelTemplate(tableMetadata : TableMetadata) : string {
 	const sb : string[] = [];

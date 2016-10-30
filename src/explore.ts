@@ -1,10 +1,11 @@
-import {Pool, Client, QueryResult} from "pg";
+import {Pool, Client} from "pg";
 // import R = require('ramda');
-import {DefaultMap, makeDirs} from "./lang";
+import {makeDirs} from "./lang";
 import {TableTemplate} from "./templates/table";
 import fs = require('fs');
 import path = require('path');
 import {TableMetamodelTemplate} from "./templates/tableMetamodel";
+import {TableMetadata, getTableMetadata} from "./dbmetadata";
 
 const config = {
 	user: 'postgres',
@@ -17,82 +18,6 @@ const config = {
 };
 
 const pool = new Pool(config);
-
-type sql_identifier = string;
-// type cardinal_number = number;
-// type character_data = string;
-type yes_or_no = 'YES'|'NO';
-
-interface ColumnsRow {
-	// udt_catalog : sql_identifier;
-	// udt_schema : sql_identifier;
-	udt_name : sql_identifier;
-	// table_catalog : sql_identifier;
-	// table_schema : sql_identifier;
-	table_name : sql_identifier;
-	column_name : sql_identifier;
-	is_nullable : yes_or_no;
-}
-
-function yesOrNoToBoolean(yesOrNo : yes_or_no) : boolean {
-	return yesOrNo === 'YES';
-}
-
-/* Potential columns:
- column_udt_usage: datatypes of each column
- key_column_usage
- referential_constraints
- sequences
- table_constraints
- views
- */
-
-export class ColumnMetadata {
-	public type : string;
-	public isNullable : boolean;
-
-	constructor(public name : string) {
-
-	}
-}
-
-export class TableMetadata {
-	public columns = new DefaultMap<string, ColumnMetadata>((key : string) => new ColumnMetadata(key));
-
-	constructor(public name : string) {
-	}
-}
-
-const SCHEMA = 'public';
-
-class MetadataClient {
-	constructor(private client : Client) {
-
-	}
-
-	private populateColumnTypes(tablesMetadata : Map<string, TableMetadata>) : Promise<void> {
-		return this.client.query(`SELECT "udt_name", "table_name", "column_name", "is_nullable" FROM "information_schema"."columns" WHERE "table_schema" = '${ SCHEMA }'`)
-			.then((result : QueryResult) => {
-				const rows : ColumnsRow[] = result.rows;
-				rows.forEach((row) => {
-					const tableMetadata = tablesMetadata.get(row.table_name);
-					if (tableMetadata == undefined) throw new Error("Table metadata should never be undefined");
-					const column : ColumnMetadata = tableMetadata.columns.get(row.column_name);
-					if (column == undefined) throw new Error("Column metadata should never be undefined");
-					column.type = row.udt_name;
-					column.isNullable = yesOrNoToBoolean(row.is_nullable);
-				});
-			});
-	}
-
-	getTableMetadata() : Promise<Map<string, TableMetadata>> {
-		const tablesMetadata : Map<string, TableMetadata> = new DefaultMap<string, TableMetadata>((key : string) => new TableMetadata(key));
-		return this.populateColumnTypes(tablesMetadata)
-			.then(() => {
-				return tablesMetadata;
-			});
-	}
-}
 
 function generateInterfaces(tablesMetadata : Map<string, TableMetadata>) : void {
 	console.log(`Generating interfaces for ${ tablesMetadata.size } tables...`);
@@ -114,12 +39,6 @@ function generateTableMetamodel(tablesMetadata : Map<string, TableMetadata>) : v
 		const outName = path.join(rootDir, `_${ tableMetadata.name }.ts`);
 		fs.writeFileSync(outName, content);
 	}
-}
-
-function getTableMetadata(client : Client) {
-	console.log(`Querying the database...`);
-	const metadataClient = new MetadataClient(client);
-	return metadataClient.getTableMetadata();
 }
 
 function wrapError(fn : () => Promise<any>) : (err : Error) => Promise<any> {
@@ -147,6 +66,7 @@ function main() : Promise<any> {
 					}
 				});
 			};
+			console.log(`Querying the database...`);
 			return getTableMetadata(client)
 				.then((tablesMetadata : Map<string, TableMetadata>) => {
 					generateInterfaces(tablesMetadata);
