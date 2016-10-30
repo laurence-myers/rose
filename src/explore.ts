@@ -21,16 +21,21 @@ const pool = new Pool(config);
 type sql_identifier = string;
 // type cardinal_number = number;
 // type character_data = string;
-// type yes_or_no = 'YES'|'NO';
+type yes_or_no = 'YES'|'NO';
 
-interface ColumnUdtUsageRow {
-	udt_catalog : sql_identifier;
-	udt_schema : sql_identifier;
+interface ColumnsRow {
+	// udt_catalog : sql_identifier;
+	// udt_schema : sql_identifier;
 	udt_name : sql_identifier;
-	table_catalog : sql_identifier;
-	table_schema : sql_identifier;
+	// table_catalog : sql_identifier;
+	// table_schema : sql_identifier;
 	table_name : sql_identifier;
 	column_name : sql_identifier;
+	is_nullable : yes_or_no;
+}
+
+function yesOrNoToBoolean(yesOrNo : yes_or_no) : boolean {
+	return yesOrNo === 'YES';
 }
 
 /* Potential columns:
@@ -40,10 +45,11 @@ interface ColumnUdtUsageRow {
  sequences
  table_constraints
  views
-*/
+ */
 
 export class ColumnMetadata {
 	public type : string;
+	public isNullable : boolean;
 
 	constructor(public name : string) {
 
@@ -65,15 +71,16 @@ class MetadataClient {
 	}
 
 	private populateColumnTypes(tablesMetadata : Map<string, TableMetadata>) : Promise<void> {
-		return this.client.query(`SELECT * FROM "information_schema"."column_udt_usage" WHERE "table_schema" = '${ SCHEMA }'`)
+		return this.client.query(`SELECT "udt_name", "table_name", "column_name", "is_nullable" FROM "information_schema"."columns" WHERE "table_schema" = '${ SCHEMA }'`)
 			.then((result : QueryResult) => {
-				const rows : ColumnUdtUsageRow[] = result.rows;
+				const rows : ColumnsRow[] = result.rows;
 				rows.forEach((row) => {
 					const tableMetadata = tablesMetadata.get(row.table_name);
 					if (tableMetadata == undefined) throw new Error("Table metadata should never be undefined");
 					const column : ColumnMetadata = tableMetadata.columns.get(row.column_name);
 					if (column == undefined) throw new Error("Column metadata should never be undefined");
 					column.type = row.udt_name;
+					column.isNullable = yesOrNoToBoolean(row.is_nullable);
 				});
 			});
 	}
@@ -115,6 +122,15 @@ function getTableMetadata(client : Client) {
 	return metadataClient.getTableMetadata();
 }
 
+function wrapError(fn : () => Promise<any>) : (err : Error) => Promise<any> {
+	return (err : Error) => {
+		return fn()
+			.then(() => {
+				throw err;
+			});
+	};
+}
+
 function main() : Promise<any> {
 	const releasePool = () => {
 		return pool.end();
@@ -122,15 +138,26 @@ function main() : Promise<any> {
 	return pool.connect()
 		.then((client : Client) => {
 			const cleanup = () => {
-				client.release();
+				return new Promise((resolve, reject) => {
+					try {
+						client.release();
+						return resolve();
+					} catch (err) {
+						return reject(err);
+					}
+				});
 			};
 			return getTableMetadata(client)
 				.then((tablesMetadata : Map<string, TableMetadata>) => {
 					generateInterfaces(tablesMetadata);
 					generateTableMetamodel(tablesMetadata);
-				}).then(cleanup, cleanup);
-		}).then(releasePool, releasePool)
-		.then(() => console.log("Done!"));
+				}).then(cleanup, wrapError(cleanup));
+		}).then(releasePool, wrapError(releasePool))
+		.then(() => console.log("Done!"),
+			(err) => {
+				console.error("Error encountered");
+				console.error(err);
+			});
 }
 
 main();
