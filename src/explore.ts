@@ -19,24 +19,13 @@ const config = {
 
 const pool = new Pool(config);
 
-function generateInterfaces(tablesMetadata : Map<string, TableMetadata>) : void {
-	console.log(`Generating interfaces for ${ tablesMetadata.size } tables...`);
+function generateInterfacesAndMetamodel(tablesMetadata : Map<string, TableMetadata>) : void {
+	console.log(`Generating interfaces and metamodels for ${ tablesMetadata.size } tables...`);
 	for (const tableMetadata of tablesMetadata.values()) {
-		const content = TableTemplate(tableMetadata);
+		const content = [TableTemplate(tableMetadata), TableMetamodelTemplate(tableMetadata)].join('\n');
 		const rootDir = 'out';
 		makeDirs(rootDir);
 		const outName = path.join(rootDir, `${ tableMetadata.name }.ts`);
-		fs.writeFileSync(outName, content);
-	}
-}
-
-function generateTableMetamodel(tablesMetadata : Map<string, TableMetadata>) : void {
-	console.log(`Generating table metamodel for ${ tablesMetadata.size } tables...`);
-	for (const tableMetadata of tablesMetadata.values()) {
-		const content = TableMetamodelTemplate(tableMetadata);
-		const rootDir = 'out';
-		makeDirs(rootDir);
-		const outName = path.join(rootDir, `_${ tableMetadata.name }.ts`);
 		fs.writeFileSync(outName, content);
 	}
 }
@@ -69,8 +58,7 @@ function main() : Promise<any> {
 			console.log(`Querying the database...`);
 			return getTableMetadata(client)
 				.then((tablesMetadata : Map<string, TableMetadata>) => {
-					generateInterfaces(tablesMetadata);
-					generateTableMetamodel(tablesMetadata);
+					generateInterfacesAndMetamodel(tablesMetadata);
 				}).then(cleanup, wrapError(cleanup));
 		}).then(releasePool, wrapError(releasePool))
 		.then(() => console.log("Done!"),
