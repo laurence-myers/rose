@@ -27,4 +27,32 @@ describe("Query DSL", function () {
 		const result = select(QuerySelect).where(QUsers.id.eq(1));
 		console.log(result.toSql());
 	});
+
+	it("produces SQL 2", function () {
+		@Table(new TableMetamodel("Users"))
+		class QUsers {
+			static id = new NumericColumnMetamodel(QUsers, "id", Number);
+			static locationId = new NumericColumnMetamodel(QUsers, "locationId", Number);
+
+			protected constructor() {}
+		}
+
+		@Table(new TableMetamodel("Locations"))
+		class QLocations {
+			static id = new NumericColumnMetamodel(QLocations, "id", Number);
+
+			protected constructor() {}
+		}
+
+		class QuerySelect {
+			@Column(QUsers.id)
+			id : number;
+
+			@Column(QLocations.id)
+			locationId : number;
+		}
+
+		const result = select(QuerySelect).where(QLocations.id.eq(QUsers.locationId));
+		console.log(result.toSql());
+	});
 });

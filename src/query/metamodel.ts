@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import {InvalidTableDefinitionError, InvalidColumnDefinitionError} from "../errors";
-import {WhereClause, Operator} from "./dsl";
+import {Operator, WhereExpression} from "./dsl";
 
 const METADATA_KEY_PREFIX = "arbaon.";
 export const TABLE_METADATA_KEY = `${ METADATA_KEY_PREFIX }table`;
@@ -49,10 +49,10 @@ export abstract class ColumnMetamodel<T> {
 
 	}
 
-	eq(value : T | ColumnMetamodel<T>) : WhereClause {
+	eq(value : T | ColumnMetamodel<T>) : WhereExpression<T> {
 		return {
-			columnMetamodel: this,
-			value: value,
+			left: this,
+			right: value,
 			operator: Operator.Equals
 		};
 	}

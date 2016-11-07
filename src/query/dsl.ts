@@ -33,10 +33,14 @@ interface SelectClause {
 	alias : string;
 }
 
-export interface WhereClause {
-	value : ColumnMetamodel<any> | any;
+export type WhereExpression<T> = BooleanExpression<T>;
+
+type ExpressionValue<T> = ColumnMetamodel<T> | T;
+
+interface BooleanExpression<T> {
+	left : ExpressionValue<T>;
 	operator : Operator;
-	columnMetamodel : ColumnMetamodel<any>;
+	right : ExpressionValue<T>;
 }
 
 interface GeneratedQuery {
@@ -52,7 +56,7 @@ class QueryBuilder<T extends QueryClass> {
 	protected selectValues : SelectClause[] = [];
 	protected tables : TableClause[] = [];
 	protected tableMap = new DefaultMap<string, string>((key) => `t${ this.tables.length + 1 }`);
-	protected whereClauses : WhereClause[] = [];
+	protected whereExpression : WhereExpression<any>;
 
 	constructor(private command : SqlCommand, private queryClass : T) {
 		this.select();
@@ -101,8 +105,8 @@ class QueryBuilder<T extends QueryClass> {
 		return this;
 	}
 
-	where(whereClause : WhereClause) : this {
-		this.whereClauses.push(whereClause);
+	where(whereExpression : WhereExpression<any>) : this {
+		this.whereExpression = whereExpression;
 		return this;
 	}
 
@@ -136,30 +140,32 @@ class QueryBuilder<T extends QueryClass> {
 		return output;
 	}
 
+	protected resolveExpressionValue(value : ExpressionValue<any>, parameterValues : any[]) : string {
+		if (isColumnMetamodel(value)) {
+			return this.getQualifiedColumnName(value);
+		} else {
+			parameterValues.push(value);
+			return `$${ parameterValues.length }`;
+		}
+	}
+
 	toSql() : GeneratedQuery {
 		const columnsString = this.selectValues.map((c) => `"${ c.tableAlias }"."${ c.column }" as "${ c.alias }"`).join(`,`);
 		const tablesString = this.tables.map((t) => `"${ t.name }" as "${ t.alias }"`).join(`,`);
 		let whereString : string;
 		let parameterValues : any[] = [];
-		if (this.whereClauses.length > 0) {
+		if (this.whereExpression) {
 			whereString = ` WHERE (`;
-			for (const whereClause of this.whereClauses) {
-				switch (whereClause.operator) {
+			// if (whereExpression instanceof BooleanExpression) {
+				switch (this.whereExpression.operator) {
 					case Operator.Equals:
 						// TODO: sanitized values?
-						whereString += `${ this.getQualifiedColumnName(whereClause.columnMetamodel) } = `;
-						const value = whereClause.value;
-						if (isColumnMetamodel(value)) {
-							whereString += this.getQualifiedColumnName(value);
-						} else {
-							parameterValues.push(value);
-							whereString += `$${ parameterValues.length }`;
-						}
+						whereString += `${ this.resolveExpressionValue(this.whereExpression.left, parameterValues) } = ${ this.resolveExpressionValue(this.whereExpression.right, parameterValues) }`;
 						break;
 					default:
-						throw new UnsupportedOperationError(`Unrecognised where clause operator: ${ whereClause.operator }`);
+						throw new UnsupportedOperationError(`Unrecognised where clause operator: ${ this.whereExpression.operator }`);
 				}
-			}
+			// }
 			whereString += `)`;
 		} else {
 			whereString = '';
