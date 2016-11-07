@@ -1,119 +1,20 @@
 import "reflect-metadata";
-import {DefaultMap} from "./lang";
+import {ColumnMetamodel, TABLE_METADATA_KEY, SELECT_METADATA_KEY} from "./metamodel";
+import {DefaultMap} from "../lang";
+import {
+	InvalidTableDefinitionError, InvalidQueryClassError, RowMappingError,
+	UnsupportedOperationError
+} from "../errors";
 
-class ArbaonError extends Error {
-
-}
-
-class UnsupportedOperationError extends ArbaonError {
-
-}
-
-class InvalidTableDefinitionError extends ArbaonError {
-
-}
-
-class InvalidColumnDefinitionError extends ArbaonError {
-
-}
-
-class InvalidQueryClassError extends ArbaonError {
-
-}
-
-class RowMappingError extends ArbaonError {
-
-}
-
-const METADATA_KEY_PREFIX = "arbaon.";
-const TABLE_METADATA_KEY = `${ METADATA_KEY_PREFIX }table`;
-export function Table<T>(metamodel : TableMetamodel) : ClassDecorator {
-	return function (target : Function) {
-		if (Reflect.hasMetadata(TABLE_METADATA_KEY, target)) {
-			throw new InvalidTableDefinitionError(`Class "${ target.name }" already has table metadata defined.`);
-		} else {
-			Reflect.defineMetadata(TABLE_METADATA_KEY, metamodel, target.prototype);
-		}
-	}
-}
-
-const SELECT_METADATA_KEY = `${ METADATA_KEY_PREFIX }select`;
-export function Column<T>(metamodel : ColumnMetamodel<any>) : PropertyDecorator {
-	return function (target : Object, propertyKey : string | symbol) {
-		let metadata : Map<string, ColumnMetamodel<any>> = Reflect.getMetadata(SELECT_METADATA_KEY, target);
-		if (!metadata) {
-			metadata = new Map<string, ColumnMetamodel<any>>();
-			Reflect.defineMetadata(SELECT_METADATA_KEY, metadata, target);
-		} else if (metadata.get(<string> propertyKey) !== undefined) {
-			throw new InvalidColumnDefinitionError(`Property "${ propertyKey }" already has column metadata defined.`);
-		}
-		metadata.set(<string> propertyKey, metamodel);
-	}
-}
-
-class TableMetamodel {
-	constructor(
-		private name : string
-	) {
-	}
-}
-
-const enum Operator {
+export const enum Operator {
 	Equals
 }
 
-const enum SqlCommand {
+export const enum SqlCommand {
 	Select,
 	Insert,
 	Update,
 	Delete
-}
-
-interface ColumnMetamodelOptions<R> {
-	references : R;
-}
-
-abstract class ColumnMetamodel<T> {
-	constructor(
-		public table : Function, // hmm
-		public name : string,
-		public type : Function,
-		private options? : ColumnMetamodelOptions<any>
-	) {
-
-	}
-
-	eq(value : T | ColumnMetamodel<T>) : WhereClause {
-		return {
-			columnMetamodel: this,
-			value: value,
-			operator: Operator.Equals
-		};
-	}
-}
-
-class NumericColumnMetamodel extends ColumnMetamodel<number> {
-
-}
-
-@Table(new TableMetamodel("Users"))
-class QUsers {
-	static id = new NumericColumnMetamodel(QUsers, "id", Number);
-	static locationId = new NumericColumnMetamodel(QUsers, "id", Number);
-
-	protected constructor() {}
-}
-
-@Table(new TableMetamodel("Locations"))
-class QLocations {
-	static id = new NumericColumnMetamodel(QLocations, "id", Number);
-
-	protected constructor() {}
-}
-
-class QuerySelect {
-	@Column(QUsers.id)
-	id : number;
 }
 
 interface QueryClass {
@@ -132,7 +33,7 @@ interface SelectClause {
 	alias : string;
 }
 
-interface WhereClause {
+export interface WhereClause {
 	value : ColumnMetamodel<any> | any;
 	operator : Operator;
 	columnMetamodel : ColumnMetamodel<any>;
@@ -271,9 +172,6 @@ class QueryBuilder<T extends QueryClass> {
 	}
 }
 
-function select<T extends QueryClass>(queryClass : T) : QueryBuilder<T> {
+export function select<T extends QueryClass>(queryClass : T) : QueryBuilder<T> {
 	return new QueryBuilder<T>(SqlCommand.Select, queryClass);
 }
-
-const result = select(QuerySelect).where(QUsers.id.eq(1));
-console.log(result.toSql());

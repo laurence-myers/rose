@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "compile": "tsc",
     "watch": "tsc -w --pretty"
   },
@@ -20,5 +20,9 @@
     "ramda": "^0.22.1",
     "reflect-metadata": "^0.1.8",
     "typescript": "^2.0.6"
+  },
+  "devDependencies": {
+    "@types/mocha": "2.2.32",
+    "mocha": "3.1.2"
   }
 }
