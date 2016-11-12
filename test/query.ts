@@ -1,6 +1,6 @@
 // import {describe, it} from "mocha";
 import {NumericColumnMetamodel, TableMetamodel, Table, Column} from "../src/query/metamodel";
-import {select} from "../src/query/dsl";
+import {select, Nested} from "../src/query/dsl";
 
 describe("Query DSL", function () {
 	it("produces SQL", function () {
@@ -53,6 +53,39 @@ describe("Query DSL", function () {
 		}
 
 		const result = select(QuerySelect).where(QLocations.id.eq(QUsers.locationId));
+		console.log(result.toSql());
+	});
+
+	it("produces SQL 3", function () {
+		@Table(new TableMetamodel("Users"))
+		class QUsers {
+			static id = new NumericColumnMetamodel(QUsers, "id", Number);
+			static locationId = new NumericColumnMetamodel(QUsers, "locationId", Number);
+
+			protected constructor() {}
+		}
+
+		@Table(new TableMetamodel("Locations"))
+		class QLocations {
+			static id = new NumericColumnMetamodel(QLocations, "id", Number);
+
+			protected constructor() {}
+		}
+
+		class QuerySelectNested {
+			@Column(QUsers.id)
+			id : number;
+		}
+
+		class QuerySelect {
+			@Column(QLocations.id)
+			id : number;
+
+			@Nested(QuerySelectNested)
+			users : Array<QuerySelectNested>;
+		}
+
+		const result = select(QuerySelect);
 		console.log(result.toSql());
 	});
 });

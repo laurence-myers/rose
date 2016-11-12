@@ -1,8 +1,8 @@
 import "reflect-metadata";
-import {InvalidTableDefinitionError, InvalidColumnDefinitionError} from "../errors";
+import {InvalidTableDefinitionError, InvalidColumnDefinitionError, InvalidQueryNestedClassError} from "../errors";
 import {Operator, WhereExpression} from "./dsl";
 
-const METADATA_KEY_PREFIX = "arbaon.";
+export const METADATA_KEY_PREFIX = "arbaon.";
 export const TABLE_METADATA_KEY = `${ METADATA_KEY_PREFIX }table`;
 export function Table<T>(metamodel : TableMetamodel) : ClassDecorator {
 	return function (target : Function) {

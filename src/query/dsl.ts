@@ -1,10 +1,39 @@
 import "reflect-metadata";
-import {ColumnMetamodel, TABLE_METADATA_KEY, SELECT_METADATA_KEY} from "./metamodel";
+import {ColumnMetamodel, TABLE_METADATA_KEY, SELECT_METADATA_KEY, METADATA_KEY_PREFIX} from "./metamodel";
 import {DefaultMap} from "../lang";
 import {
 	InvalidTableDefinitionError, InvalidQueryClassError, RowMappingError,
-	UnsupportedOperationError
+	UnsupportedOperationError, InvalidQueryNestedClassError
 } from "../errors";
+
+export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
+export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator {
+	return function (target : Object, propertyKey : string | symbol) {
+		const type = Reflect.getMetadata("design:type", target, propertyKey);
+		const isArray = type == Array;
+		if (isArray && !nestedClass) {
+			throw new InvalidQueryNestedClassError(`When nesting an array, you must pass the nested class as an argument to the decorator.`);
+		}
+		let metadata : Map<string, NestedQuery> = Reflect.getMetadata(NESTED_METADATA_KEY, target);
+		if (!metadata) {
+			metadata = new Map<string, NestedQuery>();
+			Reflect.defineMetadata(NESTED_METADATA_KEY, metadata, target);
+		} else if (metadata.get(<string> propertyKey) !== undefined) {
+			throw new InvalidQueryNestedClassError(`Property "${ propertyKey }" already has nested metadata defined.`);
+		}
+		const nestedQuery = new NestedQuery(isArray ? nestedClass : type, isArray);
+		metadata.set(<string> propertyKey, nestedQuery);
+	}
+}
+
+export class NestedQuery {
+	constructor(
+		public queryClass : Function,
+		public isArray : boolean
+	) {
+
+	}
+}
 
 export const enum Operator {
 	Equals
@@ -78,17 +107,11 @@ class QueryBuilder<T extends QueryClass> {
 		return `"${ tableAlias }"."${ columnMetamodel.name }"`;
 	}
 
-	protected select() : this {
-		const selectMetadata : Map<string, ColumnMetamodel<any>> = Reflect.getMetadata(SELECT_METADATA_KEY, this.queryClass.prototype);
-		if (!selectMetadata) {
-			throw new InvalidQueryClassError("The class provided to the select function does not have any column decorators.");
-		}
-
-		const entries : IterableIterator<[string, ColumnMetamodel<any>]> = selectMetadata.entries();
+	private processSelectMetadata(entries : IterableIterator<[string, ColumnMetamodel<any>]>, aliasPrefix? : string) : void {
 		for (const entry of entries) {
 			const columnMetamodel : ColumnMetamodel<any> = entry[1];
 			const columnName = columnMetamodel.name;
-			const columnAlias : string = entry[0];
+			const columnAlias : string = aliasPrefix ? `${ aliasPrefix }.${ entry[0] }` : entry[0];
 			const tableName = this.getTableName(columnMetamodel);
 			const tableAlias = this.tableMap.get(tableName);
 
@@ -101,6 +124,33 @@ class QueryBuilder<T extends QueryClass> {
 				column: columnName,
 				alias: columnAlias
 			});
+		}
+	}
+
+	private processNestedMetadata(entries : IterableIterator<[string, NestedQuery]>) : void {
+		for (const entry of entries) {
+			const aliasPrefix : string = entry[0];
+			const nestedQuery : NestedQuery = entry[1];
+			const selectMetadata = this.getSelectMetadata(nestedQuery.queryClass);
+			this.processSelectMetadata(selectMetadata.entries(), aliasPrefix);
+		}
+	}
+
+	private getSelectMetadata(queryClass : Function) : Map<string, ColumnMetamodel<any>> {
+		const selectMetadata : Map<string, ColumnMetamodel<any>> = Reflect.getMetadata(SELECT_METADATA_KEY, queryClass.prototype);
+		if (!selectMetadata) {
+			throw new InvalidQueryClassError("The class provided to the select function does not have any column decorators.");
+		}
+		return selectMetadata;
+	}
+
+	protected select() : this {
+		const selectMetadata = this.getSelectMetadata(this.queryClass);
+		const entries : IterableIterator<[string, ColumnMetamodel<any>]> = selectMetadata.entries();
+		this.processSelectMetadata(entries);
+		const nestedMetadata : Map<string, NestedQuery> = Reflect.getMetadata(NESTED_METADATA_KEY, this.queryClass.prototype);
+		if (nestedMetadata) {
+			this.processNestedMetadata(nestedMetadata.entries());
 		}
 		return this;
 	}
