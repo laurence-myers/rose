@@ -11,6 +11,6 @@
 		"noImplicitThis": true,
 		"noUnusedParameters": false,
 		"noUnusedLocals": false,
-		"sourceMap": false
+		"sourceMap": true
 	}
 }
