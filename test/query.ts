@@ -4,7 +4,7 @@ import {select, Nested} from "../src/query/dsl";
 import assert = require('assert');
 
 describe("Query DSL", function () {
-	it("produces SQL", function () {
+	it("supports selecting and where clause from one table, with an immediate value (param)", function () {
 		@Table(new TableMetamodel("Users"))
 		class QUsers {
 			static id = new NumericColumnMetamodel(QUsers, "id", Number);
@@ -30,7 +30,7 @@ describe("Query DSL", function () {
 		assert.equal(actual, expected);
 	});
 
-	it("produces SQL 2", function () {
+	it("supports selecting and where clause from multiple tables", function () {
 		@Table(new TableMetamodel("Users"))
 		class QUsers {
 			static id = new NumericColumnMetamodel(QUsers, "id", Number);
@@ -59,7 +59,7 @@ describe("Query DSL", function () {
 		assert.equal(actual, expected);
 	});
 
-	it("produces SQL 3", function () {
+	it("supports nested select objects", function () {
 		@Table(new TableMetamodel("Users"))
 		class QUsers {
 			static id = new NumericColumnMetamodel(QUsers, "id", Number);

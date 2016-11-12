@@ -1,27 +1,28 @@
 import "reflect-metadata";
 import {ColumnMetamodel, TABLE_METADATA_KEY, SELECT_METADATA_KEY, METADATA_KEY_PREFIX} from "./metamodel";
-import {DefaultMap} from "../lang";
+import {DefaultMap, getMetadata, getType} from "../lang";
 import {
 	InvalidTableDefinitionError, InvalidQueryClassError, RowMappingError,
 	UnsupportedOperationError, InvalidQueryNestedClassError
 } from "../errors";
+import {TableMetadata} from "../dbmetadata";
 
 export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
 export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator {
 	return function (target : Object, propertyKey : string | symbol) {
-		const type = Reflect.getMetadata("design:type", target, propertyKey);
+		const type = getType(target, propertyKey);
 		const isArray = type == Array;
 		if (isArray && !nestedClass) {
 			throw new InvalidQueryNestedClassError(`When nesting an array, you must pass the nested class as an argument to the decorator.`);
 		}
-		let metadata : Map<string, NestedQuery> = Reflect.getMetadata(NESTED_METADATA_KEY, target);
+		let metadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, target);
 		if (!metadata) {
 			metadata = new Map<string, NestedQuery>();
 			Reflect.defineMetadata(NESTED_METADATA_KEY, metadata, target);
 		} else if (metadata.get(<string> propertyKey) !== undefined) {
 			throw new InvalidQueryNestedClassError(`Property "${ propertyKey }" already has nested metadata defined.`);
 		}
-		const nestedQuery = new NestedQuery(isArray ? nestedClass : type, isArray);
+		const nestedQuery = new NestedQuery(isArray ? nestedClass : <any>type, isArray);
 		metadata.set(<string> propertyKey, nestedQuery);
 	}
 }
@@ -93,7 +94,7 @@ class QueryBuilder<T extends QueryClass> {
 
 	protected getTableName(columnMetamodel : ColumnMetamodel<any>) : string {
 		const queryTable = columnMetamodel.table;
-		const tableMetamodelMetadata = Reflect.getMetadata(TABLE_METADATA_KEY, queryTable.prototype);
+		const tableMetamodelMetadata = getMetadata<TableMetadata>(TABLE_METADATA_KEY, queryTable.prototype);
 		if (!tableMetamodelMetadata) {
 			throw new InvalidTableDefinitionError(`Table class "${ queryTable.name }" does not have any metadata.`);
 		}
@@ -137,7 +138,7 @@ class QueryBuilder<T extends QueryClass> {
 	}
 
 	private getSelectMetadata(queryClass : Function) : Map<string, ColumnMetamodel<any>> {
-		const selectMetadata : Map<string, ColumnMetamodel<any>> = Reflect.getMetadata(SELECT_METADATA_KEY, queryClass.prototype);
+		const selectMetadata = getMetadata<Map<string, ColumnMetamodel<any>>>(SELECT_METADATA_KEY, queryClass.prototype);
 		if (!selectMetadata) {
 			throw new InvalidQueryClassError("The class provided to the select function does not have any column decorators.");
 		}
@@ -148,7 +149,7 @@ class QueryBuilder<T extends QueryClass> {
 		const selectMetadata = this.getSelectMetadata(this.queryClass);
 		const entries : IterableIterator<[string, ColumnMetamodel<any>]> = selectMetadata.entries();
 		this.processSelectMetadata(entries);
-		const nestedMetadata : Map<string, NestedQuery> = Reflect.getMetadata(NESTED_METADATA_KEY, this.queryClass.prototype);
+		const nestedMetadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, this.queryClass.prototype);
 		if (nestedMetadata) {
 			this.processNestedMetadata(nestedMetadata.entries());
 		}

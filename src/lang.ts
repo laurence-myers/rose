@@ -1,3 +1,4 @@
+import "reflect-metadata";
 const fs = require('fs');
 const path = require('path');
 
@@ -26,4 +27,20 @@ export function makeDirs(fullPath : string) : void {
 			fs.mkdirSync(pathToMake);
 		}
 	}
+}
+
+export function getMetadata<T>(metadataKey : string, target : Object, targetKey? : string | symbol) : T | undefined {
+	if (targetKey) {
+		return Reflect.getMetadata(metadataKey, target, targetKey);
+	} else {
+		return Reflect.getMetadata(metadataKey, target);
+	}
+}
+
+export function getType(target : Object, propertyKey : string | symbol) : Function {
+	const type = getMetadata<Function>("design:type", target, propertyKey);
+	if (type === undefined) {
+		throw new TypeError(`Could not find a type for property ${ propertyKey }`);
+	}
+	return type;
 }

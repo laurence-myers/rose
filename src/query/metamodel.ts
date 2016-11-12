@@ -1,6 +1,7 @@
 import "reflect-metadata";
-import {InvalidTableDefinitionError, InvalidColumnDefinitionError, InvalidQueryNestedClassError} from "../errors";
+import {InvalidTableDefinitionError, InvalidColumnDefinitionError} from "../errors";
 import {Operator, WhereExpression} from "./dsl";
+import {getMetadata} from "../lang";
 
 export const METADATA_KEY_PREFIX = "arbaon.";
 export const TABLE_METADATA_KEY = `${ METADATA_KEY_PREFIX }table`;
@@ -17,7 +18,7 @@ export function Table<T>(metamodel : TableMetamodel) : ClassDecorator {
 export const SELECT_METADATA_KEY = `${ METADATA_KEY_PREFIX }select`;
 export function Column<T>(metamodel : ColumnMetamodel<any>) : PropertyDecorator {
 	return function (target : Object, propertyKey : string | symbol) {
-		let metadata : Map<string, ColumnMetamodel<any>> = Reflect.getMetadata(SELECT_METADATA_KEY, target);
+		let metadata = getMetadata<Map<string, ColumnMetamodel<any>>>(SELECT_METADATA_KEY, target);
 		if (!metadata) {
 			metadata = new Map<string, ColumnMetamodel<any>>();
 			Reflect.defineMetadata(SELECT_METADATA_KEY, metadata, target);
