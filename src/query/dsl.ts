@@ -200,8 +200,8 @@ class QueryBuilder<T extends QueryClass> {
 	}
 
 	toSql() : GeneratedQuery {
-		const columnsString = this.selectValues.map((c) => `"${ c.tableAlias }"."${ c.column }" as "${ c.alias }"`).join(`,`);
-		const tablesString = this.tables.map((t) => `"${ t.name }" as "${ t.alias }"`).join(`,`);
+		const columnsString = this.selectValues.map((c) => `"${ c.tableAlias }"."${ c.column }" as "${ c.alias }"`).join(`, `);
+		const tablesString = this.tables.map((t) => `"${ t.name }" as "${ t.alias }"`).join(`, `);
 		let whereString : string;
 		let parameterValues : any[] = [];
 		if (this.whereExpression) {
