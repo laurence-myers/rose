@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import {InvalidTableDefinitionError, InvalidColumnDefinitionError} from "../errors";
-import {Operator, WhereExpression} from "./dsl";
+import {Operator, WhereExpression, BooleanExpression} from "./dsl";
 import {getMetadata} from "../lang";
 
 export const METADATA_KEY_PREFIX = "arbaon.";
@@ -50,7 +50,7 @@ export abstract class ColumnMetamodel<T> {
 
 	}
 
-	eq(value : T | ColumnMetamodel<T>) : WhereExpression<T> {
+	eq(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanExpression<T, any> {
 		return {
 			left: this,
 			right: value,

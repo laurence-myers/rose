@@ -25,9 +25,18 @@ describe("Query DSL", function () {
 			id : number;
 		}
 
-		const actual : string = select(QuerySelect).where(QUsers.id.eq(1)).toSql().sql;
-		const expected = `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE ("t1"."id" = $1)`;
-		assert.equal(actual, expected);
+		interface QueryParams {
+			userId : number;
+		}
+		const params = {
+			userId : 1
+		};
+		const actual = select<any, QueryParams>(QuerySelect).where(QUsers.id.eq((p : QueryParams) => p.userId)).toSql(params);
+		const expected = {
+			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE ("t1"."id" = $1)`,
+			parameters: [1]
+		};
+		assert.deepEqual(actual, expected);
 	});
 
 	it("supports selecting and where clause from multiple tables", function () {
@@ -54,7 +63,7 @@ describe("Query DSL", function () {
 			locationId : number;
 		}
 
-		const actual = select(QuerySelect).where(QLocations.id.eq(QUsers.locationId)).toSql().sql;
+		const actual = select(QuerySelect).where(QLocations.id.eq(QUsers.locationId)).toSql({}).sql;
 		const expected = `SELECT "t1"."id" as "id", "t2"."id" as "locationId" FROM "Users" as "t1", "Locations" as "t2" WHERE ("t2"."id" = "t1"."locationId")`;
 		assert.equal(actual, expected);
 	});
@@ -88,7 +97,7 @@ describe("Query DSL", function () {
 			users : Array<QuerySelectNested>;
 		}
 
-		const actual = select(QuerySelect).toSql().sql;
+		const actual = select(QuerySelect).toSql({}).sql;
 		const expected = `SELECT "t1"."id" as "id", "t2"."id" as "users.id" FROM "Locations" as "t1", "Users" as "t2"`;
 		assert.equal(actual, expected);
 	});

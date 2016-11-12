@@ -63,14 +63,15 @@ interface SelectClause {
 	alias : string;
 }
 
-export type WhereExpression<T> = BooleanExpression<T>;
+export type WhereExpression<T, P> = BooleanExpression<T, P>;
 
-type ExpressionValue<T> = ColumnMetamodel<T> | T;
+export type PropertyGetter<P, T> = (params : P) => T;
+export type ExpressionValue<T, P> = ColumnMetamodel<T> | PropertyGetter<P, T>;
 
-interface BooleanExpression<T> {
-	left : ExpressionValue<T>;
+export interface BooleanExpression<T, P> {
+	left : ExpressionValue<T, P>;
 	operator : Operator;
-	right : ExpressionValue<T>;
+	right : ExpressionValue<T, P>;
 }
 
 interface GeneratedQuery {
@@ -82,11 +83,11 @@ function isColumnMetamodel(value : any | ColumnMetamodel<any>) : value is Column
 	return value instanceof ColumnMetamodel;
 }
 
-class QueryBuilder<T extends QueryClass> {
+class QueryBuilder<T extends QueryClass, P> {
 	protected selectValues : SelectClause[] = [];
 	protected tables : TableClause[] = [];
 	protected tableMap = new DefaultMap<string, string>((key) => `t${ this.tables.length + 1 }`);
-	protected whereExpression : WhereExpression<any>;
+	protected whereExpression : WhereExpression<any, any>;
 
 	constructor(private command : SqlCommand, private queryClass : T) {
 		this.select();
@@ -156,7 +157,7 @@ class QueryBuilder<T extends QueryClass> {
 		return this;
 	}
 
-	where(whereExpression : WhereExpression<any>) : this {
+	where(whereExpression : WhereExpression<any, any>) : this {
 		this.whereExpression = whereExpression;
 		return this;
 	}
@@ -191,16 +192,16 @@ class QueryBuilder<T extends QueryClass> {
 		return output;
 	}
 
-	protected resolveExpressionValue(value : ExpressionValue<any>, parameterValues : any[]) : string {
+	protected resolveExpressionValue(value : ExpressionValue<any, any>, params : P, parameterValues : any[]) : string {
 		if (isColumnMetamodel(value)) {
 			return this.getQualifiedColumnName(value);
 		} else {
-			parameterValues.push(value);
+			parameterValues.push(value(params));
 			return `$${ parameterValues.length }`;
 		}
 	}
 
-	toSql() : GeneratedQuery {
+	toSql(params : P) : GeneratedQuery {
 		const columnsString = this.selectValues.map((c) => `"${ c.tableAlias }"."${ c.column }" as "${ c.alias }"`).join(`, `);
 		const tablesString = this.tables.map((t) => `"${ t.name }" as "${ t.alias }"`).join(`, `);
 		let whereString : string;
@@ -211,7 +212,7 @@ class QueryBuilder<T extends QueryClass> {
 				switch (this.whereExpression.operator) {
 					case Operator.Equals:
 						// TODO: sanitized values?
-						whereString += `${ this.resolveExpressionValue(this.whereExpression.left, parameterValues) } = ${ this.resolveExpressionValue(this.whereExpression.right, parameterValues) }`;
+						whereString += `${ this.resolveExpressionValue(this.whereExpression.left, params, parameterValues) } = ${ this.resolveExpressionValue(this.whereExpression.right, params, parameterValues) }`;
 						break;
 					default:
 						throw new UnsupportedOperationError(`Unrecognised where clause operator: ${ this.whereExpression.operator }`);
@@ -229,6 +230,6 @@ class QueryBuilder<T extends QueryClass> {
 	}
 }
 
-export function select<T extends QueryClass>(queryClass : T) : QueryBuilder<T> {
-	return new QueryBuilder<T>(SqlCommand.Select, queryClass);
+export function select<T extends QueryClass, P>(queryClass : T) : QueryBuilder<T, P> {
+	return new QueryBuilder<T, P>(SqlCommand.Select, queryClass);
 }
