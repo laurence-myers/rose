@@ -44,3 +44,7 @@ export function getType(target : Object, propertyKey : string | symbol) : Functi
 	}
 	return type;
 }
+
+export function assertNever(arg : never) : never {
+	throw new Error(`Unexpected object: ${ arg }`);
+}

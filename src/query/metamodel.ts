@@ -1,7 +1,8 @@
 import "reflect-metadata";
 import {InvalidTableDefinitionError, InvalidColumnDefinitionError} from "../errors";
-import {Operator, WhereExpression, BooleanExpression} from "./dsl";
 import {getMetadata} from "../lang";
+import {BooleanExpressionNode, ColumnReferenceNode, ConstantNode} from "./ast";
+import {TableMetadata} from "../dbmetadata";
 
 export const METADATA_KEY_PREFIX = "arbaon.";
 export const TABLE_METADATA_KEY = `${ METADATA_KEY_PREFIX }table`;
@@ -50,15 +51,46 @@ export abstract class ColumnMetamodel<T> {
 
 	}
 
-	eq(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanExpression<T, any> {
+	eq(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanExpressionNode {
+		let right : ColumnReferenceNode | ConstantNode<T>;
+		if (value instanceof ColumnMetamodel) {
+			right = value.toColumnReferenceNode();
+		} else {
+			right = <ConstantNode<T>> {
+				type: 'constantNode',
+				getter: value
+			};
+		}
 		return {
-			left: this,
-			right: value,
-			operator: Operator.Equals
+			type: 'booleanExpressionNode',
+			left: this.toColumnReferenceNode(),
+			right,
+			operator: '=' // TODO
+		};
+	}
+
+	protected toColumnReferenceNode() : ColumnReferenceNode {
+		return {
+			type: 'columnReferenceNode',
+			columnName: this.name,
+			tableName: getTableName(this.table)
 		};
 	}
 }
 
 export class NumericColumnMetamodel extends ColumnMetamodel<number> {
 
+}
+
+export function getTableName(queryTable : Function) {
+	const tableMetamodelMetadata = getMetadata<TableMetadata>(TABLE_METADATA_KEY, queryTable.prototype);
+	if (!tableMetamodelMetadata) {
+		throw new InvalidTableDefinitionError(`Table class "${ queryTable.name }" does not have any metadata.`);
+	}
+	return tableMetamodelMetadata.name;
+}
+
+export function getTableNameFromColumn(columnMetamodel : ColumnMetamodel<any>) : string {
+	const queryTable = columnMetamodel.table;
+	return getTableName(queryTable);
 }
