@@ -1,15 +1,13 @@
 import "reflect-metadata";
 import {
-	ColumnMetamodel, TABLE_METADATA_KEY, SELECT_METADATA_KEY, METADATA_KEY_PREFIX,
+	ColumnMetamodel, SELECT_METADATA_KEY, METADATA_KEY_PREFIX,
 	getTableNameFromColumn
 } from "./metamodel";
 import {DefaultMap, getMetadata, getType} from "../lang";
 import {
-	InvalidTableDefinitionError, InvalidQueryClassError, RowMappingError,
-	UnsupportedOperationError, InvalidQueryNestedClassError
+	InvalidQueryClassError, InvalidQueryNestedClassError
 } from "../errors";
-import {TableMetadata} from "../dbmetadata";
-import {AstNode, SelectCommandNode, BooleanExpressionNode} from "./ast";
+import {SelectCommandNode, BooleanExpressionNode} from "./ast";
 import {AstWalker} from "./walker";
 
 export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
@@ -41,10 +39,6 @@ export class NestedQuery {
 	}
 }
 
-export const enum Operator {
-	Equals
-}
-
 export const enum SqlCommand {
 	Select,
 	Insert,
@@ -56,36 +50,9 @@ interface QueryClass {
 	new() : any;
 }
 
-interface TableClause {
-	name : string;
-	alias : string;
-}
-
-interface SelectClause {
-	// Naive, doesn't allow aggregates, functions, etc.
-	tableAlias : string;
-	column : string;
-	alias : string;
-}
-
-export type WhereExpression<T, P> = BooleanExpression<T, P>;
-
-export type PropertyGetter<P, T> = (params : P) => T;
-export type ExpressionValue<T, P> = ColumnMetamodel<T> | PropertyGetter<P, T>;
-
-export interface BooleanExpression<T, P> {
-	left : ExpressionValue<T, P>;
-	operator : Operator;
-	right : ExpressionValue<T, P>;
-}
-
 export interface GeneratedQuery {
 	sql : string;
 	parameters : any[];
-}
-
-function isColumnMetamodel(value : any | ColumnMetamodel<any>) : value is ColumnMetamodel<any> {
-	return value instanceof ColumnMetamodel;
 }
 
 class QueryBuilder<T extends QueryClass, P> {
