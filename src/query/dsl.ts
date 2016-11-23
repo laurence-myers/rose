@@ -7,7 +7,7 @@ import {DefaultMap, getMetadata, getType} from "../lang";
 import {
 	InvalidQueryClassError, InvalidQueryNestedClassError
 } from "../errors";
-import {SelectCommandNode, BooleanExpressionNode} from "./ast";
+import {SelectCommandNode, BooleanExpressionNode, OrderByExpressionNode} from "./ast";
 import {AstWalker} from "./walker";
 
 export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
@@ -108,7 +108,8 @@ class QueryBuilder<T extends QueryClass, P> {
 			distinction: 'all',
 			outputExpressions: [],
 			fromItems: [],
-			conditions: []
+			conditions: [],
+			ordering: []
 		};
 		const selectMetadata = this.getSelectMetadata(this.queryClass);
 		const entries : IterableIterator<[string, ColumnMetamodel<any>]> = selectMetadata.entries();
@@ -123,6 +124,14 @@ class QueryBuilder<T extends QueryClass, P> {
 	where(whereExpression : BooleanExpressionNode) : this {
 		// Rectify table aliases. Crap, need to work out a better way to do this
 		this.queryAst.conditions.push(whereExpression);
+		return this;
+	}
+
+	orderBy(first : OrderByExpressionNode, ...rest : OrderByExpressionNode[]) : this {
+		this.queryAst.ordering.push(first);
+		if (rest && rest.length > 0) {
+			rest.forEach((node) => this.queryAst.ordering.push(node));
+		}
 		return this;
 	}
 

@@ -1,9 +1,10 @@
 import {
 	SelectCommandNode, AstNode, ColumnReferenceNode, ValueExpressionNode, FromItemNode,
-	BooleanExpressionNode, ConstantNode
+	BooleanExpressionNode, ConstantNode, OrderByExpressionNode
 } from "./ast";
 import {DefaultMap, assertNever} from "../lang";
 import {GeneratedQuery} from "./dsl";
+import {UnsupportedOperationError} from "../errors";
 
 export class AstWalker {
 	// protected tableMap = new DefaultMap<string, string>((key) => `t${ this.queryAst.fromItems.length + 1 }`);
@@ -55,6 +56,29 @@ export class AstWalker {
 		this.sb.push(`"`);
 	}
 
+	private walkOrderByExpressionNode(node : OrderByExpressionNode) : void {
+		this.walk(node.expression);
+		if (node.order) {
+			switch (node.order) {
+				case 'asc':
+					this.sb.push(' ASC');
+					break;
+				case 'desc':
+					this.sb.push(' DESC');
+					break;
+				case 'using':
+					this.sb.push(' USING ');
+					if (!node.operator) {
+						throw new UnsupportedOperationError(`An order by expression with "using" must also have an operator.`);
+					}
+					this.sb.push(node.operator);
+					break;
+				default:
+					return assertNever(node.order);
+			}
+		}
+	}
+
 	protected walkSelectCommandNode(node : SelectCommandNode) : void {
 		this.sb.push("SELECT ");
 		if (node.distinction == 'distinct') {
@@ -78,6 +102,10 @@ export class AstWalker {
 			node.conditions.forEach((node : BooleanExpressionNode) => this.walk(node));
 			this.sb.push(")");
 		}
+		if (node.ordering.length > 0) {
+			this.sb.push(" ORDER BY ");
+			node.ordering.forEach((node : OrderByExpressionNode) => this.walk(node));
+		}
 	}
 
 	protected walk(node : AstNode) : void {
@@ -93,6 +121,9 @@ export class AstWalker {
 				break;
 			case "fromItemNode":
 				this.walkFromItemNode(node);
+				break;
+			case "orderByExpressionNode":
+				this.walkOrderByExpressionNode(node);
 				break;
 			case "selectCommandNode":
 				this.walkSelectCommandNode(node);

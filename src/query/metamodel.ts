@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import {InvalidTableDefinitionError, InvalidColumnDefinitionError} from "../errors";
 import {getMetadata} from "../lang";
-import {BooleanExpressionNode, ColumnReferenceNode, ConstantNode} from "./ast";
+import {BooleanExpressionNode, ColumnReferenceNode, ConstantNode, OrderByExpressionNode} from "./ast";
 import {TableMetadata} from "../dbmetadata";
 
 export const METADATA_KEY_PREFIX = "arbaon.";
@@ -49,6 +49,22 @@ export abstract class ColumnMetamodel<T> {
 		private options? : ColumnMetamodelOptions<any>
 	) {
 
+	}
+
+	asc() : OrderByExpressionNode {
+		return {
+			type: "orderByExpressionNode",
+			expression: this.toColumnReferenceNode(),
+			order: "asc"
+		};
+	}
+
+	desc() : OrderByExpressionNode {
+		return {
+			type: "orderByExpressionNode",
+			expression: this.toColumnReferenceNode(),
+			order: "desc"
+		};
 	}
 
 	eq(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanExpressionNode {

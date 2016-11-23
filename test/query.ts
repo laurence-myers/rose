@@ -4,22 +4,22 @@ import {select, Nested} from "../src/query/dsl";
 import assert = require('assert');
 
 describe("Query DSL", function () {
+	@Table(new TableMetamodel("Users"))
+	class QUsers {
+		static id = new NumericColumnMetamodel(QUsers, "id", Number);
+		static locationId = new NumericColumnMetamodel(QUsers, "locationId", Number);
+
+		protected constructor() {}
+	}
+
+	@Table(new TableMetamodel("Locations"))
+	class QLocations {
+		static id = new NumericColumnMetamodel(QLocations, "id", Number);
+
+		protected constructor() {}
+	}
+
 	it("supports selecting and where clause from one table, with an immediate value (param)", function () {
-		@Table(new TableMetamodel("Users"))
-		class QUsers {
-			static id = new NumericColumnMetamodel(QUsers, "id", Number);
-			static locationId = new NumericColumnMetamodel(QUsers, "id", Number);
-
-			protected constructor() {}
-		}
-
-		@Table(new TableMetamodel("Locations"))
-		class QLocations {
-			static id = new NumericColumnMetamodel(QLocations, "id", Number);
-
-			protected constructor() {}
-		}
-
 		class QuerySelect {
 			@Column(QUsers.id)
 			id : number;
@@ -39,22 +39,44 @@ describe("Query DSL", function () {
 		assert.deepEqual(actual, expected);
 	});
 
+	it("supports ordering", function () {
+		class QuerySelect {
+			@Column(QUsers.id)
+			id : number;
+		}
+
+		interface QueryParams {
+			userId : number;
+		}
+		const params = {
+			userId : 1
+		};
+		const cases = [
+			{
+				expected: {
+					sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" ORDER BY "t1"."id" ASC`,
+					parameters: []
+				},
+				actual: select<any, QueryParams>(QuerySelect)
+					.orderBy(QUsers.id.asc())
+					.toSql(params)
+			},
+			{
+				expected: {
+					sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" ORDER BY "t1"."id" DESC`,
+					parameters: []
+				},
+				actual: select<any, QueryParams>(QuerySelect)
+					.orderBy(QUsers.id.desc())
+					.toSql(params)
+			}
+		];
+		cases.forEach((entry) => {
+			assert.deepEqual(entry.actual, entry.expected);
+		});
+	});
+
 	it("supports selecting and where clause from multiple tables", function () {
-		@Table(new TableMetamodel("Users"))
-		class QUsers {
-			static id = new NumericColumnMetamodel(QUsers, "id", Number);
-			static locationId = new NumericColumnMetamodel(QUsers, "locationId", Number);
-
-			protected constructor() {}
-		}
-
-		@Table(new TableMetamodel("Locations"))
-		class QLocations {
-			static id = new NumericColumnMetamodel(QLocations, "id", Number);
-
-			protected constructor() {}
-		}
-
 		class QuerySelect {
 			@Column(QUsers.id)
 			id : number;
@@ -69,21 +91,6 @@ describe("Query DSL", function () {
 	});
 
 	it("supports nested select objects", function () {
-		@Table(new TableMetamodel("Users"))
-		class QUsers {
-			static id = new NumericColumnMetamodel(QUsers, "id", Number);
-			static locationId = new NumericColumnMetamodel(QUsers, "locationId", Number);
-
-			protected constructor() {}
-		}
-
-		@Table(new TableMetamodel("Locations"))
-		class QLocations {
-			static id = new NumericColumnMetamodel(QLocations, "id", Number);
-
-			protected constructor() {}
-		}
-
 		class QuerySelectNested {
 			@Column(QUsers.id)
 			id : number;

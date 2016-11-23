@@ -63,6 +63,14 @@ export interface FromItemNode {
 	alias : string;
 }
 
+export interface OrderByExpressionNode {
+	type : 'orderByExpressionNode';
+	expression : ValueExpressionNode; //?
+	order? : 'asc' | 'desc' | 'using';
+	operator? : string; //?
+	nulls? : 'first' | 'last';
+}
+
 /*
  https://www.postgresql.org/docs/9.6/static/sql-select.html
  [ WITH [ RECURSIVE ] with_query [, ...] ]
@@ -115,6 +123,7 @@ export interface SelectCommandNode {
 	outputExpressions : ValueExpressionNode[]; // should we also support *?
 	fromItems : FromItemNode[];
 	conditions : BooleanExpressionNode[];
+	ordering : OrderByExpressionNode[];
 }
 
-export type AstNode = SelectCommandNode | ValueExpressionNode | FromItemNode;
+export type AstNode = SelectCommandNode | ValueExpressionNode | FromItemNode | OrderByExpressionNode;
