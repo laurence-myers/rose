@@ -156,13 +156,15 @@ class QueryBuilder<T extends QueryClass, P> {
 		return this;
 	}
 
-	from(table : Function) : this {
-		const tableName = getTableName(table);
-		this.queryAst.fromItems.push({
-			type: 'fromItemNode',
-			tableName: tableName,
-			alias: this.tableMap.get(tableName)
-		});
+	from(first : Function, ...rest: Function[]) : this {
+		for (const table of [first].concat(rest)) {
+			const tableName = getTableName(table);
+			this.queryAst.fromItems.push({
+				type: 'fromItemNode',
+				tableName: tableName,
+				alias: this.tableMap.get(tableName)
+			});
+		}
 		return this;
 	}
 
