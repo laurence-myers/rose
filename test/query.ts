@@ -1,7 +1,8 @@
 // import {describe, it} from "mocha";
 import {NumericColumnMetamodel, TableMetamodel, Table, Column} from "../src/query/metamodel";
-import {select, Nested} from "../src/query/dsl";
+import {select, Nested, Expression} from "../src/query/dsl";
 import assert = require('assert');
+import {count} from "../src/query/postgresql/functions";
 
 describe("Query DSL", function () {
 	@Table(new TableMetamodel("Users"))
@@ -141,6 +142,17 @@ describe("Query DSL", function () {
 
 		const actual = select(QuerySelect).toSql({}).sql;
 		const expected = `SELECT "t1"."id" as "id", "t2"."id" as "locations.id", "t3"."id" as "users.id" FROM "Agencies" as "t1", "Locations" as "t2", "Users" as "t3"`;
+		assert.equal(actual, expected);
+	});
+
+	it("supports function expressions as select output", function () {
+		class QuerySelect {
+			@Expression(count())
+			count : number;
+		}
+
+		const actual = select(QuerySelect).from(QUsers).toSql({}).sql;
+		const expected = `SELECT count(*) FROM "Users" as "t1"`;
 		assert.equal(actual, expected);
 	});
 });

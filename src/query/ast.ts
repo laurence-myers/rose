@@ -54,7 +54,13 @@ export interface BooleanExpressionNode {
 	right : ConstantNode<any> | ColumnReferenceNode;
 }
 
-export type ValueExpressionNode = ConstantNode<any> | ColumnReferenceNode | BooleanExpressionNode;
+export interface FunctionExpressionNode {
+	type : 'functionExpressionNode';
+	name : string;
+	arguments : ValueExpressionNode[];
+}
+
+export type ValueExpressionNode = ConstantNode<any> | ColumnReferenceNode | BooleanExpressionNode | FunctionExpressionNode;
 
 export interface FromItemNode {
 	type : 'fromItemNode';
@@ -126,4 +132,4 @@ export interface SelectCommandNode {
 	ordering : OrderByExpressionNode[];
 }
 
-export type AstNode = SelectCommandNode | ValueExpressionNode | FromItemNode | OrderByExpressionNode;
+export type AstNode = SelectCommandNode | ValueExpressionNode | FromItemNode | OrderByExpressionNode | FunctionExpressionNode;

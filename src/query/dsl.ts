@@ -1,13 +1,16 @@
 import "reflect-metadata";
 import {
 	ColumnMetamodel, SELECT_METADATA_KEY, METADATA_KEY_PREFIX,
-	getTableNameFromColumn
+	getTableNameFromColumn, getTableName
 } from "./metamodel";
 import {DefaultMap, getMetadata, getType} from "../lang";
 import {
-	InvalidQueryClassError, InvalidQueryNestedClassError
+	InvalidQueryClassError, InvalidDecoratorError
 } from "../errors";
-import {SelectCommandNode, BooleanExpressionNode, OrderByExpressionNode} from "./ast";
+import {
+	SelectCommandNode, BooleanExpressionNode, OrderByExpressionNode, FunctionExpressionNode,
+	ValueExpressionNode
+} from "./ast";
 import {AstWalker} from "./walker";
 
 export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
@@ -16,17 +19,31 @@ export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator
 		const type = getType(target, propertyKey);
 		const isArray = type == Array;
 		if (isArray && !nestedClass) {
-			throw new InvalidQueryNestedClassError(`When nesting an array, you must pass the nested class as an argument to the decorator.`);
+			throw new InvalidDecoratorError(`When nesting an array, you must pass the nested class as an argument to the decorator.`);
 		}
 		let metadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, target);
 		if (!metadata) {
 			metadata = new Map<string, NestedQuery>();
 			Reflect.defineMetadata(NESTED_METADATA_KEY, metadata, target);
 		} else if (metadata.get(<string> propertyKey) !== undefined) {
-			throw new InvalidQueryNestedClassError(`Property "${ propertyKey }" already has nested metadata defined.`);
+			throw new InvalidDecoratorError(`Property "${ propertyKey }" already has nested metadata defined.`);
 		}
 		const nestedQuery = new NestedQuery(isArray ? nestedClass : <any>type, isArray);
 		metadata.set(<string> propertyKey, nestedQuery);
+	}
+}
+
+export const EXPRESSION_METADATA_KEY = `${ METADATA_KEY_PREFIX }expression`;
+export function Expression(functionExpressionNode : ValueExpressionNode) : PropertyDecorator {
+	return function (target : Object, propertyKey : string | symbol) {
+		let metadata = getMetadata<Map<string, ValueExpressionNode>>(EXPRESSION_METADATA_KEY, target);
+		if (!metadata) {
+			metadata = new Map<string, ValueExpressionNode>();
+			Reflect.defineMetadata(EXPRESSION_METADATA_KEY, metadata, target);
+		} else if (metadata.get(<string> propertyKey) !== undefined) {
+			throw new InvalidDecoratorError(`Property "${ propertyKey }" already has an expression metadata defined.`);
+		}
+		metadata.set(<string> propertyKey, functionExpressionNode);
 	}
 }
 
@@ -93,20 +110,36 @@ class QueryBuilder<T extends QueryClass, P> {
 		}
 	}
 
-	protected getSelectMetadata(queryClass : Function) : Map<string, ColumnMetamodel<any>> {
-		const selectMetadata = getMetadata<Map<string, ColumnMetamodel<any>>>(SELECT_METADATA_KEY, queryClass.prototype);
-		if (!selectMetadata) {
-			throw new InvalidQueryClassError("The class provided to the select function does not have any column decorators.");
+	protected processExpressionMetadata(entries : IterableIterator<[string, ValueExpressionNode]>) : void {
+		for (const entry of entries) {
+			const alias : string = entry[0];
+			const expression : ValueExpressionNode = entry[1];
+			// TODO: resolve table references within the expression?
+			// TODO: support the property name as the alias
+			this.queryAst.outputExpressions.push(expression);
 		}
+	}
+
+	protected getSelectMetadata(queryClass : Function) : Map<string, ColumnMetamodel<any>> | undefined {
+		const selectMetadata = getMetadata<Map<string, ColumnMetamodel<any>>>(SELECT_METADATA_KEY, queryClass.prototype);
 		return selectMetadata;
 	}
 
 	protected processSelectQueryClass(queryClass : Function, aliasPrefix? : string) {
 		const selectMetadata = this.getSelectMetadata(queryClass);
-		this.processSelectMetadata(selectMetadata.entries(), aliasPrefix);
+		if (selectMetadata) {
+			this.processSelectMetadata(selectMetadata.entries(), aliasPrefix);
+		}
 		const nestedMetadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, queryClass.prototype);
 		if (nestedMetadata) {
 			this.processNestedMetadata(nestedMetadata.entries());
+		}
+		const expressionMetadata = getMetadata<Map<string, FunctionExpressionNode>>(EXPRESSION_METADATA_KEY, queryClass.prototype);
+		if (expressionMetadata) {
+			this.processExpressionMetadata(expressionMetadata.entries());
+		}
+		if (!selectMetadata && !nestedMetadata && !expressionMetadata) {
+			throw new InvalidQueryClassError("The class provided to the select function does not have any output columns, expressions, or nested queries.");
 		}
 	}
 
@@ -120,6 +153,16 @@ class QueryBuilder<T extends QueryClass, P> {
 			ordering: []
 		};
 		this.processSelectQueryClass(this.queryClass);
+		return this;
+	}
+
+	from(table : Function) : this {
+		const tableName = getTableName(table);
+		this.queryAst.fromItems.push({
+			type: 'fromItemNode',
+			tableName: tableName,
+			alias: this.tableMap.get(tableName)
+		});
 		return this;
 	}
 

@@ -18,7 +18,7 @@ export class InvalidQueryClassError extends ArbaonError {
 
 }
 
-export class InvalidQueryNestedClassError extends ArbaonError {
+export class InvalidDecoratorError extends ArbaonError {
 
 }
 

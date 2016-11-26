@@ -1,6 +1,6 @@
 import "reflect-metadata";
-const fs = require('fs');
-const path = require('path');
+import fs = require('fs');
+import path = require('path');
 
 export class DefaultMap<K, V> extends Map<K, V> {
 	constructor(private defaultValueFactory : (key : K) => V, iterable?: [K, V][]) {
@@ -46,5 +46,5 @@ export function getType(target : Object, propertyKey : string | symbol) : Functi
 }
 
 export function assertNever(arg : never) : never {
-	throw new Error(`Unexpected object: ${ arg }`);
+	throw new Error(`Unexpected object: ${ (<any> arg).constructor || arg }`);
 }

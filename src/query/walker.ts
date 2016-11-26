@@ -1,6 +1,6 @@
 import {
 	SelectCommandNode, AstNode, ColumnReferenceNode, ValueExpressionNode, FromItemNode,
-	BooleanExpressionNode, ConstantNode, OrderByExpressionNode
+	BooleanExpressionNode, ConstantNode, OrderByExpressionNode, FunctionExpressionNode
 } from "./ast";
 import {DefaultMap, assertNever} from "../lang";
 import {GeneratedQuery} from "./dsl";
@@ -54,6 +54,17 @@ export class AstWalker {
 		this.sb.push(`" as "`);
 		this.sb.push(node.alias);
 		this.sb.push(`"`);
+	}
+
+	protected walkFunctionExpressionNode(node : FunctionExpressionNode) : void {
+		this.sb.push(node.name);
+		this.sb.push('(');
+		if (node.arguments.length > 0) {
+			node.arguments.forEach((node) => this.walk(node));
+		} else {
+			this.sb.push('*');
+		}
+		this.sb.push(')');
 	}
 
 	private walkOrderByExpressionNode(node : OrderByExpressionNode) : void {
@@ -121,6 +132,9 @@ export class AstWalker {
 				break;
 			case "fromItemNode":
 				this.walkFromItemNode(node);
+				break;
+			case "functionExpressionNode":
+				this.walkFunctionExpressionNode(node);
 				break;
 			case "orderByExpressionNode":
 				this.walkOrderByExpressionNode(node);
