@@ -89,8 +89,7 @@ class QueryBuilder<T extends QueryClass, P> {
 		for (const entry of entries) {
 			const aliasPrefix : string = entry[0];
 			const nestedQuery : NestedQuery = entry[1];
-			const selectMetadata = this.getSelectMetadata(nestedQuery.queryClass);
-			this.processSelectMetadata(selectMetadata.entries(), aliasPrefix);
+			this.processSelectQueryClass(nestedQuery.queryClass, aliasPrefix);
 		}
 	}
 
@@ -102,6 +101,15 @@ class QueryBuilder<T extends QueryClass, P> {
 		return selectMetadata;
 	}
 
+	protected processSelectQueryClass(queryClass : Function, aliasPrefix? : string) {
+		const selectMetadata = this.getSelectMetadata(queryClass);
+		this.processSelectMetadata(selectMetadata.entries(), aliasPrefix);
+		const nestedMetadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, queryClass.prototype);
+		if (nestedMetadata) {
+			this.processNestedMetadata(nestedMetadata.entries());
+		}
+	}
+
 	protected select() : this {
 		this.queryAst = {
 			type: 'selectCommandNode',
@@ -111,13 +119,7 @@ class QueryBuilder<T extends QueryClass, P> {
 			conditions: [],
 			ordering: []
 		};
-		const selectMetadata = this.getSelectMetadata(this.queryClass);
-		const entries : IterableIterator<[string, ColumnMetamodel<any>]> = selectMetadata.entries();
-		this.processSelectMetadata(entries);
-		const nestedMetadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, this.queryClass.prototype);
-		if (nestedMetadata) {
-			this.processNestedMetadata(nestedMetadata.entries());
-		}
+		this.processSelectQueryClass(this.queryClass);
 		return this;
 	}
 

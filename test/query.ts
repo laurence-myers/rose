@@ -15,6 +15,14 @@ describe("Query DSL", function () {
 	@Table(new TableMetamodel("Locations"))
 	class QLocations {
 		static id = new NumericColumnMetamodel(QLocations, "id", Number);
+		static agencyId = new NumericColumnMetamodel(QLocations, "id", Number);
+
+		protected constructor() {}
+	}
+
+	@Table(new TableMetamodel("Agencies"))
+	class QAgencies {
+		static id = new NumericColumnMetamodel(QAgencies, "id", Number);
 
 		protected constructor() {}
 	}
@@ -106,6 +114,33 @@ describe("Query DSL", function () {
 
 		const actual = select(QuerySelect).toSql({}).sql;
 		const expected = `SELECT "t1"."id" as "id", "t2"."id" as "users.id" FROM "Locations" as "t1", "Users" as "t2"`;
+		assert.equal(actual, expected);
+	});
+
+	it("supports deeply nested select objects", function () {
+		class QuerySelectNestedNested {
+			@Column(QUsers.id)
+			id : number;
+		}
+
+		class QuerySelectNested {
+			@Column(QLocations.id)
+			id : number;
+
+			@Nested(QuerySelectNestedNested)
+			users : Array<QuerySelectNestedNested>;
+		}
+
+		class QuerySelect {
+			@Column(QAgencies.id)
+			id : number;
+
+			@Nested(QuerySelectNested)
+			locations : Array<QuerySelectNested>;
+		}
+
+		const actual = select(QuerySelect).toSql({}).sql;
+		const expected = `SELECT "t1"."id" as "id", "t2"."id" as "locations.id", "t3"."id" as "users.id" FROM "Agencies" as "t1", "Locations" as "t2", "Users" as "t3"`;
 		assert.equal(actual, expected);
 	});
 });
