@@ -156,6 +156,11 @@ class QueryBuilder<T extends QueryClass, P> {
 		return this;
 	}
 
+	distinct() : this {
+		this.queryAst.distinction = 'distinct';
+		return this;
+	}
+
 	from(first : QueryTable, ...rest: QueryTable[]) : this {
 		for (const qtable of [first].concat(rest)) {
 			const tableName = qtable.$table.name;

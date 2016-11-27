@@ -160,4 +160,15 @@ describe("Query DSL", function () {
 		const expected = `SELECT count(*) FROM "Users" as "t1", "Locations" as "t2"`; // TODO: the count should be output with an alias of "count"
 		assert.equal(actual, expected);
 	});
+
+	it("supports distinct rows", function () {
+		class QuerySelect {
+			@Column(QUsers.id)
+			id : number;
+		}
+
+		const actual = select(QuerySelect).distinct().toSql({}).sql;
+		const expected = `SELECT DISTINCT "t1"."id" as "id" FROM "Users" as "t1"`; // TODO: the count should be output with an alias of "count"
+		assert.equal(actual, expected);
+	});
 });
