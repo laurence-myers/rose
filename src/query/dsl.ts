@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import {
 	ColumnMetamodel, SELECT_METADATA_KEY, METADATA_KEY_PREFIX,
-	getTableNameFromColumn, getTableName
+	getTableNameFromColumn, getTableName, QueryTable
 } from "./metamodel";
 import {DefaultMap, getMetadata, getType} from "../lang";
 import {
@@ -156,9 +156,9 @@ class QueryBuilder<T extends QueryClass, P> {
 		return this;
 	}
 
-	from(first : Function, ...rest: Function[]) : this {
-		for (const table of [first].concat(rest)) {
-			const tableName = getTableName(table);
+	from(first : QueryTable, ...rest: QueryTable[]) : this {
+		for (const qtable of [first].concat(rest)) {
+			const tableName = qtable.$table.name;
 			this.queryAst.fromItems.push({
 				type: 'fromItemNode',
 				tableName: tableName,

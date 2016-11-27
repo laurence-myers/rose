@@ -1,32 +1,36 @@
 // import {describe, it} from "mocha";
-import {NumericColumnMetamodel, TableMetamodel, Table, Column} from "../src/query/metamodel";
+import {
+	NumericColumnMetamodel, TableMetamodel, Table, Column, StringColumnMetamodel,
+	QueryTable
+} from "../src/query/metamodel";
 import {select, Nested, Expression} from "../src/query/dsl";
 import assert = require('assert');
 import {count} from "../src/query/postgresql/functions";
 
 describe("Query DSL", function () {
-	@Table(new TableMetamodel("Users"))
-	class QUsers {
-		static id = new NumericColumnMetamodel(QUsers, "id", Number);
-		static locationId = new NumericColumnMetamodel(QUsers, "locationId", Number);
+	class TUsers implements QueryTable {
+		$table = new TableMetamodel("Users");
 
-		protected constructor() {}
+		id = new NumericColumnMetamodel(this.$table, "id", Number);
+		locationId = new NumericColumnMetamodel(this.$table, "locationId", Number);
+		name = new StringColumnMetamodel(this.$table, "name", String);
 	}
+	const QUsers = Object.freeze(new TUsers());
 
-	@Table(new TableMetamodel("Locations"))
-	class QLocations {
-		static id = new NumericColumnMetamodel(QLocations, "id", Number);
-		static agencyId = new NumericColumnMetamodel(QLocations, "id", Number);
+	class TLocations implements QueryTable {
+		$table = new TableMetamodel("Locations");
 
-		protected constructor() {}
+		id = new NumericColumnMetamodel(this.$table, "id", Number);
+		agencyId = new NumericColumnMetamodel(this.$table, "id", Number);
 	}
+	const QLocations = Object.freeze(new TLocations());
 
-	@Table(new TableMetamodel("Agencies"))
-	class QAgencies {
-		static id = new NumericColumnMetamodel(QAgencies, "id", Number);
+	class TAgencies implements QueryTable {
+		$table = new TableMetamodel("Agencies");
 
-		protected constructor() {}
+		id = new NumericColumnMetamodel(this.$table, "id", Number);
 	}
+	const QAgencies = Object.freeze(new TAgencies());
 
 	it("supports selecting and where clause from one table, with an immediate value (param)", function () {
 		class QuerySelect {

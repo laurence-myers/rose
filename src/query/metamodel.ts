@@ -32,7 +32,7 @@ export function Column<T>(metamodel : ColumnMetamodel<any>) : PropertyDecorator 
 
 export class TableMetamodel {
 	constructor(
-		private name : string
+		readonly name : string
 	) {
 	}
 }
@@ -43,9 +43,9 @@ export interface ColumnMetamodelOptions<R> {
 
 export abstract class ColumnMetamodel<T> {
 	constructor(
-		public table : Function, // hmm
-		public name : string,
-		public type : Function,
+		readonly table : TableMetamodel,
+		readonly name : string,
+		readonly type : Function,
 		private options? : ColumnMetamodelOptions<any>
 	) {
 
@@ -89,13 +89,21 @@ export abstract class ColumnMetamodel<T> {
 		return {
 			type: 'columnReferenceNode',
 			columnName: this.name,
-			tableName: getTableName(this.table)
+			tableName: this.table.name
 		};
 	}
 }
 
 export class NumericColumnMetamodel extends ColumnMetamodel<number> {
 
+}
+
+export class StringColumnMetamodel extends ColumnMetamodel<string> {
+
+}
+
+export interface QueryTable {
+	$table : TableMetamodel;
 }
 
 export function getTableName(queryTable : Function) {
@@ -107,6 +115,5 @@ export function getTableName(queryTable : Function) {
 }
 
 export function getTableNameFromColumn(columnMetamodel : ColumnMetamodel<any>) : string {
-	const queryTable = columnMetamodel.table;
-	return getTableName(queryTable);
+	return columnMetamodel.table.name;
 }
