@@ -168,7 +168,24 @@ describe("Query DSL", function () {
 		}
 
 		const actual = select(QuerySelect).distinct().toSql({}).sql;
-		const expected = `SELECT DISTINCT "t1"."id" as "id" FROM "Users" as "t1"`; // TODO: the count should be output with an alias of "count"
+		const expected = `SELECT DISTINCT "t1"."id" as "id" FROM "Users" as "t1"`;
 		assert.equal(actual, expected);
+	});
+
+	it("supports limit and offset", function () {
+		class QuerySelect {
+			@Column(QUsers.id)
+			id : number;
+		}
+
+		const actual = select(QuerySelect).limit().toSql({
+			limit: 10,
+			offset: 20
+		});
+		const expected = {
+			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" LIMIT $1 OFFSET $2`,
+			parameters: [10, 20]
+		};
+		assert.deepEqual(actual, expected);
 	});
 });

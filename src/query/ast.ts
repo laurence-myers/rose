@@ -77,6 +77,12 @@ export interface OrderByExpressionNode {
 	nulls? : 'first' | 'last';
 }
 
+export interface LimitOffsetNode {
+	type : 'limitOffsetNode';
+	limit : ConstantNode<number>; // could also be "ALL", but let's not support that
+	offset : ConstantNode<number>;
+}
+
 /*
  https://www.postgresql.org/docs/9.6/static/sql-select.html
  [ WITH [ RECURSIVE ] with_query [, ...] ]
@@ -130,6 +136,8 @@ export interface SelectCommandNode {
 	fromItems : FromItemNode[];
 	conditions : BooleanExpressionNode[];
 	ordering : OrderByExpressionNode[];
+	limit? : LimitOffsetNode;
 }
 
-export type AstNode = SelectCommandNode | ValueExpressionNode | FromItemNode | OrderByExpressionNode | FunctionExpressionNode;
+export type AstNode = SelectCommandNode | ValueExpressionNode | FromItemNode | OrderByExpressionNode
+	| FunctionExpressionNode | LimitOffsetNode;

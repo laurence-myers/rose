@@ -1,6 +1,6 @@
 import {
 	SelectCommandNode, AstNode, ColumnReferenceNode, ValueExpressionNode, FromItemNode,
-	BooleanExpressionNode, ConstantNode, OrderByExpressionNode, FunctionExpressionNode
+	BooleanExpressionNode, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode
 } from "./ast";
 import {DefaultMap, assertNever} from "../lang";
 import {GeneratedQuery} from "./dsl";
@@ -67,7 +67,14 @@ export class AstWalker {
 		this.sb.push(')');
 	}
 
-	private walkOrderByExpressionNode(node : OrderByExpressionNode) : void {
+	protected walkLimitOffsetNode(node : LimitOffsetNode) : void {
+		this.sb.push('LIMIT ');
+		this.walk(node.limit);
+		this.sb.push(' OFFSET ');
+		this.walk(node.offset);
+	}
+
+	protected walkOrderByExpressionNode(node : OrderByExpressionNode) : void {
 		this.walk(node.expression);
 		if (node.order) {
 			switch (node.order) {
@@ -117,6 +124,10 @@ export class AstWalker {
 			this.sb.push(" ORDER BY ");
 			node.ordering.forEach((node : OrderByExpressionNode) => this.walk(node));
 		}
+		if (node.limit) {
+			this.sb.push(" ");
+			this.walk(node.limit);
+		}
 	}
 
 	protected walk(node : AstNode) : void {
@@ -135,6 +146,9 @@ export class AstWalker {
 				break;
 			case "functionExpressionNode":
 				this.walkFunctionExpressionNode(node);
+				break;
+			case "limitOffsetNode":
+				this.walkLimitOffsetNode(node);
 				break;
 			case "orderByExpressionNode":
 				this.walkOrderByExpressionNode(node);

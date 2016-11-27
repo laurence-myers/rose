@@ -72,7 +72,12 @@ export interface GeneratedQuery {
 	parameters : any[];
 }
 
-class QueryBuilder<T extends QueryClass, P> {
+export interface HasLimit {
+	limit? : number;
+	offset? : number;
+}
+
+class QueryBuilder<T extends QueryClass, P extends HasLimit> {
 	protected tableMap = new DefaultMap<string, string>((key) => `t${ this.queryAst.fromItems.length + 1 }`);
 	protected queryAst : SelectCommandNode;
 
@@ -184,6 +189,21 @@ class QueryBuilder<T extends QueryClass, P> {
 		if (rest && rest.length > 0) {
 			rest.forEach((node) => this.queryAst.ordering.push(node));
 		}
+		return this;
+	}
+
+	limit() : this {
+		this.queryAst.limit = {
+			type: 'limitOffsetNode',
+			limit: {
+				type: 'constantNode',
+				getter: (params) => params.limit
+			},
+			offset: {
+				type: 'constantNode',
+				getter: (params) => params.offset || 0
+			}
+		};
 		return this;
 	}
 
