@@ -6,6 +6,7 @@ import {
 import {select, Nested, Expression} from "../src/query/dsl";
 import assert = require('assert');
 import {count} from "../src/query/postgresql/functions";
+import {deepFreeze} from "../src/lang";
 
 describe("Query DSL", function () {
 	class TUsers implements QueryTable {
@@ -15,7 +16,7 @@ describe("Query DSL", function () {
 		locationId = new NumericColumnMetamodel(this.$table, "locationId", Number);
 		name = new StringColumnMetamodel(this.$table, "name", String);
 	}
-	const QUsers = Object.freeze(new TUsers());
+	const QUsers = deepFreeze(new TUsers());
 
 	class TLocations implements QueryTable {
 		$table = new TableMetamodel("Locations");
@@ -23,14 +24,14 @@ describe("Query DSL", function () {
 		id = new NumericColumnMetamodel(this.$table, "id", Number);
 		agencyId = new NumericColumnMetamodel(this.$table, "id", Number);
 	}
-	const QLocations = Object.freeze(new TLocations());
+	const QLocations = deepFreeze(new TLocations());
 
 	class TAgencies implements QueryTable {
 		$table = new TableMetamodel("Agencies");
 
 		id = new NumericColumnMetamodel(this.$table, "id", Number);
 	}
-	const QAgencies = Object.freeze(new TAgencies());
+	const QAgencies = deepFreeze(new TAgencies());
 
 	it("supports selecting and where clause from one table, with an immediate value (param)", function () {
 		class QuerySelect {
