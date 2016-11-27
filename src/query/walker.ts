@@ -1,6 +1,7 @@
 import {
 	SelectCommandNode, AstNode, ColumnReferenceNode, ValueExpressionNode, FromItemNode,
-	BooleanExpressionNode, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode
+	BooleanExpressionNode, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
+	AliasedExpressionNode
 } from "./ast";
 import {DefaultMap, assertNever} from "../lang";
 import {GeneratedQuery} from "./dsl";
@@ -17,6 +18,13 @@ export class AstWalker {
 		protected params : Object
 	) {
 
+	}
+
+	protected walkAliasedExpressionNode(node : AliasedExpressionNode) : void {
+		this.walk(node.expression);
+		this.sb.push(` as "`);
+		this.sb.push(node.alias);
+		this.sb.push(`"`);
 	}
 
 	protected walkBooleanExpressionNode(node : BooleanExpressionNode) : void {
@@ -132,6 +140,9 @@ export class AstWalker {
 
 	protected walk(node : AstNode) : void {
 		switch (node.type) {
+			case "aliasedExpressionNode":
+				this.walkAliasedExpressionNode(node);
+				break;
 			case "booleanExpressionNode":
 				this.walkBooleanExpressionNode(node);
 				break;

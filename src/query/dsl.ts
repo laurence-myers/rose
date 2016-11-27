@@ -9,7 +9,7 @@ import {
 } from "../errors";
 import {
 	SelectCommandNode, BooleanExpressionNode, OrderByExpressionNode, FunctionExpressionNode,
-	ValueExpressionNode
+	ValueExpressionNode, AliasedExpressionNode
 } from "./ast";
 import {AstWalker} from "./walker";
 
@@ -121,7 +121,12 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> {
 			const expression : ValueExpressionNode = entry[1];
 			// TODO: resolve table references within the expression?
 			// TODO: support the property name as the alias
-			this.queryAst.outputExpressions.push(expression);
+			const aliasedExpressionNode : AliasedExpressionNode = {
+				type: 'aliasedExpressionNode',
+				alias,
+				expression
+			};
+			this.queryAst.outputExpressions.push(aliasedExpressionNode);
 		}
 	}
 

@@ -157,7 +157,7 @@ describe("Query DSL", function () {
 		}
 
 		const actual = select(QuerySelect).from(QUsers, QLocations).toSql({}).sql;
-		const expected = `SELECT count(*) FROM "Users" as "t1", "Locations" as "t2"`; // TODO: the count should be output with an alias of "count"
+		const expected = `SELECT count(*) as "count" FROM "Users" as "t1", "Locations" as "t2"`;
 		assert.equal(actual, expected);
 	});
 

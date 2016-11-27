@@ -62,6 +62,12 @@ export interface FunctionExpressionNode {
 
 export type ValueExpressionNode = ConstantNode<any> | ColumnReferenceNode | BooleanExpressionNode | FunctionExpressionNode;
 
+export interface AliasedExpressionNode {
+	type : 'aliasedExpressionNode';
+	alias : string;
+	expression : ValueExpressionNode;
+}
+
 export interface FromItemNode {
 	type : 'fromItemNode';
 	//schema? : string;
@@ -132,12 +138,12 @@ export interface LimitOffsetNode {
 export interface SelectCommandNode {
 	type : 'selectCommandNode';
 	distinction : 'distinct' | 'all';
-	outputExpressions : ValueExpressionNode[]; // should we also support *?
+	outputExpressions : Array<ValueExpressionNode | AliasedExpressionNode>; // should we also support *?
 	fromItems : FromItemNode[];
 	conditions : BooleanExpressionNode[];
 	ordering : OrderByExpressionNode[];
 	limit? : LimitOffsetNode;
 }
 
-export type AstNode = SelectCommandNode | ValueExpressionNode | FromItemNode | OrderByExpressionNode
-	| FunctionExpressionNode | LimitOffsetNode;
+export type AstNode = SelectCommandNode | ValueExpressionNode | AliasedExpressionNode | FromItemNode
+	| OrderByExpressionNode | FunctionExpressionNode | LimitOffsetNode;
