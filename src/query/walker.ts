@@ -7,7 +7,62 @@ import {DefaultMap, assertNever} from "../lang";
 import {GeneratedQuery} from "./dsl";
 import {UnsupportedOperationError} from "../errors";
 
-export class AstWalker {
+export abstract class BaseWalker {
+
+	protected abstract walkAliasedExpressionNode(node : AliasedExpressionNode) : void;
+
+	protected abstract walkBooleanExpressionNode(node : BooleanExpressionNode) : void;
+
+	protected abstract walkColumnReferenceNode(node : ColumnReferenceNode) : void;
+
+	protected abstract walkConstantNode(node : ConstantNode<any>) : void;
+
+	protected abstract walkFromItemNode(node : FromItemNode) : void;
+
+	protected abstract walkFunctionExpressionNode(node : FunctionExpressionNode) : void;
+
+	protected abstract walkLimitOffsetNode(node : LimitOffsetNode) : void;
+
+	protected abstract walkOrderByExpressionNode(node : OrderByExpressionNode) : void;
+
+	protected abstract walkSelectCommandNode(node : SelectCommandNode) : void;
+
+	protected walk(node : AstNode) : void {
+		switch (node.type) {
+			case "aliasedExpressionNode":
+				this.walkAliasedExpressionNode(node);
+				break;
+			case "booleanExpressionNode":
+				this.walkBooleanExpressionNode(node);
+				break;
+			case "columnReferenceNode":
+				this.walkColumnReferenceNode(node);
+				break;
+			case "constantNode":
+				this.walkConstantNode(node);
+				break;
+			case "fromItemNode":
+				this.walkFromItemNode(node);
+				break;
+			case "functionExpressionNode":
+				this.walkFunctionExpressionNode(node);
+				break;
+			case "limitOffsetNode":
+				this.walkLimitOffsetNode(node);
+				break;
+			case "orderByExpressionNode":
+				this.walkOrderByExpressionNode(node);
+				break;
+			case "selectCommandNode":
+				this.walkSelectCommandNode(node);
+				break;
+			default:
+				return assertNever(node);
+		}
+	}
+}
+
+export class AstWalker extends BaseWalker {
 	// protected tableMap = new DefaultMap<string, string>((key) => `t${ this.queryAst.fromItems.length + 1 }`);
 	protected sb : string[] = [];
 	protected parameterValues : any[] = [];
@@ -17,7 +72,7 @@ export class AstWalker {
 		protected tableMap : DefaultMap<string, string>,
 		protected params : Object
 	) {
-
+		super();
 	}
 
 	protected walkAliasedExpressionNode(node : AliasedExpressionNode) : void {
@@ -135,40 +190,6 @@ export class AstWalker {
 		if (node.limit) {
 			this.sb.push(" ");
 			this.walk(node.limit);
-		}
-	}
-
-	protected walk(node : AstNode) : void {
-		switch (node.type) {
-			case "aliasedExpressionNode":
-				this.walkAliasedExpressionNode(node);
-				break;
-			case "booleanExpressionNode":
-				this.walkBooleanExpressionNode(node);
-				break;
-			case "columnReferenceNode":
-				this.walkColumnReferenceNode(node);
-				break;
-			case "constantNode":
-				this.walkConstantNode(node);
-				break;
-			case "fromItemNode":
-				this.walkFromItemNode(node);
-				break;
-			case "functionExpressionNode":
-				this.walkFunctionExpressionNode(node);
-				break;
-			case "limitOffsetNode":
-				this.walkLimitOffsetNode(node);
-				break;
-			case "orderByExpressionNode":
-				this.walkOrderByExpressionNode(node);
-				break;
-			case "selectCommandNode":
-				this.walkSelectCommandNode(node);
-				break;
-			default:
-				return assertNever(node);
 		}
 	}
 
