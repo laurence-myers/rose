@@ -3,7 +3,7 @@ import {
 	BooleanExpressionNode, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
 	AliasedExpressionNode
 } from "./ast";
-import {DefaultMap, assertNever} from "../lang";
+import {DefaultMap, assertNever, remove} from "../lang";
 import {GeneratedQuery} from "./dsl";
 import {UnsupportedOperationError} from "../errors";
 
@@ -59,6 +59,78 @@ export abstract class BaseWalker {
 			default:
 				return assertNever(node);
 		}
+	}
+}
+
+/**
+ * Walks through the AST graph without performing any actions.
+ * Extend this class to implement your own behaviour, such as static analysis.
+ */
+export class SkippingWalker extends BaseWalker {
+	protected walkAliasedExpressionNode(node : AliasedExpressionNode) : void {
+	}
+
+	protected walkBooleanExpressionNode(node : BooleanExpressionNode) : void {
+		this.walk(node.left);
+		this.walk(node.right);
+	}
+
+	protected walkColumnReferenceNode(node : ColumnReferenceNode) : void {
+	}
+
+	protected walkConstantNode(node : ConstantNode<any>) : void {
+	}
+
+	protected walkFromItemNode(node : FromItemNode) : void {
+	}
+
+	protected walkFunctionExpressionNode(node : FunctionExpressionNode) : void {
+		node.arguments.forEach((node) => this.walk(node));
+	}
+
+	protected walkLimitOffsetNode(node : LimitOffsetNode) : void {
+	}
+
+	protected walkOrderByExpressionNode(node : OrderByExpressionNode) : void {
+		this.walk(node.expression);
+	}
+
+	protected walkSelectCommandNode(node : SelectCommandNode) : void {
+		node.outputExpressions.forEach((node) => this.walk(node));
+		node.fromItems.forEach((node) => this.walk(node));
+		node.conditions.forEach((node) => this.walk(node));
+		node.ordering.forEach((node) => this.walk(node));
+	}
+}
+
+export interface AnalysisResult {
+	tables : string[];
+}
+
+export class AnalysingWalker extends SkippingWalker {
+	private tables : string[] = [];
+
+	constructor(
+		private ast : AstNode
+	) {
+		super();
+	}
+
+	protected walkColumnReferenceNode(node : ColumnReferenceNode) : void {
+		this.tables.push(node.tableName);
+	}
+
+	// TODO: don't screw up sub-queries
+	// TODO: don't screw up manually aliased tables?
+	protected walkFromItemNode(node : FromItemNode) : void {
+		remove(this.tables, node.tableName);
+	}
+
+	analyse() : AnalysisResult {
+		this.walk(this.ast);
+		return {
+			tables: this.tables
+		};
 	}
 }
 

@@ -69,3 +69,10 @@ export function getType(target : Object, propertyKey : string | symbol) : Functi
 export function assertNever(arg : never) : never {
 	throw new Error(`Unexpected object: ${ (<any> arg).constructor || arg }`);
 }
+
+export function remove<T>(arr : T[], obj : T) : void {
+	const index = arr.indexOf(obj);
+	if (index > -1) {
+		arr.splice(index, 1);
+	}
+}
