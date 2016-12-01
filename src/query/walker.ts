@@ -169,11 +169,6 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb.push(`"."`);
 		this.sb.push(node.columnName);
 		this.sb.push(`"`);
-		if (node.alias) {
-			this.sb.push(` as "`);
-			this.sb.push(node.alias);
-			this.sb.push(`"`);
-		}
 	}
 
 	protected walkConstantNode(node : ConstantNode<any>) : void {

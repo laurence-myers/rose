@@ -99,10 +99,13 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> {
 				alias: tableAlias
 			});
 			this.queryAst.outputExpressions.push({
-				type: 'columnReferenceNode',
-				tableName: tableName,
-				columnName: columnName,
-				alias: columnAlias
+				type: 'aliasedExpressionNode',
+				alias: columnAlias,
+				expression: {
+					type: 'columnReferenceNode',
+					tableName: tableName,
+					columnName: columnName
+				}
 			});
 		}
 	}

@@ -43,7 +43,6 @@ export interface ColumnReferenceNode {
 	//schema? : string;
 	tableName : string;
 	columnName : string;
-	alias? : string;
 }
 
 export interface BooleanExpressionNode {
