@@ -62,7 +62,7 @@ export abstract class BaseWalker {
 	}
 }
 
-export class AstWalker extends BaseWalker {
+export class SqlAstWalker extends BaseWalker {
 	// protected tableMap = new DefaultMap<string, string>((key) => `t${ this.queryAst.fromItems.length + 1 }`);
 	protected sb : string[] = [];
 	protected parameterValues : any[] = [];

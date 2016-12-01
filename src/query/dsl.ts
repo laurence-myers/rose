@@ -11,7 +11,7 @@ import {
 	SelectCommandNode, BooleanExpressionNode, OrderByExpressionNode, FunctionExpressionNode,
 	ValueExpressionNode, AliasedExpressionNode
 } from "./ast";
-import {AstWalker} from "./walker";
+import {SqlAstWalker} from "./walker";
 
 export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
 export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator {
@@ -231,7 +231,7 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> {
 	}*/
 
 	toSql(params : P) : GeneratedQuery {
-		const walker = new AstWalker(this.queryAst, this.tableMap, params);
+		const walker = new SqlAstWalker(this.queryAst, this.tableMap, params);
 		return walker.toSql();
 	}
 }
