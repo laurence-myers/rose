@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha --require source-map-support/register",
     "compile": "tsc",
     "watch": "tsc -w --pretty"
   },
@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@types/mocha": "2.2.32",
-    "mocha": "3.1.2"
+    "mocha": "3.1.2",
+    "source-map-support": "^0.4.6"
   }
 }
