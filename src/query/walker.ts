@@ -3,7 +3,7 @@ import {
 	BooleanExpressionNode, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
 	AliasedExpressionNode
 } from "./ast";
-import {DefaultMap, assertNever, remove} from "../lang";
+import {DefaultMap, assertNever, remove, difference} from "../lang";
 import {GeneratedQuery} from "./dsl";
 import {UnsupportedOperationError} from "../errors";
 
@@ -68,6 +68,7 @@ export abstract class BaseWalker {
  */
 export class SkippingWalker extends BaseWalker {
 	protected walkAliasedExpressionNode(node : AliasedExpressionNode) : void {
+		this.walk(node.expression);
 	}
 
 	protected walkBooleanExpressionNode(node : BooleanExpressionNode) : void {
@@ -108,7 +109,8 @@ export interface AnalysisResult {
 }
 
 export class AnalysingWalker extends SkippingWalker {
-	private tables : string[] = [];
+	private referencedTables : Set<string> = new Set<string>();
+	private specifiedTables : Set<string> = new Set<string>();
 
 	constructor(
 		private ast : AstNode
@@ -117,19 +119,22 @@ export class AnalysingWalker extends SkippingWalker {
 	}
 
 	protected walkColumnReferenceNode(node : ColumnReferenceNode) : void {
-		this.tables.push(node.tableName);
+		this.referencedTables.add(node.tableName);
+		super.walkColumnReferenceNode(node);
 	}
 
 	// TODO: don't screw up sub-queries
 	// TODO: don't screw up manually aliased tables?
 	protected walkFromItemNode(node : FromItemNode) : void {
-		remove(this.tables, node.tableName);
+		this.specifiedTables.add(node.tableName);
+		super.walkFromItemNode(node);
 	}
 
 	analyse() : AnalysisResult {
 		this.walk(this.ast);
+		const specifiedTables = difference(this.referencedTables, this.specifiedTables);
 		return {
-			tables: this.tables
+			tables: [...specifiedTables]
 		};
 	}
 }

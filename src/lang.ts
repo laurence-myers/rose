@@ -76,3 +76,7 @@ export function remove<T>(arr : T[], obj : T) : void {
 		arr.splice(index, 1);
 	}
 }
+
+export function difference<T>(setA : Set<T>, setB : Set<T>) : Set<T> {
+	return new Set([...setA].filter((value) => !setB.has(value)));
+}

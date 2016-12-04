@@ -11,7 +11,7 @@ import {
 	SelectCommandNode, BooleanExpressionNode, OrderByExpressionNode, FunctionExpressionNode,
 	ValueExpressionNode, AliasedExpressionNode
 } from "./ast";
-import {SqlAstWalker} from "./walker";
+import {SqlAstWalker, AnalysingWalker} from "./walker";
 
 export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
 export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator {
@@ -91,13 +91,7 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> {
 			const columnName = columnMetamodel.name;
 			const columnAlias : string = aliasPrefix ? `${ aliasPrefix }.${ entry[0] }` : entry[0];
 			const tableName = getTableNameFromColumn(columnMetamodel);
-			const tableAlias = this.tableMap.get(tableName);
 
-			this.queryAst.fromItems.push({
-				type: 'fromItemNode',
-				tableName: tableName,
-				alias: tableAlias
-			});
 			this.queryAst.outputExpressions.push({
 				type: 'aliasedExpressionNode',
 				alias: columnAlias,
@@ -154,6 +148,23 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> {
 		if (!selectMetadata && !nestedMetadata && !expressionMetadata) {
 			throw new InvalidQueryClassError("The class provided to the select function does not have any output columns, expressions, or nested queries.");
 		}
+	}
+
+	/**
+	 * Adds referenced tables as "FROM" clauses for any tables not explicitly joined/from-ed.
+	 */
+	protected rectifyTableReferences() {
+		const analyser = new AnalysingWalker(this.queryAst);
+		const result = analyser.analyse();
+		result.tables.forEach((tableName) => {
+			const tableAlias = this.tableMap.get(tableName);
+
+			this.queryAst.fromItems.push({
+				type: 'fromItemNode',
+				tableName: tableName,
+				alias: tableAlias
+			});
+		});
 	}
 
 	protected select() : this {
@@ -234,6 +245,7 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> {
 	}*/
 
 	toSql(params : P) : GeneratedQuery {
+		this.rectifyTableReferences();
 		const walker = new SqlAstWalker(this.queryAst, this.tableMap, params);
 		return walker.toSql();
 	}

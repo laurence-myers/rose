@@ -5,7 +5,7 @@ import {
 } from "../src/query/metamodel";
 import {select, Nested, Expression} from "../src/query/dsl";
 import assert = require('assert');
-import {count} from "../src/query/postgresql/functions";
+import {count, lower} from "../src/query/postgresql/functions";
 import {deepFreeze} from "../src/lang";
 
 describe("Query DSL", function () {
@@ -88,6 +88,26 @@ describe("Query DSL", function () {
 		cases.forEach((entry) => {
 			assert.deepEqual(entry.actual, entry.expected);
 		});
+	});
+
+	it('supports ordering by an aliased expression', function () {
+		const nameExpr = lower(QUsers.name.toColumnReferenceNode());
+
+		class QuerySelect {
+			@Expression(nameExpr)
+			userName : string;
+		}
+
+		// TODO: don't require manually constructing an OrderByExpressionNode to "orderBy"
+		// TODO: expose the expression alias, and use it in the generated "ORDER BY" statement
+		const actual = select<any, any>(QuerySelect)
+			.orderBy({
+				type: 'orderByExpressionNode',
+				expression: nameExpr
+			}) // TODO: better API for this
+			.toSql({}).sql;
+		const expected = `SELECT lower("t1"."name") as "userName" FROM "Users" as "t1" ORDER BY lower("t1"."name")`;
+		assert.equal(actual, expected);
 	});
 
 	it("supports selecting and where clause from multiple tables", function () {

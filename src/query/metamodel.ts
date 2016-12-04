@@ -85,7 +85,7 @@ export abstract class ColumnMetamodel<T> {
 		};
 	}
 
-	protected toColumnReferenceNode() : ColumnReferenceNode {
+	toColumnReferenceNode() : ColumnReferenceNode {
 		return {
 			type: 'columnReferenceNode',
 			columnName: this.name,
