@@ -138,6 +138,7 @@ describe("Query DSL", function () {
 			users : Array<QuerySelectNested>;
 		}
 
+		// TODO: specify the type of join for nested items
 		const actual = select(QuerySelect).toSql({}).sql;
 		const expected = `SELECT "t1"."id" as "id", "t2"."id" as "users.id" FROM "Locations" as "t1", "Users" as "t2"`;
 		assert.equal(actual, expected);
@@ -207,5 +208,52 @@ describe("Query DSL", function () {
 			parameters: [10, 20]
 		};
 		assert.deepEqual(actual, expected);
+	});
+
+	describe("Joins", function () {
+
+		class QuerySelect {
+			@Column(QLocations.id)
+			id : number;
+
+			@Column(QUsers.id)
+			userId : number;
+		}
+
+		it("can perform an inner join", function () {
+			const actual = select(QuerySelect).join(QUsers).on(QUsers.locationId.eq(QLocations.id)).toSql({}).sql;
+			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" INNER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can perform a left outer join", function () {
+			const actual = select(QuerySelect).join(QUsers).left().on(QUsers.locationId.eq(QLocations.id)).toSql({}).sql;
+			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" LEFT OUTER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can perform a right outer join", function () {
+			const actual = select(QuerySelect).join(QUsers).right().on(QUsers.locationId.eq(QLocations.id)).toSql({}).sql;
+			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" RIGHT OUTER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can perform a full outer join", function () {
+			const actual = select(QuerySelect).join(QUsers).full().on(QUsers.locationId.eq(QLocations.id)).toSql({}).sql;
+			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" FULL OUTER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can perform a left outer join with 'using'", function () {
+			const actual = select(QuerySelect).join(QUsers).left().using(QLocations.id).toSql({}).sql;
+			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" LEFT OUTER JOIN "Users" as "t1" USING "t2"."id"`;
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can perform a cross join", function () {
+			const actual = select(QuerySelect).join(QUsers).cross().toSql({}).sql;
+			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" CROSS JOIN "Users" as "t1"`;
+			assert.deepEqual(actual, expected);
+		});
 	});
 });

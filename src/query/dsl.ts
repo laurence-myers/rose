@@ -5,11 +5,11 @@ import {
 } from "./metamodel";
 import {DefaultMap, getMetadata, getType} from "../lang";
 import {
-	InvalidQueryClassError, InvalidDecoratorError
+	InvalidQueryClassError, InvalidDecoratorError, UnsupportedOperationError
 } from "../errors";
 import {
 	SelectCommandNode, BooleanExpressionNode, OrderByExpressionNode, FunctionExpressionNode,
-	ValueExpressionNode, AliasedExpressionNode
+	ValueExpressionNode, AliasedExpressionNode, ColumnReferenceNode, JoinNode
 } from "./ast";
 import {SqlAstWalker, AnalysingWalker} from "./walker";
 
@@ -77,8 +77,78 @@ export interface HasLimit {
 	offset? : number;
 }
 
+class JoinBuilder<R> {
+	protected joinType : 'inner' | 'left' | 'right' | 'full' | 'cross' = 'inner';
+	protected onNode : BooleanExpressionNode;
+	protected usingNodes : ColumnReferenceNode[];
+
+	constructor(
+		protected tableMap : DefaultMap<string, string>,
+		protected qtable : QueryTable,
+		protected callback : (joinNode : JoinNode) => R) {
+	}
+
+	inner() : this {
+		this.joinType = 'inner';
+		return this;
+	}
+
+	left() : this {
+		this.joinType = 'left';
+		return this;
+	}
+
+	right() : this {
+		this.joinType = 'right';
+		return this;
+	}
+
+	full() : this {
+		this.joinType = 'full';
+		return this;
+	}
+
+	cross() {
+		this.joinType = 'cross';
+		return this.build();
+	}
+
+	on(expression : BooleanExpressionNode) {
+		this.onNode = expression;
+		return this.build();
+	}
+
+	using(...columns : ColumnMetamodel<any>[]) {
+		if (columns && columns.length > 0) {
+			this.usingNodes = columns.map((column) => column.toColumnReferenceNode());
+		}
+		return this.build();
+	}
+
+	protected build() : R {
+		if (this.onNode && this.usingNodes) {
+			throw new UnsupportedOperationError(`Cannot join tables with both "on" and "using" criteria.`);
+		} else if (this.joinType == 'cross' && (this.onNode || this.usingNodes)) {
+			throw new UnsupportedOperationError(`Cannot make a cross join with "on" or "using" criteria.`);
+		}
+		const tableName = this.qtable.$table.name;
+		const joinNode : JoinNode = {
+			type: 'joinNode',
+			joinType: this.joinType,
+			fromItem: {
+				type: 'fromItemNode',
+				tableName: tableName,
+				alias: this.tableMap.get(tableName)
+			},
+			on: this.onNode,
+			using: this.usingNodes
+		};
+		return this.callback(joinNode);
+	}
+}
+
 class QueryBuilder<T extends QueryClass, P extends HasLimit> {
-	protected tableMap = new DefaultMap<string, string>((key) => `t${ this.queryAst.fromItems.length + 1 }`);
+	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
 	protected queryAst : SelectCommandNode;
 
 	constructor(private command : SqlCommand, private queryClass : T) {
@@ -173,6 +243,7 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> {
 			distinction: 'all',
 			outputExpressions: [],
 			fromItems: [],
+			joins: [],
 			conditions: [],
 			ordering: []
 		};
@@ -195,6 +266,13 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> {
 			});
 		}
 		return this;
+	}
+
+	join(queryTable : QueryTable) : JoinBuilder<this> {
+		return new JoinBuilder(this.tableMap, queryTable, (joinNode) => {
+			this.queryAst.joins.push(joinNode);
+			return this;
+		});
 	}
 
 	where(whereExpression : BooleanExpressionNode) : this {

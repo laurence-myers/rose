@@ -16,6 +16,7 @@ describe("AST Walkers", function () {
 				],
 				distinction: 'all',
 				fromItems: [],
+				joins: [],
 				conditions: [],
 				ordering: []
 			};
@@ -43,6 +44,7 @@ describe("AST Walkers", function () {
 						alias: "t1"
 					}
 				],
+				joins: [],
 				conditions: [],
 				ordering: []
 			};

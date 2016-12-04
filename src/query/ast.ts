@@ -67,6 +67,16 @@ export interface AliasedExpressionNode {
 	expression : ValueExpressionNode;
 }
 
+export interface JoinNode {
+	type : 'joinNode';
+	joinType : 'inner' | 'left' | 'right' | 'full' | 'cross';
+	fromItem : FromItemNode;
+	on? : BooleanExpressionNode;
+	using? : ColumnReferenceNode[];
+	// TODO: support lateral
+	// TODO: support natural
+}
+
 export interface FromItemNode {
 	type : 'fromItemNode';
 	//schema? : string;
@@ -139,10 +149,11 @@ export interface SelectCommandNode {
 	distinction : 'distinct' | 'all';
 	outputExpressions : Array<ValueExpressionNode | AliasedExpressionNode>; // should we also support *?
 	fromItems : FromItemNode[];
+	joins : JoinNode[];
 	conditions : BooleanExpressionNode[];
 	ordering : OrderByExpressionNode[];
 	limit? : LimitOffsetNode;
 }
 
-export type AstNode = SelectCommandNode | ValueExpressionNode | AliasedExpressionNode | FromItemNode
+export type AstNode = SelectCommandNode | ValueExpressionNode | AliasedExpressionNode | JoinNode | FromItemNode
 	| OrderByExpressionNode | FunctionExpressionNode | LimitOffsetNode;

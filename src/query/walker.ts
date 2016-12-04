@@ -1,13 +1,19 @@
 import {
 	SelectCommandNode, AstNode, ColumnReferenceNode, ValueExpressionNode, FromItemNode,
 	BooleanExpressionNode, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
-	AliasedExpressionNode
+	AliasedExpressionNode, JoinNode
 } from "./ast";
-import {DefaultMap, assertNever, remove, difference} from "../lang";
+import {DefaultMap, assertNever, remove, difference, deepFreeze} from "../lang";
 import {GeneratedQuery} from "./dsl";
 import {UnsupportedOperationError} from "../errors";
 
 export abstract class BaseWalker {
+
+	protected doItemWalk<N extends AstNode>() {
+		return (node : N) : void => {
+			this.walk(node);
+		};
+	}
 
 	protected abstract walkAliasedExpressionNode(node : AliasedExpressionNode) : void;
 
@@ -20,6 +26,8 @@ export abstract class BaseWalker {
 	protected abstract walkFromItemNode(node : FromItemNode) : void;
 
 	protected abstract walkFunctionExpressionNode(node : FunctionExpressionNode) : void;
+
+	protected abstract walkJoinNode(node : JoinNode) : void;
 
 	protected abstract walkLimitOffsetNode(node : LimitOffsetNode) : void;
 
@@ -46,6 +54,9 @@ export abstract class BaseWalker {
 				break;
 			case "functionExpressionNode":
 				this.walkFunctionExpressionNode(node);
+				break;
+			case "joinNode":
+				this.walkJoinNode(node);
 				break;
 			case "limitOffsetNode":
 				this.walkLimitOffsetNode(node);
@@ -86,10 +97,20 @@ export class SkippingWalker extends BaseWalker {
 	}
 
 	protected walkFunctionExpressionNode(node : FunctionExpressionNode) : void {
-		node.arguments.forEach((node) => this.walk(node));
+		node.arguments.forEach(this.doItemWalk());
 	}
 
 	protected walkLimitOffsetNode(node : LimitOffsetNode) : void {
+	}
+
+	protected walkJoinNode(node : JoinNode) : void {
+		this.walk(node.fromItem);
+		if (node.on) {
+			this.walk(node.on);
+		}
+		if (node.using) {
+			node.using.forEach(this.doItemWalk());
+		}
 	}
 
 	protected walkOrderByExpressionNode(node : OrderByExpressionNode) : void {
@@ -97,10 +118,11 @@ export class SkippingWalker extends BaseWalker {
 	}
 
 	protected walkSelectCommandNode(node : SelectCommandNode) : void {
-		node.outputExpressions.forEach((node) => this.walk(node));
-		node.fromItems.forEach((node) => this.walk(node));
-		node.conditions.forEach((node) => this.walk(node));
-		node.ordering.forEach((node) => this.walk(node));
+		node.outputExpressions.forEach(this.doItemWalk());
+		node.fromItems.forEach(this.doItemWalk());
+		node.joins.forEach(this.doItemWalk());
+		node.conditions.forEach(this.doItemWalk());
+		node.ordering.forEach(this.doItemWalk());
 	}
 }
 
@@ -132,12 +154,20 @@ export class AnalysingWalker extends SkippingWalker {
 
 	analyse() : AnalysisResult {
 		this.walk(this.ast);
-		const specifiedTables = difference(this.referencedTables, this.specifiedTables);
+		const unspecifiedTables = difference(this.referencedTables, this.specifiedTables);
 		return {
-			tables: [...specifiedTables]
+			tables: [...unspecifiedTables]
 		};
 	}
 }
+
+const JOIN_TEXT_MAP = deepFreeze(new Map([
+	['inner', 'INNER'],
+	['left', 'LEFT OUTER'],
+	['right', 'RIGHT OUTER'],
+	['full', 'FULL OUTER'],
+	['cross', 'CROSS']
+]));
 
 export class SqlAstWalker extends BaseWalker {
 	// protected tableMap = new DefaultMap<string, string>((key) => `t${ this.queryAst.fromItems.length + 1 }`);
@@ -150,6 +180,15 @@ export class SqlAstWalker extends BaseWalker {
 		protected params : Object
 	) {
 		super();
+	}
+
+	protected doListWalk<N extends AstNode>() {
+		return (node : N, index : number) : void => {
+			if (index > 0) {
+				this.sb.push(`, `);
+			}
+			this.walk(node);
+		}
 	}
 
 	protected walkAliasedExpressionNode(node : AliasedExpressionNode) : void {
@@ -191,11 +230,36 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb.push(`"`);
 	}
 
+	protected walkJoinNode(node : JoinNode) : void {
+		const joinText = JOIN_TEXT_MAP.get(node.joinType);
+		if (!joinText) {
+			throw new UnsupportedOperationError(`Unrecognised join type: ${ node.joinType }`);
+		}
+		if (node.joinType == 'cross' && (node.on || (node.using && node.using.length > 0))) {
+			throw new UnsupportedOperationError(`Cross joins cannot specify "on" or "using" conditions.`);
+		}
+		if (node.on && node.using && node.using.length > 0) {
+			throw new UnsupportedOperationError(`Joins cannot specify both "on" and "using" conditions.`);
+		}
+
+		this.sb.push(joinText);
+		this.sb.push(` JOIN `);
+		this.walk(node.fromItem);
+		if (node.on) {
+			this.sb.push(` ON `);
+			this.walk(node.on);
+		} else if (node.using) {
+			this.sb.push(` USING `);
+			node.using.forEach(this.doListWalk());
+		}
+		// TODO: support "natural"
+	}
+
 	protected walkFunctionExpressionNode(node : FunctionExpressionNode) : void {
 		this.sb.push(node.name);
 		this.sb.push('(');
 		if (node.arguments.length > 0) {
-			node.arguments.forEach((node) => this.walk(node));
+			node.arguments.forEach(this.doItemWalk());
 		} else {
 			this.sb.push('*');
 		}
@@ -237,27 +301,21 @@ export class SqlAstWalker extends BaseWalker {
 		if (node.distinction == 'distinct') {
 			this.sb.push("DISTINCT ");
 		}
-		node.outputExpressions.forEach((node : ValueExpressionNode, index : number) => {
-			if (index > 0) {
-				this.sb.push(', ');
-			}
-			this.walk(node);
-		});
+		node.outputExpressions.forEach(this.doListWalk());
 		this.sb.push(" FROM ");
-		node.fromItems.forEach((node : FromItemNode, index : number) => {
-			if (index > 0) {
-				this.sb.push(', ');
-			}
-			this.walk(node);
-		});
+		node.fromItems.forEach(this.doListWalk());
 		if (node.conditions.length > 0) {
 			this.sb.push(" WHERE (");
-			node.conditions.forEach((node : BooleanExpressionNode) => this.walk(node));
+			node.conditions.forEach(this.doItemWalk());
 			this.sb.push(")");
+		}
+		if (node.joins.length > 0) {
+			this.sb.push(" ");
+			node.joins.forEach(this.doListWalk());
 		}
 		if (node.ordering.length > 0) {
 			this.sb.push(" ORDER BY ");
-			node.ordering.forEach((node : OrderByExpressionNode) => this.walk(node));
+			node.ordering.forEach(this.doItemWalk());
 		}
 		if (node.limit) {
 			this.sb.push(" ");
