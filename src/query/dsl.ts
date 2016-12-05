@@ -8,7 +8,7 @@ import {
 	InvalidQueryClassError, InvalidDecoratorError, UnsupportedOperationError
 } from "../errors";
 import {
-	SelectCommandNode, BooleanExpressionNode, OrderByExpressionNode, FunctionExpressionNode,
+	SelectCommandNode, BooleanExpression, OrderByExpressionNode, FunctionExpressionNode,
 	ValueExpressionNode, AliasedExpressionNode, ColumnReferenceNode, JoinNode
 } from "./ast";
 import {SqlAstWalker, AnalysingWalker} from "./walker";
@@ -79,7 +79,7 @@ export interface HasLimit {
 
 class JoinBuilder<R> {
 	protected joinType : 'inner' | 'left' | 'right' | 'full' | 'cross' = 'inner';
-	protected onNode : BooleanExpressionNode;
+	protected onNode : BooleanExpression;
 	protected usingNodes : ColumnReferenceNode[];
 
 	constructor(
@@ -113,7 +113,7 @@ class JoinBuilder<R> {
 		return this.build();
 	}
 
-	on(expression : BooleanExpressionNode) {
+	on(expression : BooleanExpression) {
 		this.onNode = expression;
 		return this.build();
 	}
@@ -275,7 +275,7 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> {
 		});
 	}
 
-	where(whereExpression : BooleanExpressionNode) : this {
+	where(whereExpression : BooleanExpression) : this {
 		// Rectify table aliases. Crap, need to work out a better way to do this
 		this.queryAst.conditions.push(whereExpression);
 		return this;

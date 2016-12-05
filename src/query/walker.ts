@@ -1,7 +1,7 @@
 import {
 	SelectCommandNode, AstNode, ColumnReferenceNode, ValueExpressionNode, FromItemNode,
-	BooleanExpressionNode, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
-	AliasedExpressionNode, JoinNode
+	BooleanExpression, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
+	AliasedExpressionNode, JoinNode, BooleanBinaryOperationNode, BinaryOperationNode, UnaryOperationNode
 } from "./ast";
 import {DefaultMap, assertNever, remove, difference, deepFreeze} from "../lang";
 import {GeneratedQuery} from "./dsl";
@@ -17,7 +17,7 @@ export abstract class BaseWalker {
 
 	protected abstract walkAliasedExpressionNode(node : AliasedExpressionNode) : void;
 
-	protected abstract walkBooleanExpressionNode(node : BooleanExpressionNode) : void;
+	protected abstract walkBinaryOperationNode(node : BinaryOperationNode) : void;
 
 	protected abstract walkColumnReferenceNode(node : ColumnReferenceNode) : void;
 
@@ -35,13 +35,15 @@ export abstract class BaseWalker {
 
 	protected abstract walkSelectCommandNode(node : SelectCommandNode) : void;
 
+	protected abstract walkUnaryOperationNode(node : UnaryOperationNode) : void;
+
 	protected walk(node : AstNode) : void {
 		switch (node.type) {
 			case "aliasedExpressionNode":
 				this.walkAliasedExpressionNode(node);
 				break;
-			case "booleanExpressionNode":
-				this.walkBooleanExpressionNode(node);
+			case "binaryOperationNode":
+				this.walkBinaryOperationNode(node);
 				break;
 			case "columnReferenceNode":
 				this.walkColumnReferenceNode(node);
@@ -67,6 +69,9 @@ export abstract class BaseWalker {
 			case "selectCommandNode":
 				this.walkSelectCommandNode(node);
 				break;
+			case "unaryOperationNode":
+				this.walkUnaryOperationNode(node);
+				break;
 			default:
 				return assertNever(node);
 		}
@@ -82,7 +87,7 @@ export class SkippingWalker extends BaseWalker {
 		this.walk(node.expression);
 	}
 
-	protected walkBooleanExpressionNode(node : BooleanExpressionNode) : void {
+	protected walkBinaryOperationNode(node : BinaryOperationNode) : void {
 		this.walk(node.left);
 		this.walk(node.right);
 	}
@@ -123,6 +128,10 @@ export class SkippingWalker extends BaseWalker {
 		node.joins.forEach(this.doItemWalk());
 		node.conditions.forEach(this.doItemWalk());
 		node.ordering.forEach(this.doItemWalk());
+	}
+
+	protected walkUnaryOperationNode(node : UnaryOperationNode) : void {
+		this.walk(node.expression);
 	}
 }
 
@@ -198,7 +207,7 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb.push(`"`);
 	}
 
-	protected walkBooleanExpressionNode(node : BooleanExpressionNode) : void {
+	protected walkBinaryOperationNode(node : BinaryOperationNode) : void {
 		this.walk(node.left);
 		this.sb.push(` `);
 		this.sb.push(node.operator);
@@ -320,6 +329,18 @@ export class SqlAstWalker extends BaseWalker {
 		if (node.limit) {
 			this.sb.push(" ");
 			this.walk(node.limit);
+		}
+	}
+
+	protected walkUnaryOperationNode(node : UnaryOperationNode) : void {
+		if (node.position == 'left') {
+			this.sb.push(node.operator);
+			this.sb.push(` `);
+			this.walk(node.expression);
+		} else {
+			this.walk(node.expression);
+			this.sb.push(` `);
+			this.sb.push(node.operator);
 		}
 	}
 

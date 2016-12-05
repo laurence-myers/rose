@@ -45,13 +45,29 @@ export interface ColumnReferenceNode {
 	columnName : string;
 }
 
-export interface BooleanExpressionNode {
-	type : 'booleanExpressionNode';
-	// TODO: make this an operator expression?
-	left : ConstantNode<any> | ColumnReferenceNode;
-	operator : '=';
-	right : ConstantNode<any> | ColumnReferenceNode;
+export interface BinaryOperationNode {
+	type : 'binaryOperationNode';
+	left : ValueExpressionNode;
+	operator : string;
+	right : ValueExpressionNode;
 }
+
+export interface BooleanBinaryOperationNode extends BinaryOperationNode {
+	operator : '=' | '!=' | '<' | '<=' | '>' | '>=';
+}
+
+export interface UnaryOperationNode {
+	type : 'unaryOperationNode';
+	expression : ConstantNode<any> | ColumnReferenceNode;
+	operator : string;
+	position : 'left' | 'right';
+}
+
+export interface BooleanUnaryOperationNode extends UnaryOperationNode {
+	operator : 'IS NULL' | 'IS NOT NULL' | 'IS TRUE' | 'IS NOT TRUE' | 'IS FALSE' | 'IS NOT FALSE' | 'IS UNKNOWN' | 'IS NOT UNKNOWN';
+}
+
+export type BooleanExpression = BooleanBinaryOperationNode | BooleanUnaryOperationNode;
 
 export interface FunctionExpressionNode {
 	type : 'functionExpressionNode';
@@ -59,7 +75,7 @@ export interface FunctionExpressionNode {
 	arguments : ValueExpressionNode[];
 }
 
-export type ValueExpressionNode = ConstantNode<any> | ColumnReferenceNode | BooleanExpressionNode | FunctionExpressionNode;
+export type ValueExpressionNode = ConstantNode<any> | ColumnReferenceNode | BooleanExpression | FunctionExpressionNode;
 
 export interface AliasedExpressionNode {
 	type : 'aliasedExpressionNode';
@@ -71,7 +87,7 @@ export interface JoinNode {
 	type : 'joinNode';
 	joinType : 'inner' | 'left' | 'right' | 'full' | 'cross';
 	fromItem : FromItemNode;
-	on? : BooleanExpressionNode;
+	on? : BooleanExpression;
 	using? : ColumnReferenceNode[];
 	// TODO: support lateral
 	// TODO: support natural
@@ -150,7 +166,7 @@ export interface SelectCommandNode {
 	outputExpressions : Array<ValueExpressionNode | AliasedExpressionNode>; // should we also support *?
 	fromItems : FromItemNode[];
 	joins : JoinNode[];
-	conditions : BooleanExpressionNode[];
+	conditions : BooleanExpression[];
 	ordering : OrderByExpressionNode[];
 	limit? : LimitOffsetNode;
 }

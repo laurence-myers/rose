@@ -220,6 +220,8 @@ describe("Query DSL", function () {
 			userId : number;
 		}
 
+		// TODO: see if we can fix the generated alias ordering. Although, does it matter?
+
 		it("can perform an inner join", function () {
 			const actual = select(QuerySelect).join(QUsers).on(QUsers.locationId.eq(QLocations.id)).toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" INNER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
