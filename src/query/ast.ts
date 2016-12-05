@@ -53,7 +53,7 @@ export interface BinaryOperationNode {
 }
 
 export interface BooleanBinaryOperationNode extends BinaryOperationNode {
-	operator : '=' | '!=' | '<' | '<=' | '>' | '>=';
+	operator : '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM';
 }
 
 export interface UnaryOperationNode {
@@ -64,7 +64,16 @@ export interface UnaryOperationNode {
 }
 
 export interface BooleanUnaryOperationNode extends UnaryOperationNode {
-	operator : 'IS NULL' | 'IS NOT NULL' | 'IS TRUE' | 'IS NOT TRUE' | 'IS FALSE' | 'IS NOT FALSE' | 'IS UNKNOWN' | 'IS NOT UNKNOWN';
+	operator : 'IS NULL'
+		| 'IS NOT NULL'
+		| 'IS TRUE'
+		| 'IS NOT TRUE'
+		| 'IS FALSE'
+		| 'IS NOT FALSE'
+		| 'IS UNKNOWN'
+		| 'IS NOT UNKNOWN'
+		| 'IS DISTINCT FROM'
+		| 'IS NOT DISTINCT FROM';
 }
 
 export type BooleanExpression = BooleanBinaryOperationNode | BooleanUnaryOperationNode;

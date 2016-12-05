@@ -3,7 +3,7 @@ import {InvalidTableDefinitionError, InvalidColumnDefinitionError} from "../erro
 import {getMetadata} from "../lang";
 import {
 	BooleanExpression, ColumnReferenceNode, ConstantNode, OrderByExpressionNode, BinaryOperationNode,
-	BooleanBinaryOperationNode
+	BooleanBinaryOperationNode, BooleanUnaryOperationNode
 } from "./ast";
 import {TableMetadata} from "../dbmetadata";
 
@@ -70,7 +70,7 @@ export abstract class ColumnMetamodel<T> {
 		};
 	}
 
-	protected createBooleanBinaryOperationNode(operator : '=' | '!=' | '<' | '<=' | '>' | '>=', value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
+	protected createBooleanBinaryOperationNode(operator : '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM', value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
 		let right : ColumnReferenceNode | ConstantNode<T>;
 		if (value instanceof ColumnMetamodel) {
 			right = value.toColumnReferenceNode();
@@ -110,6 +110,62 @@ export abstract class ColumnMetamodel<T> {
 
 	lte(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('<=', value);
+	}
+
+	isDistinctFrom(value : ((params : any) => T) | ColumnMetamodel<T>) {
+		return this.createBooleanBinaryOperationNode('IS DISTINCT FROM', value);
+	}
+
+	isNotDistinctFrom(value : ((params : any) => T) | ColumnMetamodel<T>) {
+		return this.createBooleanBinaryOperationNode('IS NOT DISTINCT FROM', value);
+	}
+
+	protected createBooleanUnaryOperationNode(operator : 'IS NULL'
+		| 'IS NOT NULL'
+		| 'IS TRUE'
+		| 'IS NOT TRUE'
+		| 'IS FALSE'
+		| 'IS NOT FALSE'
+		| 'IS UNKNOWN'
+		| 'IS NOT UNKNOWN') : BooleanUnaryOperationNode {
+		return {
+			type: 'unaryOperationNode',
+			expression: this.toColumnReferenceNode(),
+			operator,
+			position: 'right' // TODO: support left-hand unary operators
+		};
+	}
+
+	isNull() : BooleanUnaryOperationNode {
+		return this.createBooleanUnaryOperationNode('IS NULL');
+	}
+
+	isNotNull() {
+		return this.createBooleanUnaryOperationNode('IS NOT NULL');
+	}
+
+	isTrue() {
+		return this.createBooleanUnaryOperationNode('IS TRUE');
+	}
+
+	isNotTrue() {
+		return this.createBooleanUnaryOperationNode('IS NOT TRUE');
+	}
+
+	isFalse() {
+		return this.createBooleanUnaryOperationNode('IS FALSE');
+	}
+
+	isNotFalse() {
+		return this.createBooleanUnaryOperationNode('IS NOT FALSE');
+	}
+
+	isUnknown() {
+		return this.createBooleanUnaryOperationNode('IS UNKNOWN');
+	}
+
+	isNotUnknown() {
+		return this.createBooleanUnaryOperationNode('IS NOT UNKNOWN');
 	}
 
 	toColumnReferenceNode() : ColumnReferenceNode {

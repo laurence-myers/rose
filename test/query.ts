@@ -43,7 +43,7 @@ describe("Query DSL", function () {
 			userId : number;
 		}
 		const params = {
-			userId : 1
+			userId: 1
 		};
 		const actual = select<any, QueryParams>(QuerySelect).where(QUsers.id.eq((p : QueryParams) => p.userId)).toSql(params);
 		const expected = {
@@ -63,7 +63,7 @@ describe("Query DSL", function () {
 			userId : number;
 		}
 		const params = {
-			userId : 1
+			userId: 1
 		};
 		const cases = [
 			{
@@ -327,6 +327,103 @@ describe("Query DSL", function () {
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" <= $1)`,
 				parameters: [123]
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for distinct from", function () {
+			const actual = select(QuerySelect).where(QLocations.id.isDistinctFrom(QUsers.locationId)).toSql({});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1", "Users" as "t2" WHERE ("t1"."id" IS DISTINCT FROM "t2"."locationId")`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for not distinct from", function () {
+			const actual = select(QuerySelect).where(QLocations.id.isNotDistinctFrom(QUsers.locationId)).toSql({});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1", "Users" as "t2" WHERE ("t1"."id" IS NOT DISTINCT FROM "t2"."locationId")`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+	});
+
+	describe("Boolean Unary Operations", function () {
+		class QuerySelect {
+			@Column(QLocations.id)
+			id : number;
+		}
+
+		it("can test for null", function () {
+			const actual = select(QuerySelect).where(QLocations.id.isNull()).toSql({});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" IS NULL)`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for not null", function () {
+			const actual = select(QuerySelect).where(QLocations.id.isNotNull()).toSql({});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" IS NOT NULL)`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for true", function () {
+			const actual = select(QuerySelect).where(QLocations.id.isTrue()).toSql({});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" IS TRUE)`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for not true", function () {
+			const actual = select(QuerySelect).where(QLocations.id.isNotTrue()).toSql({});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" IS NOT TRUE)`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for false", function () {
+			const actual = select(QuerySelect).where(QLocations.id.isFalse()).toSql({});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" IS FALSE)`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for not false", function () {
+			const actual = select(QuerySelect).where(QLocations.id.isNotFalse()).toSql({});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" IS NOT FALSE)`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for unknown", function () {
+			const actual = select(QuerySelect).where(QLocations.id.isUnknown()).toSql({});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" IS UNKNOWN)`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for not unknown", function () {
+			const actual = select(QuerySelect).where(QLocations.id.isNotUnknown()).toSql({});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" IS NOT UNKNOWN)`,
+				parameters: []
 			};
 			assert.deepEqual(actual, expected);
 		});
