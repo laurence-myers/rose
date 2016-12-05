@@ -9,7 +9,7 @@ import {
 } from "../errors";
 import {
 	SelectCommandNode, BooleanExpression, OrderByExpressionNode, FunctionExpressionNode,
-	ValueExpressionNode, AliasedExpressionNode, ColumnReferenceNode, JoinNode
+	ValueExpressionNode, AliasedExpressionNode, ColumnReferenceNode, JoinNode, ConstantNode
 } from "./ast";
 import {SqlAstWalker, AnalysingWalker} from "./walker";
 

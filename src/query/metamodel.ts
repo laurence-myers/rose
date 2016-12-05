@@ -1,7 +1,10 @@
 import "reflect-metadata";
 import {InvalidTableDefinitionError, InvalidColumnDefinitionError} from "../errors";
 import {getMetadata} from "../lang";
-import {BooleanExpression, ColumnReferenceNode, ConstantNode, OrderByExpressionNode} from "./ast";
+import {
+	BooleanExpression, ColumnReferenceNode, ConstantNode, OrderByExpressionNode, BinaryOperationNode,
+	BooleanBinaryOperationNode
+} from "./ast";
 import {TableMetadata} from "../dbmetadata";
 
 export const METADATA_KEY_PREFIX = "arbaon.";
@@ -67,7 +70,7 @@ export abstract class ColumnMetamodel<T> {
 		};
 	}
 
-	eq(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanExpression {
+	protected createBooleanBinaryOperationNode(operator : '=' | '!=' | '<' | '<=' | '>' | '>=', value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
 		let right : ColumnReferenceNode | ConstantNode<T>;
 		if (value instanceof ColumnMetamodel) {
 			right = value.toColumnReferenceNode();
@@ -81,8 +84,32 @@ export abstract class ColumnMetamodel<T> {
 			type: 'binaryOperationNode',
 			left: this.toColumnReferenceNode(),
 			right,
-			operator: '='
+			operator
 		};
+	}
+
+	eq(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
+		return this.createBooleanBinaryOperationNode('=', value);
+	}
+
+	neq(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
+		return this.createBooleanBinaryOperationNode('!=', value);
+	}
+
+	gt(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
+		return this.createBooleanBinaryOperationNode('>', value);
+	}
+
+	gte(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
+		return this.createBooleanBinaryOperationNode('>=', value);
+	}
+
+	lt(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
+		return this.createBooleanBinaryOperationNode('<', value);
+	}
+
+	lte(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
+		return this.createBooleanBinaryOperationNode('<=', value);
 	}
 
 	toColumnReferenceNode() : ColumnReferenceNode {

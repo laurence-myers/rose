@@ -258,4 +258,77 @@ describe("Query DSL", function () {
 			assert.deepEqual(actual, expected);
 		});
 	});
+
+	describe("Boolean Binary Operations", function () {
+		class QuerySelect {
+			@Column(QLocations.id)
+			id : number;
+		}
+
+		it("can test for equality", function () {
+			const actual = select(QuerySelect).where(QLocations.id.eq((params) => params.locationId)).toSql({
+				locationId: 123
+			});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" = $1)`,
+				parameters: [123]
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for unequality", function () {
+			const actual = select(QuerySelect).where(QLocations.id.neq((params) => params.locationId)).toSql({
+				locationId: 123
+			});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" != $1)`,
+				parameters: [123]
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for greater than", function () {
+			const actual = select(QuerySelect).where(QLocations.id.gt((params) => params.locationId)).toSql({
+				locationId: 123
+			});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" > $1)`,
+				parameters: [123]
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for greater than or equal", function () {
+			const actual = select(QuerySelect).where(QLocations.id.gte((params) => params.locationId)).toSql({
+				locationId: 123
+			});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" >= $1)`,
+				parameters: [123]
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for less than", function () {
+			const actual = select(QuerySelect).where(QLocations.id.lt((params) => params.locationId)).toSql({
+				locationId: 123
+			});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" < $1)`,
+				parameters: [123]
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can test for less than or equal", function () {
+			const actual = select(QuerySelect).where(QLocations.id.lte((params) => params.locationId)).toSql({
+				locationId: 123
+			});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" <= $1)`,
+				parameters: [123]
+			};
+			assert.deepEqual(actual, expected);
+		});
+	});
 });
