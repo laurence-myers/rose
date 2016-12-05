@@ -75,7 +75,7 @@ export interface FunctionExpressionNode {
 	arguments : ValueExpressionNode[];
 }
 
-export type ValueExpressionNode = ConstantNode<any> | ColumnReferenceNode | BooleanExpression | FunctionExpressionNode;
+export type ValueExpressionNode = ConstantNode<any> | ColumnReferenceNode | BinaryOperationNode | UnaryOperationNode | FunctionExpressionNode;
 
 export interface AliasedExpressionNode {
 	type : 'aliasedExpressionNode';
