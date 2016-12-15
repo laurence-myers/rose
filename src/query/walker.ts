@@ -1,7 +1,8 @@
 import {
 	SelectCommandNode, AstNode, ColumnReferenceNode, ValueExpressionNode, FromItemNode,
 	BooleanExpression, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
-	AliasedExpressionNode, JoinNode, BooleanBinaryOperationNode, BinaryOperationNode, UnaryOperationNode
+	AliasedExpressionNode, JoinNode, BooleanBinaryOperationNode, BinaryOperationNode, UnaryOperationNode,
+	BooleanExpressionGroupNode, NotExpressionNode
 } from "./ast";
 import {DefaultMap, assertNever, remove, difference, deepFreeze} from "../lang";
 import {GeneratedQuery} from "./dsl";
@@ -19,6 +20,8 @@ export abstract class BaseWalker {
 
 	protected abstract walkBinaryOperationNode(node : BinaryOperationNode) : void;
 
+	protected abstract walkBooleanExpressionGroupNode(node : BooleanExpressionGroupNode) : void;
+
 	protected abstract walkColumnReferenceNode(node : ColumnReferenceNode) : void;
 
 	protected abstract walkConstantNode(node : ConstantNode<any>) : void;
@@ -30,6 +33,8 @@ export abstract class BaseWalker {
 	protected abstract walkJoinNode(node : JoinNode) : void;
 
 	protected abstract walkLimitOffsetNode(node : LimitOffsetNode) : void;
+
+	protected abstract walkNotExpressionNode(node : NotExpressionNode) : void;
 
 	protected abstract walkOrderByExpressionNode(node : OrderByExpressionNode) : void;
 
@@ -44,6 +49,9 @@ export abstract class BaseWalker {
 				break;
 			case "binaryOperationNode":
 				this.walkBinaryOperationNode(node);
+				break;
+			case "booleanExpressionGroupNode":
+				this.walkBooleanExpressionGroupNode(node);
 				break;
 			case "columnReferenceNode":
 				this.walkColumnReferenceNode(node);
@@ -62,6 +70,9 @@ export abstract class BaseWalker {
 				break;
 			case "limitOffsetNode":
 				this.walkLimitOffsetNode(node);
+				break;
+			case "notExpressionNode":
+				this.walkNotExpressionNode(node);
 				break;
 			case "orderByExpressionNode":
 				this.walkOrderByExpressionNode(node);
@@ -92,6 +103,10 @@ export class SkippingWalker extends BaseWalker {
 		this.walk(node.right);
 	}
 
+	protected walkBooleanExpressionGroupNode(node : BooleanExpressionGroupNode) : void {
+		node.expressions.forEach(this.doItemWalk());
+	}
+
 	protected walkColumnReferenceNode(node : ColumnReferenceNode) : void {
 	}
 
@@ -116,6 +131,10 @@ export class SkippingWalker extends BaseWalker {
 		if (node.using) {
 			node.using.forEach(this.doItemWalk());
 		}
+	}
+
+	protected walkNotExpressionNode(node : NotExpressionNode) : void {
+		this.walk(node.expression);
 	}
 
 	protected walkOrderByExpressionNode(node : OrderByExpressionNode) : void {
@@ -178,6 +197,11 @@ const JOIN_TEXT_MAP = deepFreeze(new Map([
 	['cross', 'CROSS']
 ]));
 
+const BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP = deepFreeze(new Map([
+	['and', 'AND'],
+	['or', 'OR']
+]));
+
 export class SqlAstWalker extends BaseWalker {
 	// protected tableMap = new DefaultMap<string, string>((key) => `t${ this.queryAst.fromItems.length + 1 }`);
 	protected sb : string[] = [];
@@ -205,6 +229,23 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb.push(` as "`);
 		this.sb.push(node.alias);
 		this.sb.push(`"`);
+	}
+
+	protected walkBooleanExpressionGroupNode(node : BooleanExpressionGroupNode) : void {
+		const operator = BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP.get(node.operator);
+		if (!operator) {
+			throw new UnsupportedOperationError(`Unrecognised boolean expression group operator: "${ node.operator }"`);
+		}
+		this.sb.push(`(`);
+		node.expressions.forEach((node : BooleanExpression, index : number) : void => {
+			if (index > 0) {
+				this.sb.push(` `);
+				this.sb.push(operator);
+				this.sb.push(` `);
+			}
+			this.walk(node);
+		});
+		this.sb.push(`)`);
 	}
 
 	protected walkBinaryOperationNode(node : BinaryOperationNode) : void {
@@ -280,6 +321,12 @@ export class SqlAstWalker extends BaseWalker {
 		this.walk(node.limit);
 		this.sb.push(' OFFSET ');
 		this.walk(node.offset);
+	}
+
+	protected walkNotExpressionNode(node : NotExpressionNode) : void {
+		this.sb.push(`NOT (`);
+		this.walk(node.expression);
+		this.sb.push(`)`);
 	}
 
 	protected walkOrderByExpressionNode(node : OrderByExpressionNode) : void {

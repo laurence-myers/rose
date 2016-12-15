@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import {
 	ColumnMetamodel, SELECT_METADATA_KEY, METADATA_KEY_PREFIX,
-	getTableNameFromColumn, getTableName, QueryTable
+	getTableNameFromColumn, QueryTable
 } from "./metamodel";
 import {DefaultMap, getMetadata, getType} from "../lang";
 import {
@@ -9,7 +9,8 @@ import {
 } from "../errors";
 import {
 	SelectCommandNode, BooleanExpression, OrderByExpressionNode, FunctionExpressionNode,
-	ValueExpressionNode, AliasedExpressionNode, ColumnReferenceNode, JoinNode, ConstantNode
+	ValueExpressionNode, AliasedExpressionNode, ColumnReferenceNode, JoinNode,
+	NotExpressionNode, BooleanExpressionGroupNode
 } from "./ast";
 import {SqlAstWalker, AnalysingWalker} from "./walker";
 
@@ -331,4 +332,27 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> {
 
 export function select<T extends QueryClass, P>(queryClass : T) : QueryBuilder<T, P> {
 	return new QueryBuilder<T, P>(SqlCommand.Select, queryClass);
+}
+
+export function and(first : BooleanExpression, second : BooleanExpression, ...rest : BooleanExpression[]) : BooleanExpressionGroupNode {
+	return {
+		type: 'booleanExpressionGroupNode',
+		operator: 'and',
+		expressions: [first, second].concat(rest)
+	};
+}
+
+export function or(first : BooleanExpression, second : BooleanExpression, ...rest : BooleanExpression[]) : BooleanExpressionGroupNode {
+	return {
+		type: 'booleanExpressionGroupNode',
+		operator: 'or',
+		expressions: [first, second].concat(rest)
+	};
+}
+
+export function not(expr : BooleanExpression) : NotExpressionNode {
+	return {
+		type: 'notExpressionNode',
+		expression: expr
+	};
 }

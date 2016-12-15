@@ -3,7 +3,7 @@ import {
 	NumericColumnMetamodel, TableMetamodel, Table, Column, StringColumnMetamodel,
 	QueryTable
 } from "../src/query/metamodel";
-import {select, Nested, Expression} from "../src/query/dsl";
+import {select, Nested, Expression, and, or, not} from "../src/query/dsl";
 import assert = require('assert');
 import {count, lower} from "../src/query/postgresql/functions";
 import {deepFreeze} from "../src/lang";
@@ -427,5 +427,61 @@ describe("Query DSL", function () {
 			};
 			assert.deepEqual(actual, expected);
 		});
+	});
+
+	describe("Boolean Expression Groups", function () {
+		class QuerySelect {
+			@Column(QUsers.id)
+			id : number;
+
+			@Column(QUsers.name)
+			name : string;
+		}
+
+		it("can group with 'and'", function () {
+			const actual = select(QuerySelect).where(
+				and(
+					QUsers.id.isNotUnknown(),
+					QUsers.name.isNotNull()
+				)
+			).toSql({});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id", "t1"."name" as "name" FROM "Users" as "t1" WHERE (("t1"."id" IS NOT UNKNOWN AND "t1"."name" IS NOT NULL))`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can group with 'or'", function () {
+			const actual = select(QuerySelect).where(
+				or(
+					QUsers.id.isNotUnknown(),
+					QUsers.name.isNotNull()
+				)
+			).toSql({});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id", "t1"."name" as "name" FROM "Users" as "t1" WHERE (("t1"."id" IS NOT UNKNOWN OR "t1"."name" IS NOT NULL))`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+	});
+
+	it("can negate a boolean expression", function () {
+		class QuerySelect {
+			@Column(QUsers.id)
+			id : number;
+		}
+
+		const actual = select(QuerySelect).where(
+			not(QUsers.id.eq((p) => p.userId)),
+		).toSql({
+			userId: 123
+		});
+		const expected = {
+			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE (NOT ("t1"."id" = $1))`,
+			parameters: [123]
+		};
+		assert.deepEqual(actual, expected);
 	});
 });

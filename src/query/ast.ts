@@ -53,7 +53,7 @@ export interface BinaryOperationNode {
 }
 
 export interface BooleanBinaryOperationNode extends BinaryOperationNode {
-	operator : '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM';
+	operator : '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM'; // TODO: support "IN"
 }
 
 export interface UnaryOperationNode {
@@ -76,7 +76,18 @@ export interface BooleanUnaryOperationNode extends UnaryOperationNode {
 		| 'IS NOT DISTINCT FROM';
 }
 
-export type BooleanExpression = BooleanBinaryOperationNode | BooleanUnaryOperationNode;
+export interface BooleanExpressionGroupNode {
+	type : 'booleanExpressionGroupNode';
+	operator : 'and' | 'or';
+	expressions : BooleanExpression[];
+}
+
+export interface NotExpressionNode {
+	type : 'notExpressionNode';
+	expression : BooleanExpression; // TODO: check if NOT coerces other expressions into booleans
+}
+
+export type BooleanExpression = BooleanBinaryOperationNode | BooleanUnaryOperationNode | BooleanExpressionGroupNode | NotExpressionNode;
 
 export interface FunctionExpressionNode {
 	type : 'functionExpressionNode';
@@ -181,4 +192,4 @@ export interface SelectCommandNode {
 }
 
 export type AstNode = SelectCommandNode | ValueExpressionNode | AliasedExpressionNode | JoinNode | FromItemNode
-	| OrderByExpressionNode | FunctionExpressionNode | LimitOffsetNode;
+	| OrderByExpressionNode | FunctionExpressionNode | LimitOffsetNode | BooleanExpressionGroupNode | NotExpressionNode;
