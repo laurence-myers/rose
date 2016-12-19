@@ -3,7 +3,7 @@ import {InvalidTableDefinitionError, InvalidColumnDefinitionError} from "../erro
 import {getMetadata} from "../lang";
 import {
 	BooleanExpression, ColumnReferenceNode, ConstantNode, OrderByExpressionNode, BinaryOperationNode,
-	BooleanBinaryOperationNode, BooleanUnaryOperationNode
+	BooleanBinaryOperationNode, BooleanUnaryOperationNode, SubSelectNode
 } from "./ast";
 import {TableMetadata} from "../dbmetadata";
 
@@ -40,6 +40,10 @@ export class TableMetamodel {
 	}
 }
 
+function isSubSelectNode(node : { type? : string }) : node is SubSelectNode {
+	return node && node.type == 'subSelectNode';
+}
+
 export interface ColumnMetamodelOptions<R> {
 	references : R;
 }
@@ -70,10 +74,14 @@ export abstract class ColumnMetamodel<T> {
 		};
 	}
 
-	protected createBooleanBinaryOperationNode(operator : '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM', value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
-		let right : ColumnReferenceNode | ConstantNode<T>;
+	protected createBooleanBinaryOperationNode(
+		operator : '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM',
+		value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
+		let right : ColumnReferenceNode | ConstantNode<T> | SubSelectNode;
 		if (value instanceof ColumnMetamodel) {
 			right = value.toColumnReferenceNode();
+		} else if (isSubSelectNode(value)) {
+			right = value;
 		} else {
 			right = <ConstantNode<T>> {
 				type: 'constantNode',
@@ -88,35 +96,35 @@ export abstract class ColumnMetamodel<T> {
 		};
 	}
 
-	eq(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
+	eq(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('=', value);
 	}
 
-	neq(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
+	neq(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('!=', value);
 	}
 
-	gt(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
+	gt(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('>', value);
 	}
 
-	gte(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
+	gte(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('>=', value);
 	}
 
-	lt(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
+	lt(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('<', value);
 	}
 
-	lte(value : ((params : any) => T) | ColumnMetamodel<T>) : BooleanBinaryOperationNode {
+	lte(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('<=', value);
 	}
 
-	isDistinctFrom(value : ((params : any) => T) | ColumnMetamodel<T>) {
+	isDistinctFrom(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('IS DISTINCT FROM', value);
 	}
 
-	isNotDistinctFrom(value : ((params : any) => T) | ColumnMetamodel<T>) {
+	isNotDistinctFrom(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('IS NOT DISTINCT FROM', value);
 	}
 

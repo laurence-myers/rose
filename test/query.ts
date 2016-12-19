@@ -3,7 +3,7 @@ import {
 	NumericColumnMetamodel, TableMetamodel, Table, Column, StringColumnMetamodel,
 	QueryTable
 } from "../src/query/metamodel";
-import {select, Nested, Expression, and, or, not} from "../src/query/dsl";
+import {select, Nested, Expression, and, or, not, subSelect} from "../src/query/dsl";
 import assert = require('assert');
 import {count, lower} from "../src/query/postgresql/functions";
 import {deepFreeze} from "../src/lang";
@@ -22,7 +22,7 @@ describe("Query DSL", function () {
 		$table = new TableMetamodel("Locations");
 
 		id = new NumericColumnMetamodel(this.$table, "id", Number);
-		agencyId = new NumericColumnMetamodel(this.$table, "id", Number);
+		agencyId = new NumericColumnMetamodel(this.$table, "agencyId", Number);
 	}
 	const QLocations = deepFreeze(new TLocations());
 
@@ -483,5 +483,31 @@ describe("Query DSL", function () {
 			parameters: [123]
 		};
 		assert.deepEqual(actual, expected);
+	});
+
+	describe("sub-queries", function () {
+		it("can include a basic sub-query", function () {
+			class QuerySelect {
+				@Column(QUsers.id)
+				id : number;
+			}
+
+			const actual = select(QuerySelect).where(
+				QUsers.locationId.eq(
+					subSelect(
+						QLocations.id
+					).where(QLocations.agencyId.eq((p) => p.agencyId))
+					.toSubQuery()
+				),
+			).toSql({
+				agencyId: 123
+			});
+			// NOTE: generated aliases are back-to-front, since the deepest tables are aliased first.
+			const expected = {
+				sql: `SELECT "t2"."id" as "id" FROM "Users" as "t2" WHERE ("t2"."locationId" = (SELECT "t1"."id" FROM "Locations" as "t1" WHERE ("t1"."agencyId" = $1)))`,
+				parameters: [123]
+			};
+			assert.deepEqual(actual, expected);
+		});
 	});
 });

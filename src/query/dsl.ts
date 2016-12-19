@@ -10,9 +10,9 @@ import {
 import {
 	SelectCommandNode, BooleanExpression, OrderByExpressionNode, FunctionExpressionNode,
 	ValueExpressionNode, AliasedExpressionNode, ColumnReferenceNode, JoinNode,
-	NotExpressionNode, BooleanExpressionGroupNode
+	NotExpressionNode, BooleanExpressionGroupNode, SelectOutputExpression, SubSelectNode
 } from "./ast";
-import {SqlAstWalker, AnalysingWalker} from "./walker";
+import {SqlAstWalker, RectifyingWalker} from "./walker";
 
 export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
 export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator {
@@ -148,108 +148,16 @@ class JoinBuilder<R> {
 	}
 }
 
-class QueryBuilder<T extends QueryClass, P extends HasLimit> {
+class BaseQueryBuilder<P extends HasLimit> {
 	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
 	protected queryAst : SelectCommandNode;
-
-	constructor(private command : SqlCommand, private queryClass : T) {
-		this.select();
-	}
-
-	protected processSelectMetadata(entries : IterableIterator<[string, ColumnMetamodel<any>]>, aliasPrefix? : string) : void {
-		for (const entry of entries) {
-			const columnMetamodel : ColumnMetamodel<any> = entry[1];
-			const columnName = columnMetamodel.name;
-			const columnAlias : string = aliasPrefix ? `${ aliasPrefix }.${ entry[0] }` : entry[0];
-			const tableName = getTableNameFromColumn(columnMetamodel);
-
-			this.queryAst.outputExpressions.push({
-				type: 'aliasedExpressionNode',
-				alias: columnAlias,
-				expression: {
-					type: 'columnReferenceNode',
-					tableName: tableName,
-					columnName: columnName
-				}
-			});
-		}
-	}
-
-	protected processNestedMetadata(entries : IterableIterator<[string, NestedQuery]>) : void {
-		for (const entry of entries) {
-			const aliasPrefix : string = entry[0];
-			const nestedQuery : NestedQuery = entry[1];
-			this.processSelectQueryClass(nestedQuery.queryClass, aliasPrefix);
-		}
-	}
-
-	protected processExpressionMetadata(entries : IterableIterator<[string, ValueExpressionNode]>) : void {
-		for (const entry of entries) {
-			const alias : string = entry[0];
-			const expression : ValueExpressionNode = entry[1];
-			// TODO: resolve table references within the expression?
-			// TODO: support the property name as the alias
-			const aliasedExpressionNode : AliasedExpressionNode = {
-				type: 'aliasedExpressionNode',
-				alias,
-				expression
-			};
-			this.queryAst.outputExpressions.push(aliasedExpressionNode);
-		}
-	}
-
-	protected getSelectMetadata(queryClass : Function) : Map<string, ColumnMetamodel<any>> | undefined {
-		const selectMetadata = getMetadata<Map<string, ColumnMetamodel<any>>>(SELECT_METADATA_KEY, queryClass.prototype);
-		return selectMetadata;
-	}
-
-	protected processSelectQueryClass(queryClass : Function, aliasPrefix? : string) {
-		const selectMetadata = this.getSelectMetadata(queryClass);
-		if (selectMetadata) {
-			this.processSelectMetadata(selectMetadata.entries(), aliasPrefix);
-		}
-		const nestedMetadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, queryClass.prototype);
-		if (nestedMetadata) {
-			this.processNestedMetadata(nestedMetadata.entries());
-		}
-		const expressionMetadata = getMetadata<Map<string, FunctionExpressionNode>>(EXPRESSION_METADATA_KEY, queryClass.prototype);
-		if (expressionMetadata) {
-			this.processExpressionMetadata(expressionMetadata.entries());
-		}
-		if (!selectMetadata && !nestedMetadata && !expressionMetadata) {
-			throw new InvalidQueryClassError("The class provided to the select function does not have any output columns, expressions, or nested queries.");
-		}
-	}
 
 	/**
 	 * Adds referenced tables as "FROM" clauses for any tables not explicitly joined/from-ed.
 	 */
 	protected rectifyTableReferences() {
-		const analyser = new AnalysingWalker(this.queryAst);
-		const result = analyser.analyse();
-		result.tables.forEach((tableName) => {
-			const tableAlias = this.tableMap.get(tableName);
-
-			this.queryAst.fromItems.push({
-				type: 'fromItemNode',
-				tableName: tableName,
-				alias: tableAlias
-			});
-		});
-	}
-
-	protected select() : this {
-		this.queryAst = {
-			type: 'selectCommandNode',
-			distinction: 'all',
-			outputExpressions: [],
-			fromItems: [],
-			joins: [],
-			conditions: [],
-			ordering: []
-		};
-		this.processSelectQueryClass(this.queryClass);
-		return this;
+		const rectifier = new RectifyingWalker(this.tableMap, this.queryAst);
+		rectifier.rectify();
 	}
 
 	distinct() : this {
@@ -330,8 +238,139 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> {
 	}
 }
 
+class QueryBuilder<T extends QueryClass, P extends HasLimit> extends BaseQueryBuilder<P> {
+	constructor(private command : SqlCommand, private queryClass : T) {
+		super();
+		this.select();
+	}
+
+	protected processSelectMetadata(entries : IterableIterator<[string, ColumnMetamodel<any>]>, aliasPrefix? : string) : void {
+		for (const entry of entries) {
+			const columnMetamodel : ColumnMetamodel<any> = entry[1];
+			const columnName = columnMetamodel.name;
+			const columnAlias : string = aliasPrefix ? `${ aliasPrefix }.${ entry[0] }` : entry[0];
+			const tableName = getTableNameFromColumn(columnMetamodel);
+
+			this.queryAst.outputExpressions.push({
+				type: 'aliasedExpressionNode',
+				alias: columnAlias,
+				expression: {
+					type: 'columnReferenceNode',
+					tableName: tableName,
+					columnName: columnName
+				}
+			});
+		}
+	}
+
+	protected processNestedMetadata(entries : IterableIterator<[string, NestedQuery]>) : void {
+		for (const entry of entries) {
+			const aliasPrefix : string = entry[0];
+			const nestedQuery : NestedQuery = entry[1];
+			this.processSelectQueryClass(nestedQuery.queryClass, aliasPrefix);
+		}
+	}
+
+	protected processExpressionMetadata(entries : IterableIterator<[string, ValueExpressionNode]>) : void {
+		for (const entry of entries) {
+			const alias : string = entry[0];
+			const expression : ValueExpressionNode = entry[1];
+			// TODO: resolve table references within the expression?
+			// TODO: support the property name as the alias
+			const aliasedExpressionNode : AliasedExpressionNode = {
+				type: 'aliasedExpressionNode',
+				alias,
+				expression
+			};
+			this.queryAst.outputExpressions.push(aliasedExpressionNode);
+		}
+	}
+
+	protected getSelectMetadata(queryClass : Function) : Map<string, ColumnMetamodel<any>> | undefined {
+		const selectMetadata = getMetadata<Map<string, ColumnMetamodel<any>>>(SELECT_METADATA_KEY, queryClass.prototype);
+		return selectMetadata;
+	}
+
+	protected processSelectQueryClass(queryClass : Function, aliasPrefix? : string) {
+		const selectMetadata = this.getSelectMetadata(queryClass);
+		if (selectMetadata) {
+			this.processSelectMetadata(selectMetadata.entries(), aliasPrefix);
+		}
+		const nestedMetadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, queryClass.prototype);
+		if (nestedMetadata) {
+			this.processNestedMetadata(nestedMetadata.entries());
+		}
+		const expressionMetadata = getMetadata<Map<string, FunctionExpressionNode>>(EXPRESSION_METADATA_KEY, queryClass.prototype);
+		if (expressionMetadata) {
+			this.processExpressionMetadata(expressionMetadata.entries());
+		}
+		if (!selectMetadata && !nestedMetadata && !expressionMetadata) {
+			throw new InvalidQueryClassError("The class provided to the select function does not have any output columns, expressions, or nested queries.");
+		}
+	}
+
+	protected select() : this {
+		this.queryAst = {
+			type: 'selectCommandNode',
+			distinction: 'all',
+			outputExpressions: [],
+			fromItems: [],
+			joins: [],
+			conditions: [],
+			ordering: []
+		};
+		this.processSelectQueryClass(this.queryClass);
+		return this;
+	}
+}
+
+// TODO: how to reference expressions defined outside of this sub-query?
+class SubQueryBuilder<P extends HasLimit> extends BaseQueryBuilder<P> {
+	constructor(private command : SqlCommand, subSelectExpressions : SubSelectExpression[]) {
+		super();
+		this.select(subSelectExpressions);
+	}
+
+	protected processSubSelectExpressions(subSelectExpressions : SubSelectExpression[]) {
+		for (let outputExpression of subSelectExpressions) {
+			if (outputExpression instanceof ColumnMetamodel) {
+				this.queryAst.outputExpressions.push(outputExpression.toColumnReferenceNode());
+			} else {
+				this.queryAst.outputExpressions.push(outputExpression);
+			}
+		}
+	}
+
+	protected select(subSelectExpressions : SubSelectExpression[]) : this {
+		this.queryAst = {
+			type: 'selectCommandNode',
+			distinction: 'all',
+			outputExpressions: [],
+			fromItems: [],
+			joins: [],
+			conditions: [],
+			ordering: []
+		};
+		this.processSubSelectExpressions(subSelectExpressions);
+		return this;
+	}
+
+	toSubQuery() : SubSelectNode {
+		return {
+			type: 'subSelectNode',
+			query: this.queryAst
+		};
+	}
+}
+
 export function select<T extends QueryClass, P>(queryClass : T) : QueryBuilder<T, P> {
 	return new QueryBuilder<T, P>(SqlCommand.Select, queryClass);
+}
+
+type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<any>;
+
+export function subSelect<P>(...outputExpressions : SubSelectExpression[]) {
+	return new SubQueryBuilder<P>(SqlCommand.Select, outputExpressions);
 }
 
 export function and(first : BooleanExpression, second : BooleanExpression, ...rest : BooleanExpression[]) : BooleanExpressionGroupNode {

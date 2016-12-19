@@ -2,7 +2,7 @@ import {
 	SelectCommandNode, AstNode, ColumnReferenceNode, ValueExpressionNode, FromItemNode,
 	BooleanExpression, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
 	AliasedExpressionNode, JoinNode, BooleanBinaryOperationNode, BinaryOperationNode, UnaryOperationNode,
-	BooleanExpressionGroupNode, NotExpressionNode
+	BooleanExpressionGroupNode, NotExpressionNode, SubSelectNode
 } from "./ast";
 import {DefaultMap, assertNever, remove, difference, deepFreeze} from "../lang";
 import {GeneratedQuery} from "./dsl";
@@ -39,6 +39,8 @@ export abstract class BaseWalker {
 	protected abstract walkOrderByExpressionNode(node : OrderByExpressionNode) : void;
 
 	protected abstract walkSelectCommandNode(node : SelectCommandNode) : void;
+
+	protected abstract walkSubSelectNode(node : SubSelectNode) : void;
 
 	protected abstract walkUnaryOperationNode(node : UnaryOperationNode) : void;
 
@@ -79,6 +81,9 @@ export abstract class BaseWalker {
 				break;
 			case "selectCommandNode":
 				this.walkSelectCommandNode(node);
+				break;
+			case "subSelectNode":
+				this.walkSubSelectNode(node);
 				break;
 			case "unaryOperationNode":
 				this.walkUnaryOperationNode(node);
@@ -149,6 +154,10 @@ export class SkippingWalker extends BaseWalker {
 		node.ordering.forEach(this.doItemWalk());
 	}
 
+	protected walkSubSelectNode(node : SubSelectNode) : void {
+		this.walk(node.query);
+	}
+
 	protected walkUnaryOperationNode(node : UnaryOperationNode) : void {
 		this.walk(node.expression);
 	}
@@ -158,12 +167,13 @@ export interface AnalysisResult {
 	tables : string[];
 }
 
-export class AnalysingWalker extends SkippingWalker {
-	private referencedTables : Set<string> = new Set<string>();
-	private specifiedTables : Set<string> = new Set<string>();
+export class RectifyingWalker extends SkippingWalker {
+	protected referencedTables : Set<string> = new Set<string>();
+	protected specifiedTables : Set<string> = new Set<string>();
 
 	constructor(
-		private ast : AstNode
+		protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`),
+		protected ast : SelectCommandNode
 	) {
 		super();
 	}
@@ -173,19 +183,29 @@ export class AnalysingWalker extends SkippingWalker {
 		super.walkColumnReferenceNode(node);
 	}
 
-	// TODO: don't screw up sub-queries
 	// TODO: don't screw up manually aliased tables?
 	protected walkFromItemNode(node : FromItemNode) : void {
 		this.specifiedTables.add(node.tableName);
 		super.walkFromItemNode(node);
 	}
 
-	analyse() : AnalysisResult {
+	protected walkSubSelectNode(node : SubSelectNode) : void {
+		const subWalker = new RectifyingWalker(this.tableMap, node.query);
+		subWalker.rectify();
+	}
+
+	rectify() : void {
 		this.walk(this.ast);
 		const unspecifiedTables = difference(this.referencedTables, this.specifiedTables);
-		return {
-			tables: [...unspecifiedTables]
-		};
+		unspecifiedTables.forEach((tableName) => {
+			const tableAlias = this.tableMap.get(tableName);
+
+			this.ast.fromItems.push({
+				type: 'fromItemNode',
+				tableName: tableName,
+				alias: tableAlias
+			});
+		});
 	}
 }
 
@@ -377,6 +397,12 @@ export class SqlAstWalker extends BaseWalker {
 			this.sb.push(" ");
 			this.walk(node.limit);
 		}
+	}
+
+	protected walkSubSelectNode(node : SubSelectNode) : void {
+		this.sb.push(`(`);
+		this.walk(node.query);
+		this.sb.push(`)`);
 	}
 
 	protected walkUnaryOperationNode(node : UnaryOperationNode) : void {

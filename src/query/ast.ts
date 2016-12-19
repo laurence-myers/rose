@@ -47,9 +47,9 @@ export interface ColumnReferenceNode {
 
 export interface BinaryOperationNode {
 	type : 'binaryOperationNode';
-	left : ValueExpressionNode;
+	left : ValueExpressionNode | SubSelectNode; // Should SubSelectNode just be part of ValueExpressionNode?
 	operator : string;
-	right : ValueExpressionNode;
+	right : ValueExpressionNode | SubSelectNode;
 }
 
 export interface BooleanBinaryOperationNode extends BinaryOperationNode {
@@ -58,7 +58,7 @@ export interface BooleanBinaryOperationNode extends BinaryOperationNode {
 
 export interface UnaryOperationNode {
 	type : 'unaryOperationNode';
-	expression : ConstantNode<any> | ColumnReferenceNode;
+	expression : ConstantNode<any> | ColumnReferenceNode | SubSelectNode;
 	operator : string;
 	position : 'left' | 'right';
 }
@@ -71,9 +71,7 @@ export interface BooleanUnaryOperationNode extends UnaryOperationNode {
 		| 'IS FALSE'
 		| 'IS NOT FALSE'
 		| 'IS UNKNOWN'
-		| 'IS NOT UNKNOWN'
-		| 'IS DISTINCT FROM'
-		| 'IS NOT DISTINCT FROM';
+		| 'IS NOT UNKNOWN';
 }
 
 export interface BooleanExpressionGroupNode {
@@ -180,10 +178,12 @@ export interface LimitOffsetNode {
 
  TABLE [ ONLY ] table_name [ * ]
  */
+export type SelectOutputExpression = ValueExpressionNode | AliasedExpressionNode;
+
 export interface SelectCommandNode {
 	type : 'selectCommandNode';
 	distinction : 'distinct' | 'all';
-	outputExpressions : Array<ValueExpressionNode | AliasedExpressionNode>; // should we also support *?
+	outputExpressions : Array<SelectOutputExpression>; // should we also support *?
 	fromItems : FromItemNode[];
 	joins : JoinNode[];
 	conditions : BooleanExpression[];
@@ -191,5 +191,11 @@ export interface SelectCommandNode {
 	limit? : LimitOffsetNode;
 }
 
+export interface SubSelectNode {
+	type : 'subSelectNode';
+	query : SelectCommandNode;
+}
+
 export type AstNode = SelectCommandNode | ValueExpressionNode | AliasedExpressionNode | JoinNode | FromItemNode
-	| OrderByExpressionNode | FunctionExpressionNode | LimitOffsetNode | BooleanExpressionGroupNode | NotExpressionNode;
+	| OrderByExpressionNode | FunctionExpressionNode | LimitOffsetNode | BooleanExpressionGroupNode | NotExpressionNode
+	| SubSelectNode;
