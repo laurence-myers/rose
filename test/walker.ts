@@ -22,7 +22,7 @@ describe("AST Walkers", function () {
 				ordering: []
 			};
 			const tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
-			const walker = new RectifyingWalker(tableMap, ast);
+			const walker = new RectifyingWalker(ast, tableMap);
 			walker.rectify();
 			equal(ast.fromItems.length, 1);
 			equal(ast.fromItems[0].tableName, "Users");
@@ -52,7 +52,7 @@ describe("AST Walkers", function () {
 				ordering: []
 			};
 			const tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
-			const walker = new RectifyingWalker(tableMap, ast);
+			const walker = new RectifyingWalker(ast, tableMap);
 			walker.rectify();
 			equal(ast.fromItems.length, 1);
 			equal(ast.fromItems[0].tableName, "Users");
@@ -120,7 +120,7 @@ describe("AST Walkers", function () {
 				ordering: []
 			};
 			const tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
-			const walker = new RectifyingWalker(tableMap, ast);
+			const walker = new RectifyingWalker(ast, tableMap);
 			walker.rectify();
 			equal(ast.fromItems.length, 1);
 			equal(ast.fromItems[0].tableName, "Users");

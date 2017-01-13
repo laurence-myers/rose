@@ -1,6 +1,6 @@
 // import {describe, it} from "mocha";
 import {
-	NumericColumnMetamodel, TableMetamodel, Table, Column, StringColumnMetamodel,
+	NumericColumnMetamodel, TableMetamodel, Column, StringColumnMetamodel,
 	QueryTable
 } from "../src/query/metamodel";
 import {select, Nested, Expression, and, or, not, subSelect} from "../src/query/dsl";
@@ -9,8 +9,8 @@ import {count, lower} from "../src/query/postgresql/functions";
 import {deepFreeze} from "../src/lang";
 
 describe("Query DSL", function () {
-	class TUsers implements QueryTable {
-		$table = new TableMetamodel("Users");
+	class TUsers extends QueryTable {
+		$table = new TableMetamodel("Users", this.$tableAlias);
 
 		id = new NumericColumnMetamodel(this.$table, "id", Number);
 		locationId = new NumericColumnMetamodel(this.$table, "locationId", Number);
@@ -18,16 +18,16 @@ describe("Query DSL", function () {
 	}
 	const QUsers = deepFreeze(new TUsers());
 
-	class TLocations implements QueryTable {
-		$table = new TableMetamodel("Locations");
+	class TLocations extends QueryTable {
+		$table = new TableMetamodel("Locations", this.$tableAlias);
 
 		id = new NumericColumnMetamodel(this.$table, "id", Number);
 		agencyId = new NumericColumnMetamodel(this.$table, "agencyId", Number);
 	}
 	const QLocations = deepFreeze(new TLocations());
 
-	class TAgencies implements QueryTable {
-		$table = new TableMetamodel("Agencies");
+	class TAgencies extends QueryTable {
+		$table = new TableMetamodel("Agencies", this.$tableAlias);
 
 		id = new NumericColumnMetamodel(this.$table, "id", Number);
 	}
@@ -348,6 +348,21 @@ describe("Query DSL", function () {
 			};
 			assert.deepEqual(actual, expected);
 		});
+
+		it("can test for in", function () {
+			const actual = select(QuerySelect).where(QLocations.id.in(
+				subSelect(QLocations.id)
+					.where(QLocations.agencyId.eq((p) => p.agencyId))
+					.toSubQuery()
+			)).toSql({
+				agencyId: 321
+			});
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE ("t1"."id" IN (SELECT "t1"."id" FROM "Locations" as "t1" WHERE ("t1"."agencyId" = $1)))`,
+				parameters: [321]
+			};
+			assert.deepEqual(actual, expected);
+		});
 	});
 
 	describe("Boolean Unary Operations", function () {
@@ -506,6 +521,27 @@ describe("Query DSL", function () {
 			const expected = {
 				sql: `SELECT "t2"."id" as "id" FROM "Users" as "t2" WHERE ("t2"."locationId" = (SELECT "t1"."id" FROM "Locations" as "t1" WHERE ("t1"."agencyId" = $1)))`,
 				parameters: [123]
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("sub-queries can reference aliased columns from the outer table", function () {
+			const QOuterLocations = deepFreeze(new TLocations("outerLocations"));
+			class QuerySelect {
+				@Column(QOuterLocations.id)
+				id : number;
+			}
+
+			const actual = select(QuerySelect)
+				.from(QOuterLocations)
+				.where(QOuterLocations.id.in(
+				subSelect(QLocations.id)
+					.where(QLocations.agencyId.eq(QOuterLocations.agencyId))
+					.toSubQuery()
+			)).toSql({});
+			const expected = {
+				sql: `SELECT "outerLocations"."id" as "id" FROM "Locations" as "outerLocations" WHERE ("outerLocations"."id" IN (SELECT "t1"."id" FROM "Locations" as "t1" WHERE ("t1"."agencyId" = "outerLocations"."agencyId")))`,
+				parameters: []
 			};
 			assert.deepEqual(actual, expected);
 		});

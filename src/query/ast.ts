@@ -1,35 +1,21 @@
 /**
  A value expression is one of the following:
 
- A constant or literal value
-
- A column reference
-
- A positional parameter reference, in the body of a function definition or prepared statement
-
- A subscripted expression
-
- A field selection expression
-
- An operator invocation
-
- A function call
-
- An aggregate expression
-
- A window function call
-
- A type cast
-
- A collation expression
-
- A scalar subquery
-
- An array constructor
-
- A row constructor
-
- Another value expression in parentheses (used to group subexpressions and override precedence)
+ - A constant or literal value
+ - A column reference
+ - A positional parameter reference, in the body of a function definition or prepared statement
+ - A subscripted expression
+ - A field selection expression
+ - An operator invocation
+ - A function call
+ - An aggregate expression
+ - A window function call
+ - A type cast
+ - A collation expression
+ - A scalar subquery
+ - An array constructor
+ - A row constructor
+ - Another value expression in parentheses (used to group subexpressions and override precedence)
 
  In addition to this list, there are a number of constructs that can be classified as an expression but do not follow any general syntax rules. These generally have the semantics of a function or operator and are explained in the appropriate location in Chapter 9. An example is the IS NULL clause.
  */
@@ -42,6 +28,7 @@ export interface ColumnReferenceNode {
 	type : 'columnReferenceNode';
 	//schema? : string;
 	tableName : string;
+	tableAlias? : string;
 	columnName : string;
 }
 
@@ -53,7 +40,7 @@ export interface BinaryOperationNode {
 }
 
 export interface BooleanBinaryOperationNode extends BinaryOperationNode {
-	operator : '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM'; // TODO: support "IN"
+	operator : '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN';
 }
 
 export interface UnaryOperationNode {

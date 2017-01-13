@@ -4,7 +4,7 @@ import {
 	AliasedExpressionNode, JoinNode, BooleanBinaryOperationNode, BinaryOperationNode, UnaryOperationNode,
 	BooleanExpressionGroupNode, NotExpressionNode, SubSelectNode
 } from "./ast";
-import {DefaultMap, assertNever, remove, difference, deepFreeze} from "../lang";
+import {DefaultMap, assertNever, remove, difference, deepFreeze, keySet} from "../lang";
 import {GeneratedQuery} from "./dsl";
 import {UnsupportedOperationError} from "../errors";
 
@@ -163,17 +163,13 @@ export class SkippingWalker extends BaseWalker {
 	}
 }
 
-export interface AnalysisResult {
-	tables : string[];
-}
-
 export class RectifyingWalker extends SkippingWalker {
 	protected referencedTables : Set<string> = new Set<string>();
 	protected specifiedTables : Set<string> = new Set<string>();
 
 	constructor(
-		protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`),
-		protected ast : SelectCommandNode
+		protected ast : SelectCommandNode,
+		protected tableMap : DefaultMap<string, string> = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`)
 	) {
 		super();
 	}
@@ -183,14 +179,13 @@ export class RectifyingWalker extends SkippingWalker {
 		super.walkColumnReferenceNode(node);
 	}
 
-	// TODO: don't screw up manually aliased tables?
 	protected walkFromItemNode(node : FromItemNode) : void {
 		this.specifiedTables.add(node.tableName);
 		super.walkFromItemNode(node);
 	}
 
 	protected walkSubSelectNode(node : SubSelectNode) : void {
-		const subWalker = new RectifyingWalker(this.tableMap, node.query);
+		const subWalker = new RectifyingWalker(node.query, this.tableMap);
 		subWalker.rectify();
 	}
 
@@ -223,7 +218,6 @@ const BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP = deepFreeze(new Map([
 ]));
 
 export class SqlAstWalker extends BaseWalker {
-	// protected tableMap = new DefaultMap<string, string>((key) => `t${ this.queryAst.fromItems.length + 1 }`);
 	protected sb : string[] = [];
 	protected parameterValues : any[] = [];
 
@@ -277,7 +271,7 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkColumnReferenceNode(node : ColumnReferenceNode) : void {
-		const tableAlias = this.tableMap.get(node.tableName);
+		const tableAlias = node.tableAlias || this.tableMap.get(node.tableName);
 		this.sb.push(`"`);
 		this.sb.push(tableAlias);
 		this.sb.push(`"."`);
@@ -418,8 +412,6 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	toSql() : GeneratedQuery {
-		// console.log(this.tableMap);
-		// console.dir(this.queryAst, { depth: null });
 		this.walk(this.queryAst);
 		return {
 			sql: this.sb.join(''),

@@ -2,10 +2,9 @@ import "reflect-metadata";
 import {InvalidTableDefinitionError, InvalidColumnDefinitionError} from "../errors";
 import {getMetadata} from "../lang";
 import {
-	BooleanExpression, ColumnReferenceNode, ConstantNode, OrderByExpressionNode, BinaryOperationNode,
+	ColumnReferenceNode, ConstantNode, OrderByExpressionNode,
 	BooleanBinaryOperationNode, BooleanUnaryOperationNode, SubSelectNode
 } from "./ast";
-import {TableMetadata} from "../dbmetadata";
 
 export const METADATA_KEY_PREFIX = "arbaon.";
 export const TABLE_METADATA_KEY = `${ METADATA_KEY_PREFIX }table`;
@@ -34,8 +33,10 @@ export function Column<T>(metamodel : ColumnMetamodel<any>) : PropertyDecorator 
 }
 
 export class TableMetamodel {
+
 	constructor(
-		readonly name : string
+		readonly name : string,
+		readonly alias : string | undefined // Not great having this here, since it conflates metamodel with stateful querying.
 	) {
 	}
 }
@@ -47,6 +48,17 @@ function isSubSelectNode(node : { type? : string }) : node is SubSelectNode {
 export interface ColumnMetamodelOptions<R> {
 	references : R;
 }
+
+type BooleanUnaryOperators = 'IS NULL'
+	| 'IS NOT NULL'
+	| 'IS TRUE'
+	| 'IS NOT TRUE'
+	| 'IS FALSE'
+	| 'IS NOT FALSE'
+	| 'IS UNKNOWN'
+	| 'IS NOT UNKNOWN';
+type BooleanBinaryOperators = '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN';
+type ValueType<T> = ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode;
 
 export abstract class ColumnMetamodel<T> {
 	constructor(
@@ -75,8 +87,8 @@ export abstract class ColumnMetamodel<T> {
 	}
 
 	protected createBooleanBinaryOperationNode(
-		operator : '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM',
-		value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
+		operator : BooleanBinaryOperators,
+		value : ValueType<T>) : BooleanBinaryOperationNode {
 		let right : ColumnReferenceNode | ConstantNode<T> | SubSelectNode;
 		if (value instanceof ColumnMetamodel) {
 			right = value.toColumnReferenceNode();
@@ -96,46 +108,43 @@ export abstract class ColumnMetamodel<T> {
 		};
 	}
 
-	eq(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
+	eq(value : ValueType<T>) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('=', value);
 	}
 
-	neq(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
+	neq(value : ValueType<T>) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('!=', value);
 	}
 
-	gt(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
+	gt(value : ValueType<T>) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('>', value);
 	}
 
-	gte(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
+	gte(value : ValueType<T>) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('>=', value);
 	}
 
-	lt(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
+	lt(value : ValueType<T>) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('<', value);
 	}
 
-	lte(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
+	lte(value : ValueType<T>) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('<=', value);
 	}
 
-	isDistinctFrom(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
+	isDistinctFrom(value : ValueType<T>) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('IS DISTINCT FROM', value);
 	}
 
-	isNotDistinctFrom(value : ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode) : BooleanBinaryOperationNode {
+	isNotDistinctFrom(value : ValueType<T>) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('IS NOT DISTINCT FROM', value);
 	}
 
-	protected createBooleanUnaryOperationNode(operator : 'IS NULL'
-		| 'IS NOT NULL'
-		| 'IS TRUE'
-		| 'IS NOT TRUE'
-		| 'IS FALSE'
-		| 'IS NOT FALSE'
-		| 'IS UNKNOWN'
-		| 'IS NOT UNKNOWN') : BooleanUnaryOperationNode {
+	in(value : ValueType<T>) : BooleanBinaryOperationNode {
+		return this.createBooleanBinaryOperationNode('IN', value);
+	}
+
+	protected createBooleanUnaryOperationNode(operator : BooleanUnaryOperators) : BooleanUnaryOperationNode {
 		return {
 			type: 'unaryOperationNode',
 			expression: this.toColumnReferenceNode(),
@@ -180,7 +189,8 @@ export abstract class ColumnMetamodel<T> {
 		return {
 			type: 'columnReferenceNode',
 			columnName: this.name,
-			tableName: this.table.name
+			tableName: this.table.name,
+			tableAlias: this.table.alias || undefined
 		};
 	}
 }
@@ -193,16 +203,14 @@ export class StringColumnMetamodel extends ColumnMetamodel<string> {
 
 }
 
-export interface QueryTable {
+export abstract class QueryTable {
 	$table : TableMetamodel;
-}
 
-export function getTableName(queryTable : Function) {
-	const tableMetamodelMetadata = getMetadata<TableMetadata>(TABLE_METADATA_KEY, queryTable.prototype);
-	if (!tableMetamodelMetadata) {
-		throw new InvalidTableDefinitionError(`Table class "${ queryTable.name }" does not have any metadata.`);
+	constructor(
+		readonly $tableAlias? : string
+	) {
+		// TODO: validate that $tableAlias does not match the pattern of automatically generated aliases, e.g. "t1".
 	}
-	return tableMetamodelMetadata.name;
 }
 
 export function getTableNameFromColumn(columnMetamodel : ColumnMetamodel<any>) : string {

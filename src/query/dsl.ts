@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import {
 	ColumnMetamodel, SELECT_METADATA_KEY, METADATA_KEY_PREFIX,
-	getTableNameFromColumn, QueryTable
+	QueryTable
 } from "./metamodel";
 import {DefaultMap, getMetadata, getType} from "../lang";
 import {
@@ -156,7 +156,7 @@ class BaseQueryBuilder<P extends HasLimit> {
 	 * Adds referenced tables as "FROM" clauses for any tables not explicitly joined/from-ed.
 	 */
 	protected rectifyTableReferences() {
-		const rectifier = new RectifyingWalker(this.tableMap, this.queryAst);
+		const rectifier = new RectifyingWalker(this.queryAst, this.tableMap);
 		rectifier.rectify();
 	}
 
@@ -171,7 +171,7 @@ class BaseQueryBuilder<P extends HasLimit> {
 			this.queryAst.fromItems.push({
 				type: 'fromItemNode',
 				tableName: tableName,
-				alias: this.tableMap.get(tableName)
+				alias: qtable.$table.alias || this.tableMap.get(tableName)
 			});
 		}
 		return this;
@@ -247,18 +247,12 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> extends BaseQueryBu
 	protected processSelectMetadata(entries : IterableIterator<[string, ColumnMetamodel<any>]>, aliasPrefix? : string) : void {
 		for (const entry of entries) {
 			const columnMetamodel : ColumnMetamodel<any> = entry[1];
-			const columnName = columnMetamodel.name;
 			const columnAlias : string = aliasPrefix ? `${ aliasPrefix }.${ entry[0] }` : entry[0];
-			const tableName = getTableNameFromColumn(columnMetamodel);
 
 			this.queryAst.outputExpressions.push({
 				type: 'aliasedExpressionNode',
 				alias: columnAlias,
-				expression: {
-					type: 'columnReferenceNode',
-					tableName: tableName,
-					columnName: columnName
-				}
+				expression: columnMetamodel.toColumnReferenceNode()
 			});
 		}
 	}
@@ -356,6 +350,7 @@ class SubQueryBuilder<P extends HasLimit> extends BaseQueryBuilder<P> {
 	}
 
 	toSubQuery() : SubSelectNode {
+		// TODO: merge the tableMaps so sub-queries can refer to outer tables.
 		return {
 			type: 'subSelectNode',
 			query: this.queryAst

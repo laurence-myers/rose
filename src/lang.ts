@@ -3,8 +3,8 @@ import fs = require('fs');
 import path = require('path');
 
 export class DefaultMap<K, V> extends Map<K, V> {
-	constructor(private defaultValueFactory : (key : K, map : Map<K, V>) => V, iterable?: [K, V][]) {
-		super(iterable);
+	constructor(private defaultValueFactory : (key : K, map : Map<K, V>) => V, iterable?: [K, V][] | Iterable<[K, V]>) {
+		super(<any> iterable); // have to cast to any; current ES6 type defs don't seem to support Iterable.
 	}
 
 	get(key : K) : V {
@@ -21,7 +21,7 @@ export class DefaultMap<K, V> extends Map<K, V> {
 /**
  * Taken from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
  */
-export function deepFreeze<T>(obj : T) : T {
+export function deepFreeze<T>(obj : T) : Readonly<T> {
 	// Retrieve the property names defined on obj
 	const propNames = Object.getOwnPropertyNames(obj);
 
@@ -79,4 +79,8 @@ export function remove<T>(arr : T[], obj : T) : void {
 
 export function difference<T>(setA : Set<T>, setB : Set<T>) : Set<T> {
 	return new Set([...setA].filter((value) => !setB.has(value)));
+}
+
+export function keySet<T>(map : Map<T, any>) : Set<T> {
+	return new Set(map.keys());
 }
