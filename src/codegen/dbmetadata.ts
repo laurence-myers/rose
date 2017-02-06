@@ -1,4 +1,4 @@
-import {DefaultMap} from "./lang";
+import {DefaultMap} from "../lang";
 import {Client, QueryResult} from "pg";
 
 type sql_identifier = string;

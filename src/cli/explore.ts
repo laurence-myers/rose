@@ -1,11 +1,11 @@
 import {Pool, Client} from "pg";
 // import R = require('ramda');
-import {makeDirs} from "./lang";
-import {TableTemplate} from "./templates/table";
+import {makeDirs} from "../lang";
+import {TableTemplate} from "../codegen/templates/table";
 import fs = require('fs');
 import path = require('path');
-import {TableMetamodelTemplate} from "./templates/tableMetamodel";
-import {TableMetadata, getTableMetadata} from "./dbmetadata";
+import {TableMetamodelTemplate} from "../codegen/templates/tableMetamodel";
+import {TableMetadata, getTableMetadata} from "../codegen/dbmetadata";
 
 const config = {
 	user: 'postgres',
