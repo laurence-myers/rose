@@ -219,12 +219,11 @@ const BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP = deepFreeze(new Map([
 
 export class SqlAstWalker extends BaseWalker {
 	protected sb : string[] = [];
-	protected parameterValues : any[] = [];
+	protected parameterGetters : Array<(p : Object) => any> = [];
 
 	constructor(
 		protected queryAst : SelectCommandNode,
-		protected tableMap : DefaultMap<string, string>,
-		protected params : Object
+		protected tableMap : DefaultMap<string, string>
 	) {
 		super();
 	}
@@ -280,10 +279,9 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkConstantNode(node : ConstantNode<any>) : void {
-		const value = node.getter(this.params);
-		this.parameterValues.push(value);
+		this.parameterGetters.push(node.getter);
 		this.sb.push(`$`);
-		this.sb.push(this.parameterValues.length.toString());
+		this.sb.push(this.parameterGetters.length.toString());
 	}
 
 	protected walkFromItemNode(node : FromItemNode) : void {
@@ -411,11 +409,16 @@ export class SqlAstWalker extends BaseWalker {
 		}
 	}
 
-	toSql() : GeneratedQuery {
+	prepare() : PreparedQueryData {
 		this.walk(this.queryAst);
 		return {
 			sql: this.sb.join(''),
-			parameters: this.parameterValues
+			parameterGetters: this.parameterGetters
 		};
 	}
+}
+
+interface PreparedQueryData {
+	sql : string;
+	parameterGetters : Array<(params : Object) => any>;
 }

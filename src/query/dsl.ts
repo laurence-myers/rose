@@ -185,7 +185,6 @@ class BaseQueryBuilder<P extends HasLimit> {
 	}
 
 	where(whereExpression : BooleanExpression) : this {
-		// Rectify table aliases. Crap, need to work out a better way to do this
 		this.queryAst.conditions.push(whereExpression);
 		return this;
 	}
@@ -230,12 +229,6 @@ class BaseQueryBuilder<P extends HasLimit> {
 		}
 		return output;
 	}*/
-
-	toSql(params : P) : GeneratedQuery {
-		this.rectifyTableReferences();
-		const walker = new SqlAstWalker(this.queryAst, this.tableMap, params);
-		return walker.toSql();
-	}
 }
 
 class QueryBuilder<T extends QueryClass, P extends HasLimit> extends BaseQueryBuilder<P> {
@@ -315,6 +308,34 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> extends BaseQueryBu
 		};
 		this.processSelectQueryClass(this.queryClass);
 		return this;
+	}
+
+	prepare() : PreparedQuery<P> {
+		this.rectifyTableReferences();
+		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
+		const data = walker.prepare();
+		return new PreparedQuery<P>(data.sql, data.parameterGetters);
+	}
+
+	toSql(params : P) : GeneratedQuery {
+		return this.prepare().generate(params);
+	}
+}
+
+class PreparedQuery<P> {
+
+	constructor(
+		protected readonly sql : string,
+		protected readonly paramGetters : Array<(params : P) => any>) {
+
+	}
+
+	generate(params : P) : GeneratedQuery {
+		const values = this.paramGetters.map((getter) => getter(params));
+		return {
+			sql: this.sql,
+			parameters: values
+		};
 	}
 }
 
