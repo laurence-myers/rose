@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "explore": "node src/cli/explore.js",
     "test": "mocha --require source-map-support/register",
     "compile": "tsc",
     "watch": "tsc -w --pretty"
