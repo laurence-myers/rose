@@ -1,16 +1,15 @@
+import inflection = require("inflection");
 import {ColumnMetadata, TableMetadata} from "../dbmetadata";
 import {mmap} from "../helpers";
 import {UnsupportedOperationError} from "../../errors";
 import {POSTGRES_TO_TYPESCRIPT_TYPE_MAP} from "../dbtypes";
 
 function sanitizeTableName(tableName : string) : string {
-	// TODO
-	return tableName;
+	return inflection.camelize(tableName, false);
 }
 
 function sanitizeColumnName(columnName : string) : string {
-	// TODO
-	return columnName;
+	return inflection.camelize(columnName, true);
 }
 
 function getColumnMetamodelString(column : ColumnMetadata) : string {
