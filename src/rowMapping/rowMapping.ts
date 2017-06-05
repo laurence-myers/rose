@@ -7,28 +7,45 @@ interface Aliases {
 	output : string;
 }
 
-function processOutputExpression<TDataClass>(expr : SelectOutputExpression, row : any, output : TDataClass, aliases? : Aliases) : void {
+interface NestedPathResult {
+	nestedObject : any;
+	key : string;
+}
+
+function processNestedPathSegment(arrayKey : string, output : any) {
+	let nestedObject : any;
+	if (!(<any> output)[arrayKey]) {
+		const arr : any[] = [];
+		(<any> output)[arrayKey] = arr;
+		nestedObject = {};
+		arr.push(nestedObject);
+	} else {
+		nestedObject = (<any> output)[arrayKey][0];
+	}
+	return nestedObject;
+}
+
+function processNestedPath(fullPath : string, output : any) : NestedPathResult {
+	const allSegments = fullPath.split('.');
+	const segments = allSegments.slice(0, allSegments.length - 1);
+	let nestedObject = segments.reduce((nestedObject : any, segment : string) => {
+		return processNestedPathSegment(segment, nestedObject);
+	}, output);
+	return {
+		key: allSegments[allSegments.length - 1],
+		nestedObject
+	};
+}
+
+function processOutputExpression(expr : SelectOutputExpression, row : any, output : any, aliases? : Aliases) : void {
 	switch (expr.type) {
 		case "aliasedExpressionNode":
 			if (expr.alias.indexOf('.') > -1) {
-				const segments = expr.alias.split('.');
-				const arrayKey = segments[0];
-				let nestedObject : any;
-				if (!(<any> output)[arrayKey]) {
-					const arr : any[] = [];
-					(<any> output)[arrayKey] = arr;
-					nestedObject = {};
-					arr.push(nestedObject);
-				} else {
-					nestedObject = (<any> output)[arrayKey][0];
-				}
-				// TODO: support deeply nested joins
-				const propKey = segments[1];
+				const { key, nestedObject } = processNestedPath(expr.alias, output);
 				processOutputExpression(expr.expression, row, nestedObject, {
 					input: expr.alias,
-					output: propKey
+					output: key
 				});
-
 			} else {
 				processOutputExpression(expr.expression, row, output, {
 					input: expr.alias,

@@ -1,5 +1,5 @@
 import assert = require('assert');
-import {QLocations, QUsers} from "./fixtures";
+import {QAgencies, QLocations, QUsers} from "./fixtures";
 import {Column} from "../src/query/metamodel";
 import {mapRowToClass} from "../src/rowMapping/rowMapping";
 import {Nested} from "../src/query/dsl";
@@ -173,7 +173,79 @@ describe("Row mapping", function () {
 
 	});
 
-	xit("Can map a deeply nested sub-query", function () {
+	it("Can map a deeply nested sub-query", function () {
 
+
+		class QuerySelectDeeplyNested {
+			@Column(QUsers.id)
+			id : number;
+		}
+
+		class QuerySelectNested {
+			@Column(QLocations.id)
+			id : number;
+
+			@Nested(QuerySelectNested)
+			users : Array<QuerySelectDeeplyNested>;
+		}
+
+		class QuerySelect {
+			@Column(QAgencies.id)
+			id : number;
+
+			@Nested(QuerySelectNested)
+			locations : Array<QuerySelectNested>;
+		}
+
+		const outputExpressions : SelectOutputExpression[] = [
+			<ColumnReferenceNode> {
+				type: "columnReferenceNode",
+				tableName: "Locations",
+				columnName: "id",
+				tableAlias: "t3"
+			},
+			<AliasedExpressionNode> {
+				type: "aliasedExpressionNode",
+				alias: "locations.id",
+				expression: <ColumnReferenceNode> {
+					type: "columnReferenceNode",
+					tableName: "Locations",
+					columnName: "id",
+					tableAlias: "t2"
+				}
+			},
+			<AliasedExpressionNode> {
+				type: "aliasedExpressionNode",
+				alias: "locations.users.id",
+				expression: <ColumnReferenceNode> {
+					type: "columnReferenceNode",
+					tableName: "Users",
+					columnName: "id",
+					tableAlias: "t1"
+				}
+			}
+		];
+		// TODO: map nested rows to a single outer object
+		const row = {
+			id: 123,
+			"locations.id": 456,
+			"locations.users.id": 789
+		};
+
+		const result = mapRowToClass(QuerySelect, outputExpressions, row);
+
+		assert.deepEqual(result, {
+			id: 123,
+			locations: [
+				{
+					id: 456,
+					users: [
+						{
+							id: 789
+						}
+					]
+				}
+			]
+		});
 	});
 });
