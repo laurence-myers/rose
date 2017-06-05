@@ -2,6 +2,10 @@ export class ArbaonError extends Error {
 
 }
 
+export class NotImplementedError extends ArbaonError {
+
+}
+
 export class UnsupportedOperationError extends ArbaonError {
 
 }

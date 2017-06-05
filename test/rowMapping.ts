@@ -3,6 +3,7 @@ import {QLocations, QUsers} from "./fixtures";
 import {Column} from "../src/query/metamodel";
 import {mapRowToClass} from "../src/rowMapping/rowMapping";
 import {Nested} from "../src/query/dsl";
+import {AliasedExpressionNode, ColumnReferenceNode, SelectOutputExpression} from "../src/query/ast";
 
 describe("Row mapping", function () {
 	it("Can map a single number column to a data class", function () {
@@ -10,11 +11,19 @@ describe("Row mapping", function () {
 			@Column(QUsers.id)
 			id : number;
 		}
+		const outputExpressions : SelectOutputExpression[] = [
+			<ColumnReferenceNode> {
+				type: "columnReferenceNode",
+				tableName: "Users",
+				columnName: "id",
+				tableAlias: "t1"
+			}
+		];
 		const row = {
 			id: 123
 		};
 
-		const result = mapRowToClass(QuerySelect, row);
+		const result = mapRowToClass(QuerySelect, outputExpressions, row);
 
 		assert.strictEqual(result.id, 123);
 	});
@@ -24,11 +33,23 @@ describe("Row mapping", function () {
 			@Column(QUsers.name)
 			userName: string;
 		}
+		const outputExpressions : SelectOutputExpression[] = [
+			<AliasedExpressionNode> {
+				type: "aliasedExpressionNode",
+				alias: "userName",
+				expression: <ColumnReferenceNode> {
+					type: "columnReferenceNode",
+					tableName: "Users",
+					columnName: "name",
+					tableAlias: "t1"
+				}
+			},
+		];
 		const row = {
-			userName: "Phileas Fogg" // assumes the "Select" portion handles the column naming
+			userName: "Phileas Fogg"
 		};
 
-		const result = mapRowToClass(QuerySelect, row);
+		const result = mapRowToClass(QuerySelect, outputExpressions, row);
 
 		assert.equal(result.userName, "Phileas Fogg");
 	});
@@ -53,7 +74,7 @@ describe("Row mapping", function () {
 			"users.id": 456
 		};
 
-		const result = mapRowToClass(QuerySelect, row);
+		const result = mapRowToClass(QuerySelect, [], row);
 
 		assert.equal(result.id, 123);
 		assert.equal(result.users[0].id, 456);
