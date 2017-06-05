@@ -2,15 +2,41 @@ import {SelectOutputExpression} from "../query/ast";
 import {NotImplementedError} from "../errors";
 import {assertNever} from "../lang";
 
-function processOutputExpression<TDataClass>(expr : SelectOutputExpression, row : any, output : TDataClass, alias? : string) : void {
+interface Aliases {
+	input : string;
+	output : string;
+}
+
+function processOutputExpression<TDataClass>(expr : SelectOutputExpression, row : any, output : TDataClass, aliases? : Aliases) : void {
 	switch (expr.type) {
 		case "aliasedExpressionNode":
-			processOutputExpression(expr.expression, row, output, expr.alias);
+			if (expr.alias.indexOf('.') > -1) {
+				const segments = expr.alias.split('.');
+				const arrayKey = segments[0];
+				const arr : any[] = [];
+				(<any> output)[arrayKey] = arr;
+				// TODO: support deeply nested joins
+				// TODO: support multiple rows
+				// TODO: support multiple properties
+				const propKey = segments[1];
+				const nestedObject : any = {};
+				processOutputExpression(expr.expression, row, nestedObject, {
+					input: expr.alias,
+					output: propKey
+				});
+				arr.push(nestedObject);
+			} else {
+				processOutputExpression(expr.expression, row, output, {
+					input: expr.alias,
+					output: expr.alias
+				});
+			}
 			break;
 		case "columnReferenceNode":
 			// TODO: verify that the key exists in the row
-			const key = alias || expr.columnName;
-			(<any> output)[key] = row[key];
+			const outputKey = aliases ? aliases.output : expr.columnName;
+			const inputKey = aliases ? aliases.input : expr.columnName;
+			(<any> output)[outputKey] = row[inputKey];
 			break;
 		// TODO: support nested queries
 		// TODO: support expressions / function results

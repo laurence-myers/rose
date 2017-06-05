@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import fs = require('fs');
 import path = require('path');
+import * as util from "util";
 
 export class DefaultMap<K, V> extends Map<K, V> {
 	constructor(private defaultValueFactory : (key : K, map : Map<K, V>) => V, iterable?: [K, V][] | Iterable<[K, V]>) {
@@ -83,4 +84,8 @@ export function difference<T>(setA : Set<T>, setB : Set<T>) : Set<T> {
 
 export function keySet<T>(map : Map<T, any>) : Set<T> {
 	return new Set(map.keys());
+}
+
+export function logObject(obj : any): void {
+	console.log(util.inspect(obj, false, <any> null));
 }
