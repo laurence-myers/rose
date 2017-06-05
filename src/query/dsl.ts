@@ -218,22 +218,21 @@ class QueryBuilder<TQueryClass extends QueryClass, TParams extends HasLimit> ext
 		this.select();
 	}
 
-	protected processSelectQueryClass() : void {
-		const processor = new SelectMetadataProcessor(this.queryClass, this.queryAst);
-		processor.process();
+	protected processSelectQueryClass() : Array<SelectOutputExpression> {
+		const processor = new SelectMetadataProcessor(this.queryClass);
+		return processor.process();
 	}
 
 	protected select() : this {
 		this.queryAst = {
 			type: 'selectCommandNode',
 			distinction: 'all',
-			outputExpressions: [],
+			outputExpressions: this.processSelectQueryClass(),
 			fromItems: [],
 			joins: [],
 			conditions: [],
 			ordering: []
 		};
-		this.processSelectQueryClass();
 		return this;
 	}
 

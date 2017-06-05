@@ -1,6 +1,6 @@
 import {InvalidQueryClassError} from "../errors";
 import {EXPRESSION_METADATA_KEY, NESTED_METADATA_KEY, NestedQuery} from "./dsl";
-import {AliasedExpressionNode, FunctionExpressionNode, SelectCommandNode, ValueExpressionNode} from "./ast";
+import {AliasedExpressionNode, FunctionExpressionNode, SelectOutputExpression, ValueExpressionNode} from "./ast";
 import {getMetadata} from "../lang";
 import {ColumnMetamodel, SELECT_METADATA_KEY} from "./metamodel";
 
@@ -9,9 +9,10 @@ export interface QueryClass {
 }
 
 export class SelectMetadataProcessor {
+	protected outputExpressions : Array<SelectOutputExpression> = [];
+
 	constructor(
-		protected queryClass : QueryClass,
-		protected queryAst : SelectCommandNode
+		protected queryClass : QueryClass
 	) {
 
 	}
@@ -21,7 +22,7 @@ export class SelectMetadataProcessor {
 			const columnMetamodel : ColumnMetamodel<any> = entry[1];
 			const columnAlias : string = aliasPrefix ? `${ aliasPrefix }.${ entry[0] }` : entry[0];
 
-			this.queryAst.outputExpressions.push({
+			this.outputExpressions.push({
 				type: 'aliasedExpressionNode',
 				alias: columnAlias,
 				expression: columnMetamodel.toColumnReferenceNode()
@@ -48,7 +49,7 @@ export class SelectMetadataProcessor {
 				alias,
 				expression
 			};
-			this.queryAst.outputExpressions.push(aliasedExpressionNode);
+			this.outputExpressions.push(aliasedExpressionNode);
 		}
 	}
 
@@ -75,7 +76,8 @@ export class SelectMetadataProcessor {
 		}
 	}
 
-	process() : void {
-		return this.processSelectQueryClass(this.queryClass);
+	process() : Array<SelectOutputExpression> {
+		this.processSelectQueryClass(this.queryClass);
+		return this.outputExpressions;
 	}
 }
