@@ -1,18 +1,21 @@
 import "reflect-metadata";
-import {
-	ColumnMetamodel, SELECT_METADATA_KEY, METADATA_KEY_PREFIX,
-	QueryTable
-} from "./metamodel";
+import {ColumnMetamodel, METADATA_KEY_PREFIX, QueryTable} from "./metamodel";
 import {DefaultMap, getMetadata, getType} from "../lang";
+import {InvalidDecoratorError, UnsupportedOperationError} from "../errors";
 import {
-	InvalidQueryClassError, InvalidDecoratorError, UnsupportedOperationError
-} from "../errors";
-import {
-	SelectCommandNode, BooleanExpression, OrderByExpressionNode, FunctionExpressionNode,
-	ValueExpressionNode, AliasedExpressionNode, ColumnReferenceNode, JoinNode,
-	NotExpressionNode, BooleanExpressionGroupNode, SelectOutputExpression, SubSelectNode
+	BooleanExpression,
+	BooleanExpressionGroupNode,
+	ColumnReferenceNode,
+	JoinNode,
+	NotExpressionNode,
+	OrderByExpressionNode,
+	SelectCommandNode,
+	SelectOutputExpression,
+	SubSelectNode,
+	ValueExpressionNode
 } from "./ast";
-import {SqlAstWalker, RectifyingWalker} from "./walker";
+import {RectifyingWalker, SqlAstWalker} from "./walker";
+import {QueryClass, SelectMetadataProcessor} from "./metadata";
 
 export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
 export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator {
@@ -62,10 +65,6 @@ export const enum SqlCommand {
 	Insert,
 	Update,
 	Delete
-}
-
-interface QueryClass {
-	new() : any;
 }
 
 export interface GeneratedQuery {
@@ -148,7 +147,7 @@ class JoinBuilder<TResult> {
 	}
 }
 
-class BaseQueryBuilder<TParams extends HasLimit> {
+abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
 	protected queryAst : SelectCommandNode;
 
@@ -237,63 +236,9 @@ class QueryBuilder<TQueryClass extends QueryClass, TParams extends HasLimit> ext
 		this.select();
 	}
 
-	protected processSelectMetadata(entries : IterableIterator<[string, ColumnMetamodel<any>]>, aliasPrefix? : string) : void {
-		for (const entry of entries) {
-			const columnMetamodel : ColumnMetamodel<any> = entry[1];
-			const columnAlias : string = aliasPrefix ? `${ aliasPrefix }.${ entry[0] }` : entry[0];
-
-			this.queryAst.outputExpressions.push({
-				type: 'aliasedExpressionNode',
-				alias: columnAlias,
-				expression: columnMetamodel.toColumnReferenceNode()
-			});
-		}
-	}
-
-	protected processNestedMetadata(entries : IterableIterator<[string, NestedQuery]>) : void {
-		for (const entry of entries) {
-			const aliasPrefix : string = entry[0];
-			const nestedQuery : NestedQuery = entry[1];
-			this.processSelectQueryClass(nestedQuery.queryClass, aliasPrefix);
-		}
-	}
-
-	protected processExpressionMetadata(entries : IterableIterator<[string, ValueExpressionNode]>) : void {
-		for (const entry of entries) {
-			const alias : string = entry[0];
-			const expression : ValueExpressionNode = entry[1];
-			// TODO: resolve table references within the expression?
-			// TODO: support the property name as the alias
-			const aliasedExpressionNode : AliasedExpressionNode = {
-				type: 'aliasedExpressionNode',
-				alias,
-				expression
-			};
-			this.queryAst.outputExpressions.push(aliasedExpressionNode);
-		}
-	}
-
-	protected getSelectMetadata(queryClass : Function) : Map<string, ColumnMetamodel<any>> | undefined {
-		const selectMetadata = getMetadata<Map<string, ColumnMetamodel<any>>>(SELECT_METADATA_KEY, queryClass.prototype);
-		return selectMetadata;
-	}
-
-	protected processSelectQueryClass(queryClass : Function, aliasPrefix? : string) {
-		const selectMetadata = this.getSelectMetadata(queryClass);
-		if (selectMetadata) {
-			this.processSelectMetadata(selectMetadata.entries(), aliasPrefix);
-		}
-		const nestedMetadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, queryClass.prototype);
-		if (nestedMetadata) {
-			this.processNestedMetadata(nestedMetadata.entries());
-		}
-		const expressionMetadata = getMetadata<Map<string, FunctionExpressionNode>>(EXPRESSION_METADATA_KEY, queryClass.prototype);
-		if (expressionMetadata) {
-			this.processExpressionMetadata(expressionMetadata.entries());
-		}
-		if (!selectMetadata && !nestedMetadata && !expressionMetadata) {
-			throw new InvalidQueryClassError("The class provided to the select function does not have any output columns, expressions, or nested queries.");
-		}
+	protected processSelectQueryClass() : void {
+		const processor = new SelectMetadataProcessor(this.queryClass, this.queryAst);
+		processor.process();
 	}
 
 	protected select() : this {
@@ -306,7 +251,7 @@ class QueryBuilder<TQueryClass extends QueryClass, TParams extends HasLimit> ext
 			conditions: [],
 			ordering: []
 		};
-		this.processSelectQueryClass(this.queryClass);
+		this.processSelectQueryClass();
 		return this;
 	}
 
