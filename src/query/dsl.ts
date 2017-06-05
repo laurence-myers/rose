@@ -78,7 +78,7 @@ export interface HasLimit {
 	offset? : number;
 }
 
-class JoinBuilder<R> {
+class JoinBuilder<TResult> {
 	protected joinType : 'inner' | 'left' | 'right' | 'full' | 'cross' = 'inner';
 	protected onNode : BooleanExpression;
 	protected usingNodes : ColumnReferenceNode[];
@@ -86,7 +86,7 @@ class JoinBuilder<R> {
 	constructor(
 		protected tableMap : DefaultMap<string, string>,
 		protected qtable : QueryTable,
-		protected callback : (joinNode : JoinNode) => R) {
+		protected callback : (joinNode : JoinNode) => TResult) {
 	}
 
 	inner() : this {
@@ -126,7 +126,7 @@ class JoinBuilder<R> {
 		return this.build();
 	}
 
-	protected build() : R {
+	protected build() : TResult {
 		if (this.onNode && this.usingNodes) {
 			throw new UnsupportedOperationError(`Cannot join tables with both "on" and "using" criteria.`);
 		} else if (this.joinType == 'cross' && (this.onNode || this.usingNodes)) {
@@ -148,7 +148,7 @@ class JoinBuilder<R> {
 	}
 }
 
-class BaseQueryBuilder<P extends HasLimit> {
+class BaseQueryBuilder<TParams extends HasLimit> {
 	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
 	protected queryAst : SelectCommandNode;
 
@@ -231,8 +231,8 @@ class BaseQueryBuilder<P extends HasLimit> {
 	}*/
 }
 
-class QueryBuilder<T extends QueryClass, P extends HasLimit> extends BaseQueryBuilder<P> {
-	constructor(private command : SqlCommand, private queryClass : T) {
+class QueryBuilder<TQueryClass extends QueryClass, TParams extends HasLimit> extends BaseQueryBuilder<TParams> {
+	constructor(private command : SqlCommand, private queryClass : TQueryClass) {
 		super();
 		this.select();
 	}
@@ -310,27 +310,27 @@ class QueryBuilder<T extends QueryClass, P extends HasLimit> extends BaseQueryBu
 		return this;
 	}
 
-	prepare() : PreparedQuery<P> {
+	prepare() : PreparedQuery<TParams> {
 		this.rectifyTableReferences();
 		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
 		const data = walker.prepare();
-		return new PreparedQuery<P>(data.sql, data.parameterGetters);
+		return new PreparedQuery<TParams>(data.sql, data.parameterGetters);
 	}
 
-	toSql(params : P) : GeneratedQuery {
+	toSql(params : TParams) : GeneratedQuery {
 		return this.prepare().generate(params);
 	}
 }
 
-class PreparedQuery<P> {
+class PreparedQuery<TParams> {
 
 	constructor(
 		protected readonly sql : string,
-		protected readonly paramGetters : Array<(params : P) => any>) {
+		protected readonly paramGetters : Array<(params : TParams) => any>) {
 
 	}
 
-	generate(params : P) : GeneratedQuery {
+	generate(params : TParams) : GeneratedQuery {
 		const values = this.paramGetters.map((getter) => getter(params));
 		return {
 			sql: this.sql,
@@ -340,7 +340,7 @@ class PreparedQuery<P> {
 }
 
 // TODO: how to reference expressions defined outside of this sub-query?
-class SubQueryBuilder<P extends HasLimit> extends BaseQueryBuilder<P> {
+class SubQueryBuilder<TParams extends HasLimit> extends BaseQueryBuilder<TParams> {
 	constructor(private command : SqlCommand, subSelectExpressions : SubSelectExpression[]) {
 		super();
 		this.select(subSelectExpressions);
@@ -379,14 +379,14 @@ class SubQueryBuilder<P extends HasLimit> extends BaseQueryBuilder<P> {
 	}
 }
 
-export function select<T extends QueryClass, P>(queryClass : T) : QueryBuilder<T, P> {
-	return new QueryBuilder<T, P>(SqlCommand.Select, queryClass);
+export function select<TQueryClass extends QueryClass, TParams>(queryClass : TQueryClass) : QueryBuilder<TQueryClass, TParams> {
+	return new QueryBuilder<TQueryClass, TParams>(SqlCommand.Select, queryClass);
 }
 
 type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<any>;
 
-export function subSelect<P>(...outputExpressions : SubSelectExpression[]) {
-	return new SubQueryBuilder<P>(SqlCommand.Select, outputExpressions);
+export function subSelect<TParams>(...outputExpressions : SubSelectExpression[]) {
+	return new SubQueryBuilder<TParams>(SqlCommand.Select, outputExpressions);
 }
 
 export function and(first : BooleanExpression, second : BooleanExpression, ...rest : BooleanExpression[]) : BooleanExpressionGroupNode {
