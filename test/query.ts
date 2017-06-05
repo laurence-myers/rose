@@ -1,38 +1,12 @@
 // import {describe, it} from "mocha";
-import {
-	NumericColumnMetamodel, TableMetamodel, Column, StringColumnMetamodel,
-	QueryTable
-} from "../src/query/metamodel";
-import {select, Nested, Expression, and, or, not, subSelect} from "../src/query/dsl";
-import assert = require('assert');
+import {Column} from "../src/query/metamodel";
+import {and, Expression, Nested, not, or, select, subSelect} from "../src/query/dsl";
 import {count, lower} from "../src/query/postgresql/functions";
 import {deepFreeze} from "../src/lang";
+import {QAgencies, QLocations, QUsers, TLocations} from "./fixtures";
+import assert = require('assert');
 
 describe("Query DSL", function () {
-	class TUsers extends QueryTable {
-		$table = new TableMetamodel("Users", this.$tableAlias);
-
-		id = new NumericColumnMetamodel(this.$table, "id", Number);
-		locationId = new NumericColumnMetamodel(this.$table, "locationId", Number);
-		name = new StringColumnMetamodel(this.$table, "name", String);
-	}
-	const QUsers = deepFreeze(new TUsers());
-
-	class TLocations extends QueryTable {
-		$table = new TableMetamodel("Locations", this.$tableAlias);
-
-		id = new NumericColumnMetamodel(this.$table, "id", Number);
-		agencyId = new NumericColumnMetamodel(this.$table, "agencyId", Number);
-	}
-	const QLocations = deepFreeze(new TLocations());
-
-	class TAgencies extends QueryTable {
-		$table = new TableMetamodel("Agencies", this.$tableAlias);
-
-		id = new NumericColumnMetamodel(this.$table, "id", Number);
-	}
-	const QAgencies = deepFreeze(new TAgencies());
-
 	it("supports selecting and where clause from one table, with an immediate value (param)", function () {
 		class QuerySelect {
 			@Column(QUsers.id)
