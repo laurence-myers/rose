@@ -210,24 +210,6 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 		};
 		return this;
 	}
-
-	/*execute() : T[] {
-		const rows = [{
-			id: 1
-		}];
-		return rows.map((r) => this.mapRow(r));
-	}
-
-	protected mapRow(row : any) : T {
-		const output = new this.queryClass();
-		for (let key of this.selectValues.keys()) {
-			if (row[key] === undefined) { // allow null
-				throw new RowMappingError(`Selected property "${ key }" is not present in the row. Available properties: ${ Object.keys(row).join(', ') }`);
-			}
-			output[key] = row[key]; // TODO: parse string values, if required.
-		}
-		return output;
-	}*/
 }
 
 class QueryBuilder<TQueryClass extends QueryClass, TParams extends HasLimit> extends BaseQueryBuilder<TParams> {
