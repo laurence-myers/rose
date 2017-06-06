@@ -277,7 +277,7 @@ describe("Row mapping", function () {
 				}
 			}
 		];
-		// TODO: map nested rows to a single outer object
+
 		const rows = [
 			{
 				id: 123,
@@ -304,5 +304,54 @@ describe("Row mapping", function () {
 				]
 			}
 		]);
+	});
+
+	it("Can map a nested sub-query with loooots of rows", function () {
+		class QuerySelectNested {
+			@Column(QUsers.id)
+			id : number;
+		}
+
+		class QuerySelect {
+			@Column(QLocations.id)
+			id : number;
+
+			@Nested(QuerySelectNested)
+			users : Array<QuerySelectNested>;
+		}
+
+		const outputExpressions : SelectOutputExpression[] = [
+			<ColumnReferenceNode> {
+				type: "columnReferenceNode",
+				tableName: "Locations",
+				columnName: "id",
+				tableAlias: "t2"
+			},
+			<AliasedExpressionNode> {
+				type: "aliasedExpressionNode",
+				alias: "users.id",
+				expression: <ColumnReferenceNode> {
+					type: "columnReferenceNode",
+					tableName: "Users",
+					columnName: "id",
+					tableAlias: "t1"
+				}
+			}
+		];
+
+		const rows = [];
+		const numNested = 100000;
+		for (let i = 0; i < numNested; i++) {
+			rows.push({
+				id: 123,
+				"users.id": i
+			});
+		}
+
+		const result = mapRowsToClass(QuerySelect, outputExpressions, rows);
+
+		assert.deepEqual(result.length, 1);
+		assert.deepEqual(result[0].id, 123);
+		assert.deepEqual(result[0].users.length, numNested);
 	});
 });

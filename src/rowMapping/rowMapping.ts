@@ -81,21 +81,18 @@ function hashRow<TDataClass>(row : TDataClass, nestedPropertyNames : string[]) :
 	const hash = crypto.createHash('md5');
 	for (const key in Object.keys(row)) {
 		if (nestedPropertyNames.indexOf(key) == -1) { // TODO: replace the array lookup with a set
-			hash.write(`${ key }=;${ (<any> row)[key] }`);
+			hash.write(`${ key }=${ (<any> row)[key] };`);
 		}
 	}
 	return hash.digest().toString();
 }
 
 function mergeRows<TDataClass>(dst : TDataClass, src : TDataClass, nestedPropertyNames : string[]) : void {
-	// Immutable version
-	// return R.mergeWith(
-	// 	R.concat,
-	// 	dst,
-	// 	R.pick(nestedPropertyNames, src)
-	// );
 	for (const propName of nestedPropertyNames) {
-		(<any> dst)[propName] = (<any> dst)[propName].concat((<any> src)[propName])
+		const dstArr = (<any> dst)[propName];
+		for (const val of (<any> src)[propName]) {
+			dstArr.push(val);
+		}
 	}
 }
 
@@ -105,7 +102,7 @@ function mergeRows<TDataClass>(dst : TDataClass, src : TDataClass, nestedPropert
  */
 function mergeNestedRows<TDataClass>(convertedRows : TDataClass[], outputExpressions : SelectOutputExpression[], nestedPropertyNames : string[]) : TDataClass[] {
 	const rowMap = new Map<string, TDataClass>();
-	convertedRows.forEach((convertedRow) => {
+	for (const convertedRow of convertedRows) {
 		const hash = hashRow(convertedRow, nestedPropertyNames);
 		let row = rowMap.get(hash);
 		if (row) {
@@ -114,7 +111,7 @@ function mergeNestedRows<TDataClass>(convertedRows : TDataClass[], outputExpress
 			row = convertedRow;
 			rowMap.set(hash, row);
 		}
-	});
+	}
 	return Array.from(rowMap.values());
 }
 
