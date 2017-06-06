@@ -1,6 +1,8 @@
 import {SelectOutputExpression} from "../query/ast";
 import {NotImplementedError} from "../errors";
 import {assertNever} from "../lang";
+import {getNestedPropertyNames} from "../query/metadata";
+import * as crypto from "crypto";
 
 interface Aliases {
 	input : string;
@@ -75,7 +77,53 @@ export function mapRowToClass<TDataClass>(clz : { new() : TDataClass }, outputEx
 	return output;
 }
 
+function hashRow<TDataClass>(row : TDataClass, nestedPropertyNames : string[]) : string {
+	const hash = crypto.createHash('md5');
+	for (const key in Object.keys(row)) {
+		if (nestedPropertyNames.indexOf(key) == -1) { // TODO: replace the array lookup with a set
+			hash.write(`${ key }=;${ (<any> row)[key] }`);
+		}
+	}
+	return hash.digest().toString();
+}
+
+function mergeRows<TDataClass>(dst : TDataClass, src : TDataClass, nestedPropertyNames : string[]) : void {
+	// Immutable version
+	// return R.mergeWith(
+	// 	R.concat,
+	// 	dst,
+	// 	R.pick(nestedPropertyNames, src)
+	// );
+	for (const propName of nestedPropertyNames) {
+		(<any> dst)[propName] = (<any> dst)[propName].concat((<any> src)[propName])
+	}
+}
+
+/**
+ * Select statements can contain values from multiple tables, and are not limited to primary keys of those tables.
+ * The only way to distinguish rows is to hash all the non-nested values.
+ */
+function mergeNestedRows<TDataClass>(convertedRows : TDataClass[], outputExpressions : SelectOutputExpression[], nestedPropertyNames : string[]) : TDataClass[] {
+	const rowMap = new Map<string, TDataClass>();
+	convertedRows.forEach((convertedRow) => {
+		const hash = hashRow(convertedRow, nestedPropertyNames);
+		let row = rowMap.get(hash);
+		if (row) {
+			mergeRows(row, convertedRow, nestedPropertyNames);
+		} else {
+			row = convertedRow;
+			rowMap.set(hash, row);
+		}
+	});
+	return Array.from(rowMap.values());
+}
+
 export function mapRowsToClass<TDataClass>(clz : { new() : TDataClass }, outputExpressions : SelectOutputExpression[], rows : any[]) : TDataClass[] {
-	// TODO: "reduce" multiple rows for the same aggregate root
-	return rows.map((row) => mapRowToClass(clz, outputExpressions, row));
+	const convertedRows = rows.map((row) => mapRowToClass(clz, outputExpressions, row));
+	const nestedPropertyNames = getNestedPropertyNames(clz);
+	if (nestedPropertyNames.length > 0) {
+		return mergeNestedRows(convertedRows, outputExpressions, nestedPropertyNames);
+	} else {
+		return convertedRows;
+	}
 }

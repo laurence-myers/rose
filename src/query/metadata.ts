@@ -81,3 +81,12 @@ export class SelectMetadataProcessor {
 		return this.outputExpressions;
 	}
 }
+
+export function getNestedPropertyNames(queryClass : Function) : string[] {
+	const nestedMetadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, queryClass.prototype);
+	if (nestedMetadata) {
+		return Array.from(nestedMetadata.keys());
+	} else {
+		return [];
+	}
+}
