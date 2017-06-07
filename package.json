@@ -19,6 +19,7 @@
     "@types/ramda": "0.0.2",
     "@types/reflect-metadata": "0.0.5",
     "inflection": "^1.12.0",
+    "metrohash": "2.2.0",
     "pg": "^6.1.0",
     "ramda": "^0.22.1",
     "reflect-metadata": "^0.1.8",

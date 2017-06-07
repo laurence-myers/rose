@@ -1,8 +1,11 @@
+/// <reference path="../../typings/custom.d.ts" />
 import {SelectOutputExpression} from "../query/ast";
 import {NotImplementedError} from "../errors";
 import {assertNever} from "../lang";
 import {getNestedPropertyNames} from "../query/metadata";
-import * as crypto from "crypto";
+import {MetroHash128} from "metrohash";
+
+const HASH_SEED = Date.now();
 
 interface Aliases {
 	input : string;
@@ -78,13 +81,13 @@ export function mapRowToClass<TDataClass>(clz : { new() : TDataClass }, outputEx
 }
 
 function hashRow<TDataClass>(row : TDataClass, nestedPropertyNames : string[]) : string {
-	const hash = crypto.createHash('md5');
+	const hash = new MetroHash128(HASH_SEED);
 	for (const key in Object.keys(row)) {
 		if (nestedPropertyNames.indexOf(key) == -1) { // TODO: replace the array lookup with a set
-			hash.write(`${ key }=${ (<any> row)[key] };`);
+			hash.update(`${ key }=${ (<any> row)[key] };`);
 		}
 	}
-	return hash.digest().toString();
+	return hash.digest();
 }
 
 function mergeRows<TDataClass>(dst : TDataClass, src : TDataClass, nestedPropertyNames : string[]) : void {

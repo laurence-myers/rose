@@ -1,0 +1,1 @@
+/// <reference path="./metrohash/metrohash.d.ts" />
