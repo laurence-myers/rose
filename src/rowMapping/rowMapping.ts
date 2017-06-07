@@ -1,6 +1,6 @@
 /// <reference path="../../typings/custom.d.ts" />
 import {SelectOutputExpression} from "../query/ast";
-import {NotImplementedError} from "../errors";
+import {NotImplementedError, UnsupportedOperationError} from "../errors";
 import {assertNever} from "../lang";
 import {getNestedPropertyNames} from "../query/metadata";
 import {MetroHash128} from "metrohash";
@@ -58,16 +58,31 @@ function processOutputExpression(expr : SelectOutputExpression, row : any, outpu
 				});
 			}
 			break;
+
 		case "columnReferenceNode":
 			// TODO: verify that the key exists in the row
 			const outputKey = aliases ? aliases.output : expr.columnName;
 			const inputKey = aliases ? aliases.input : expr.columnName;
 			(<any> output)[outputKey] = row[inputKey];
 			break;
-		// TODO: support expressions / function results
+
+		case "functionExpressionNode":
+			if (!aliases || !aliases.input || !aliases.output) {
+				throw new UnsupportedOperationError("All row columns must be aliased");
+			} else {
+				const outputKey = aliases.output;
+				const inputKey = aliases.input;
+				(<any> output)[outputKey] = row[inputKey];
+			}
+			break;
+
+		case "constantNode":
+		case "binaryOperationNode":
+		case "unaryOperationNode":
+			throw new UnsupportedOperationError("Returning constants, binary operations, or unary operations as selection values is not currently supported.");
+
 		default:
-			//assertNever(expr.type);
-			throw new NotImplementedError(`Cannot map from output expression of type: "${ expr.type }"`);
+			assertNever(expr);
 	}
 }
 

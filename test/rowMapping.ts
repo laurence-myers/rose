@@ -2,8 +2,18 @@ import assert = require('assert');
 import {QAgencies, QLocations, QUsers} from "./fixtures";
 import {Column} from "../src/query/metamodel";
 import {mapRowsToClass, mapRowToClass} from "../src/rowMapping/rowMapping";
-import {Nested} from "../src/query/dsl";
-import {AliasedExpressionNode, ColumnReferenceNode, SelectOutputExpression} from "../src/query/ast";
+import {Expression, Nested} from "../src/query/dsl";
+import {
+	AliasedExpressionNode,
+	BinaryOperationNode,
+	ColumnReferenceNode,
+	ConstantNode,
+	FunctionExpressionNode,
+	SelectOutputExpression,
+	UnaryOperationNode
+} from "../src/query/ast";
+import {count} from "../src/query/postgresql/functions";
+import {UnsupportedOperationError} from "../src/errors";
 
 describe("Row mapping", function () {
 	it("Can map a single number column to a data class", function () {
@@ -353,5 +363,116 @@ describe("Row mapping", function () {
 		assert.deepEqual(result.length, 1);
 		assert.deepEqual(result[0].id, 123);
 		assert.deepEqual(result[0].users.length, numNested);
+	});
+
+	xit("Preserves order of the rows", function () {
+
+	});
+
+	it("Can map from function expressions", function () {
+		class QuerySelect {
+			@Expression(count())
+			countValue : number;
+		}
+		const outputExpressions : SelectOutputExpression[] = [
+			<AliasedExpressionNode> {
+				type: "aliasedExpressionNode",
+				alias: "countValue",
+				expression: <FunctionExpressionNode> {
+					type: "functionExpressionNode",
+					name: "count"
+				}
+			},
+		];
+		const row = {
+			countValue: 123
+		};
+
+		const result = mapRowToClass(QuerySelect, outputExpressions, row);
+
+		assert.strictEqual(result.countValue, 123);
+	});
+
+	it("Cannot map from un-aliased function expressions", function () {
+		class QuerySelect {
+			@Expression(count())
+			countValue : number;
+		}
+		const outputExpressions : SelectOutputExpression[] = [
+			<FunctionExpressionNode> {
+				type: "functionExpressionNode",
+				name: "count"
+			}
+		];
+		const row = {
+			countValue: 123
+		};
+
+		assert.throws(() => {
+			mapRowToClass(QuerySelect, outputExpressions, row);
+		}, UnsupportedOperationError);
+	});
+
+	it("Cannot map from constants", function () {
+		class QuerySelect {
+		}
+		const outputExpressions : SelectOutputExpression[] = [
+			<ConstantNode<any>> {
+				type: "constantNode",
+				getter: () => {}
+			}
+		];
+		const row = {
+			junk: 123
+		};
+
+		assert.throws(() => {
+			mapRowToClass(QuerySelect, outputExpressions, row);
+		}, UnsupportedOperationError);
+	});
+
+	it("Cannot map from binary operations", function () {
+		class QuerySelect {
+		}
+		const outputExpressions : SelectOutputExpression[] = [
+			<BinaryOperationNode> {
+				type: "binaryOperationNode",
+				operator: "=",
+				left: <FunctionExpressionNode> {
+					type: "functionExpressionNode",
+					name: "count"
+				},
+				right: <FunctionExpressionNode> {
+					type: "functionExpressionNode",
+					name: "count"
+				}
+			}
+		];
+		const row = {
+			junk: 123
+		};
+
+		assert.throws(() => {
+			mapRowToClass(QuerySelect, outputExpressions, row);
+		}, UnsupportedOperationError);
+	});
+
+	it("Cannot map from unary operations", function () {
+		class QuerySelect {
+		}
+		const outputExpressions : SelectOutputExpression[] = [
+			<UnaryOperationNode> {
+				type: "unaryOperationNode",
+				operator: "!",
+				position: 'left'
+			}
+		];
+		const row = {
+			junk: 123
+		};
+
+		assert.throws(() => {
+			mapRowToClass(QuerySelect, outputExpressions, row);
+		}, UnsupportedOperationError);
 	});
 });
