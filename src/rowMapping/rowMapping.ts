@@ -97,7 +97,7 @@ export function mapRowToClass<TDataClass>(clz : { new() : TDataClass }, outputEx
 
 function hashRow<TDataClass>(row : TDataClass, nestedPropertyNames : string[]) : string {
 	const hash = new MetroHash128(HASH_SEED);
-	for (const key in Object.keys(row)) {
+	for (const key of Object.keys(row)) {
 		if (nestedPropertyNames.indexOf(key) == -1) { // TODO: replace the array lookup with a set
 			hash.update(`${ key }=${ (<any> row)[key] };`);
 		}

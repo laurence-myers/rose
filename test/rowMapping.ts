@@ -180,8 +180,6 @@ describe("Row mapping", function () {
 	});
 
 	it("Can map a deeply nested sub-query", function () {
-
-
 		class QuerySelectDeeplyNested {
 			@Column(QUsers.id)
 			id : number;
@@ -296,6 +294,10 @@ describe("Row mapping", function () {
 			{
 				id: 123,
 				"users.id": 789
+			},
+			{
+				id: 321,
+				"users.id": 654
 			}
 		];
 
@@ -310,6 +312,14 @@ describe("Row mapping", function () {
 					},
 					{
 						id: 789
+					}
+				]
+			},
+			{
+				id: 321,
+				users: [
+					{
+						id: 654
 					}
 				]
 			}
@@ -365,8 +375,106 @@ describe("Row mapping", function () {
 		assert.deepEqual(result[0].users.length, numNested);
 	});
 
-	xit("Preserves order of the rows", function () {
+	it("Preserves order of the rows", function () {
+		class QuerySelect {
+			@Column(QUsers.id)
+			id : number;
+		}
+		const outputExpressions : SelectOutputExpression[] = [
+			<ColumnReferenceNode> {
+				type: "columnReferenceNode",
+				tableName: "Users",
+				columnName: "id",
+				tableAlias: "t1"
+			}
+		];
+		const numToGenerate = 5;
+		const rows = [];
+		for (let i = numToGenerate; i > 0; i--) {
+			const row = {
+				id: i
+			};
+			rows.push(row);
+		}
 
+		const result = mapRowsToClass(QuerySelect, outputExpressions, rows);
+
+		assert.deepEqual(result, [
+			{
+				id: 5
+			},
+			{
+				id: 4
+			},
+			{
+				id: 3
+			},
+			{
+				id: 2
+			},
+			{
+				id: 1
+			},
+		]);
+	});
+
+	it("Preserves order of the rows with nesting", function () {
+		class QuerySelectNested {
+			@Column(QUsers.id)
+			id : number;
+		}
+
+		class QuerySelect {
+			@Column(QLocations.id)
+			id : number;
+
+			@Nested(QuerySelectNested)
+			users : Array<QuerySelectNested>;
+		}
+
+		const outputExpressions : SelectOutputExpression[] = [
+			<ColumnReferenceNode> {
+				type: "columnReferenceNode",
+				tableName: "Locations",
+				columnName: "id",
+				tableAlias: "t2"
+			},
+			<AliasedExpressionNode> {
+				type: "aliasedExpressionNode",
+				alias: "users.id",
+				expression: <ColumnReferenceNode> {
+					type: "columnReferenceNode",
+					tableName: "Users",
+					columnName: "id",
+					tableAlias: "t1"
+				}
+			}
+		];
+		const numToGenerate = 5;
+		const rows = [];
+		const expectedRows = [];
+		for (let i = numToGenerate; i > 0; i--) {
+			const expectedRow = {
+				id: i,
+				users: <QuerySelectNested[]> []
+			};
+			for (let j = numToGenerate; j > 0; j--) {
+				const userId = i * 100 + j;
+				const row = {
+					id: i,
+					"users.id": userId
+				};
+				rows.push(row);
+				expectedRow.users.push({
+					id: userId
+				});
+			}
+			expectedRows.push(expectedRow);
+		}
+
+		const result = mapRowsToClass(QuerySelect, outputExpressions, rows);
+
+		assert.deepEqual(result, expectedRows);
 	});
 
 	it("Can map from function expressions", function () {
