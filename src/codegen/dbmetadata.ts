@@ -48,25 +48,21 @@ export class TableMetadata {
 
 const SCHEMA = 'public';
 
-function populateColumnTypes(client : Client, tablesMetadata : Map<string, TableMetadata>) : Promise<void> {
-	return client.query(`SELECT "udt_name", "table_name", "column_name", "is_nullable" FROM "information_schema"."columns" WHERE "table_schema" = '${ SCHEMA }'`)
-		.then((result : QueryResult) => {
-			const rows : ColumnsRow[] = result.rows;
-			rows.forEach((row) => {
-				const tableMetadata = tablesMetadata.get(row.table_name);
-				if (tableMetadata == undefined) throw new Error("Table metadata should never be undefined");
-				const column : ColumnMetadata = tableMetadata.columns.get(row.column_name);
-				if (column == undefined) throw new Error("Column metadata should never be undefined");
-				column.type = row.udt_name;
-				column.isNullable = yesOrNoToBoolean(row.is_nullable);
-			});
-		});
+async function populateColumnTypes(client : Client, tablesMetadata : Map<string, TableMetadata>) : Promise<void> {
+	const result : QueryResult = await client.query(`SELECT "udt_name", "table_name", "column_name", "is_nullable" FROM "information_schema"."columns" WHERE "table_schema" = '${ SCHEMA }'`);
+	const rows : ColumnsRow[] = result.rows;
+	rows.forEach((row) => {
+		const tableMetadata = tablesMetadata.get(row.table_name);
+		if (tableMetadata == undefined) throw new Error("Table metadata should never be undefined");
+		const column : ColumnMetadata = tableMetadata.columns.get(row.column_name);
+		if (column == undefined) throw new Error("Column metadata should never be undefined");
+		column.type = row.udt_name;
+		column.isNullable = yesOrNoToBoolean(row.is_nullable);
+	});
 }
 
-export function getTableMetadata(client : Client) : Promise<Map<string, TableMetadata>> {
+export async function getTableMetadata(client : Client) : Promise<Map<string, TableMetadata>> {
 	const tablesMetadata : Map<string, TableMetadata> = new DefaultMap<string, TableMetadata>((key : string) => new TableMetadata(key));
-	return populateColumnTypes(client, tablesMetadata)
-		.then(() => {
-			return tablesMetadata;
-		});
+	await populateColumnTypes(client, tablesMetadata);
+	return tablesMetadata;
 }

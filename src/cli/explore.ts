@@ -1,5 +1,4 @@
-import {Pool, Client} from "pg";
-// import R = require('ramda');
+import {Client} from "pg";
 import {makeDirs} from "../lang";
 import {TableTemplate} from "../codegen/templates/table";
 import fs = require('fs');
@@ -7,17 +6,7 @@ import path = require('path');
 import {TableMetamodelTemplate} from "../codegen/templates/tableMetamodel";
 import {TableMetadata, getTableMetadata} from "../codegen/dbmetadata";
 
-const config = {
-	user: 'postgres',
-	database: 'postgres',
-	password: 'password',
-	host: 'localhost',
-	port: 5432,
-	max: 10,
-	idleTimeoutMillis: 30000
-};
-
-const pool = new Pool(config);
+const DEFAULT_URL = "postgresql://postgres:password@localhost:5432/postgres";
 
 function generateInterfacesAndMetamodel(tablesMetadata : Map<string, TableMetadata>) : void {
 	console.log(`Generating interfaces and metamodels for ${ tablesMetadata.size } tables...`);
@@ -39,33 +28,30 @@ function wrapError(fn : () => Promise<any>) : (err : Error) => Promise<any> {
 	};
 }
 
-function main() : Promise<any> {
-	const releasePool = () => {
-		return pool.end();
+async function main() : Promise<any> {
+	const client = new Client(DEFAULT_URL);
+	const cleanup = () => {
+		return new Promise((resolve, reject) => {
+			try {
+				client.end();
+				return resolve();
+			} catch (err) {
+				return reject(err);
+			}
+		});
 	};
-	return pool.connect()
-		.then((client : Client) => {
-			const cleanup = () => {
-				return new Promise((resolve, reject) => {
-					try {
-						client.release();
-						return resolve();
-					} catch (err) {
-						return reject(err);
-					}
-				});
-			};
-			console.log(`Querying the database...`);
-			return getTableMetadata(client)
-				.then((tablesMetadata : Map<string, TableMetadata>) => {
-					generateInterfacesAndMetamodel(tablesMetadata);
-				}).then(cleanup, wrapError(cleanup));
-		}).then(releasePool, wrapError(releasePool))
-		.then(() => console.log("Done!"),
-			(err) => {
-				console.error("Error encountered");
-				console.error(err);
-			});
+	try {
+		client.connect();
+		console.log(`Querying the database...`);
+		const tablesMetadata : Map<string, TableMetadata> = await getTableMetadata(client);
+		generateInterfacesAndMetamodel(tablesMetadata);
+		console.log("Done!")
+	} catch (err) {
+		console.error("Error encountered");
+		console.error(err);
+	} finally {
+		await cleanup();
+	}
 }
 
 if (require.main === module) {
