@@ -68,4 +68,7 @@ function main() : Promise<any> {
 			});
 }
 
-main();
+if (require.main === module) {
+	//noinspection JSIgnoredPromiseFromCall
+	main();
+}
