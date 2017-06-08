@@ -16,6 +16,7 @@ import {
 } from "./ast";
 import {RectifyingWalker, SqlAstWalker} from "./walker";
 import {QueryClass, SelectMetadataProcessor} from "./metadata";
+import {execute, Queryable} from "../execution/execution";
 
 export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
 export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator {
@@ -236,21 +237,26 @@ class QueryBuilder<TQueryClass extends QueryClass, TParams extends HasLimit> ext
 		return this;
 	}
 
-	prepare() : PreparedQuery<TParams> {
+	prepare() : PreparedQuery<TQueryClass, TParams> {
 		this.rectifyTableReferences();
 		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
 		const data = walker.prepare();
-		return new PreparedQuery<TParams>(data.sql, data.parameterGetters);
+		return new PreparedQuery<TQueryClass, TParams>(this.queryClass, this.queryAst.outputExpressions, data.sql, data.parameterGetters);
 	}
 
 	toSql(params : TParams) : GeneratedQuery {
 		return this.prepare().generate(params);
 	}
+
+	execute(queryable : Queryable, params : TParams) : Promise<TQueryClass[]> {
+		return this.prepare().execute(queryable, params);
+	}
 }
 
-class PreparedQuery<TParams> {
-
+class PreparedQuery<TDataClass, TParams> {
 	constructor(
+		protected readonly queryClass : { new() : TDataClass },
+		protected readonly selectOutputExpressions : SelectOutputExpression[],
 		protected readonly sql : string,
 		protected readonly paramGetters : Array<(params : TParams) => any>) {
 
@@ -262,6 +268,10 @@ class PreparedQuery<TParams> {
 			sql: this.sql,
 			parameters: values
 		};
+	}
+
+	execute(queryable : Queryable, params : TParams) : Promise<TDataClass[]> {
+		return execute(queryable, this.generate(params), this.queryClass, this.selectOutputExpressions);
 	}
 }
 

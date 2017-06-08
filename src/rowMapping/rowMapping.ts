@@ -1,6 +1,6 @@
 /// <reference path="../../typings/custom.d.ts" />
 import {SelectOutputExpression} from "../query/ast";
-import {NotImplementedError, UnsupportedOperationError} from "../errors";
+import {UnsupportedOperationError} from "../errors";
 import {assertNever} from "../lang";
 import {getNestedPropertyNames} from "../query/metadata";
 import {MetroHash128} from "metrohash";
