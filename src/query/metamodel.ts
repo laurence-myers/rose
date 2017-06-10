@@ -203,6 +203,14 @@ export class StringColumnMetamodel extends ColumnMetamodel<string> {
 
 }
 
+export class BooleanColumnMetamodel extends ColumnMetamodel<boolean> {
+
+}
+
+export class DateColumnMetamodel extends ColumnMetamodel<Date> {
+
+}
+
 export abstract class QueryTable {
 	$table : TableMetamodel;
 

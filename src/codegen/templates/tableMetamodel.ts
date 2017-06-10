@@ -21,11 +21,9 @@ function getColumnMetamodelString(column : ColumnMetadata) : string {
 		case "number":
 			return `NumericColumnMetamodel(this.$table, "${ column.name }", Number)`;
 		case "Date":
-			console.log(`Ignoring date column ${ column.name }`);
-			return dummyString;
+			return `DateColumnMetamodel(this.$table, "${ column.name }", Date)`;
 		case "boolean":
-			console.log(`Ignoring boolean column ${ column.name }`);
-			return dummyString;
+			return `BooleanColumnMetamodel(this.$table, "${ column.name }", Boolean)`;
 		default:
 			if (['_varchar', 'json'].indexOf(column.type) > -1) {
 				console.log(`Ignoring "${ column.type }" column ${ column.name }`);
@@ -39,7 +37,7 @@ export function TableMetamodelTemplate(tableMetadata : TableMetadata) {
 return `// Generated file; do not manually edit, as your changes will be overwritten!
 // TODO: fix these imports.
 import {deepFreeze} from "../src/lang";
-import {NumericColumnMetamodel, StringColumnMetamodel, TableMetamodel, QueryTable} from "../src/query/metamodel";
+import {NumericColumnMetamodel, StringColumnMetamodel, DateColumnMetamodel, BooleanColumnMetamodel, TableMetamodel, QueryTable} from "../src/query/metamodel";
 
 export class T${ sanitizeTableName(tableMetadata.name) } extends QueryTable {
 	$table = new TableMetamodel("${ tableMetadata.name }", this.$tableAlias);
