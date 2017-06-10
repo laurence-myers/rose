@@ -404,26 +404,40 @@ export class SqlAstWalker extends BaseWalker {
 
 	protected walkSelectCommandNode(node : SelectCommandNode) : void {
 		this.sb.push("SELECT ");
-		if (node.distinction == 'distinct') {
-			this.sb.push("DISTINCT ");
+		switch (node.distinction) {
+			case "distinct":
+				this.sb.push("DISTINCT ");
+				break;
+			case "all":
+				break;
+			case "on":
+				this.sb.push("DISTINCT ON (");
+				if (node.distinctOn) {
+					this.walk(node.distinctOn);
+				} else {
+					throw new UnsupportedOperationError(`When using "distinct on", you must provide a distinctOn expression.`);
+				}
+				this.sb.push(") ");
+				break;
+			default:
+				assertNever(node.distinction);
 		}
 		node.outputExpressions.forEach(this.doListWalk());
 		if (node.fromItems.length > 0) {
 			this.sb.push(" FROM ");
 			node.fromItems.forEach(this.doListWalk());
 		}
-		if (node.conditions.length > 0) {
-			this.sb.push(" WHERE (");
-			node.conditions.forEach(this.doItemWalk());
-			this.sb.push(")");
-		}
 		if (node.joins.length > 0) {
 			this.sb.push(" ");
 			node.joins.forEach(this.doListWalk());
 		}
+		if (node.conditions.length > 0) {
+			this.sb.push(" WHERE ");
+			node.conditions.forEach(this.doItemWalk());
+		}
 		if (node.ordering.length > 0) {
 			this.sb.push(" ORDER BY ");
-			node.ordering.forEach(this.doItemWalk());
+			node.ordering.forEach(this.doListWalk());
 		}
 		if (node.limit) {
 			this.sb.push(" ");

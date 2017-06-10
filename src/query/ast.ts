@@ -188,7 +188,8 @@ export type SelectOutputExpression = ValueExpressionNode | AliasedExpressionNode
 
 export interface SelectCommandNode {
 	type : 'selectCommandNode';
-	distinction : 'distinct' | 'all';
+	distinction : 'distinct' | 'all' | 'on';
+	distinctOn? : ValueExpressionNode;
 	outputExpressions : Array<SelectOutputExpression>; // should we also support *?
 	fromItems : FromItemNode[];
 	joins : JoinNode[];

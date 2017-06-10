@@ -165,6 +165,12 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 		return this;
 	}
 
+	distinctOn(expression : ValueExpressionNode) : this {
+		this.queryAst.distinction = 'on';
+		this.queryAst.distinctOn = expression;
+		return this;
+	}
+
 	from(first : QueryTable, ...rest: QueryTable[]) : this {
 		for (const qtable of [first].concat(rest)) {
 			const tableName = qtable.$table.name;

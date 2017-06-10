@@ -3,7 +3,7 @@ import {InvalidTableDefinitionError, InvalidColumnDefinitionError} from "../erro
 import {getMetadata} from "../lang";
 import {
 	ColumnReferenceNode, ConstantNode, OrderByExpressionNode,
-	BooleanBinaryOperationNode, BooleanUnaryOperationNode, SubSelectNode
+	BooleanBinaryOperationNode, BooleanUnaryOperationNode, SubSelectNode, FunctionExpressionNode
 } from "./ast";
 
 export const METADATA_KEY_PREFIX = "arbaon.";
@@ -45,6 +45,10 @@ function isSubSelectNode(node : { type? : string }) : node is SubSelectNode {
 	return node && node.type == 'subSelectNode';
 }
 
+function isFunctionExpressionNode(node : { type? : string }) : node is FunctionExpressionNode {
+	return node && node.type == 'functionExpressionNode';
+}
+
 export interface ColumnMetamodelOptions<R> {
 	references : R;
 }
@@ -58,7 +62,7 @@ type BooleanUnaryOperators = 'IS NULL'
 	| 'IS UNKNOWN'
 	| 'IS NOT UNKNOWN';
 type BooleanBinaryOperators = '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN';
-type ValueType<T> = ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode;
+type ValueType<T> = ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode | FunctionExpressionNode; // TODO: replace this with ValueExpressionNode
 
 export class ColumnMetamodel<T> {
 	constructor(
@@ -89,10 +93,10 @@ export class ColumnMetamodel<T> {
 	protected createBooleanBinaryOperationNode(
 		operator : BooleanBinaryOperators,
 		value : ValueType<T>) : BooleanBinaryOperationNode {
-		let right : ColumnReferenceNode | ConstantNode<T> | SubSelectNode;
+		let right : ColumnReferenceNode | ConstantNode<T> | SubSelectNode | FunctionExpressionNode;
 		if (value instanceof ColumnMetamodel) {
 			right = value.toColumnReferenceNode();
-		} else if (isSubSelectNode(value)) {
+		} else if (isSubSelectNode(value) || isFunctionExpressionNode(value)) {
 			right = value;
 		} else {
 			right = <ConstantNode<T>> {
