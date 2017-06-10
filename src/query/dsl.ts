@@ -6,7 +6,7 @@ import {
 	BooleanExpression,
 	BooleanExpressionGroupNode,
 	ColumnReferenceNode, ConstantNode,
-	JoinNode,
+	JoinNode, LiteralNode,
 	NotExpressionNode,
 	OrderByExpressionNode,
 	SelectCommandNode,
@@ -356,5 +356,12 @@ export function constant(value : number | string) : ConstantNode<number | string
 	return {
 		type: "constantNode",
 		getter: () => value
+	};
+}
+
+export function literal(value : string) : LiteralNode {
+	return {
+		type: "literalNode",
+		value
 	};
 }

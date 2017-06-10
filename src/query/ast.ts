@@ -74,15 +74,23 @@ export interface NotExpressionNode {
 
 export type BooleanExpression = BooleanBinaryOperationNode | BooleanUnaryOperationNode | BooleanExpressionGroupNode | NotExpressionNode;
 
+/**
+ * Should generally NOT be used by consuming code, due security and syntax risks.
+ */
+export interface LiteralNode {
+	type : 'literalNode';
+	value : string;
+}
+
 export interface FunctionExpressionNode {
 	type : 'functionExpressionNode';
 	name : string;
-	arguments : ValueExpressionNode[];
+	arguments : (ValueExpressionNode | LiteralNode)[];
 }
 
 export interface NaturalSyntaxFunctionExpressionNodeArgument {
 	key? : string;
-	value : ValueExpressionNode;
+	value : ValueExpressionNode | LiteralNode;
 }
 
 export interface NaturalSyntaxFunctionExpressionNode {
@@ -196,4 +204,4 @@ export interface SubSelectNode {
 
 export type AstNode = SelectCommandNode | ValueExpressionNode | AliasedExpressionNode | JoinNode | FromItemNode
 	| OrderByExpressionNode | FunctionExpressionNode | LimitOffsetNode | BooleanExpressionGroupNode | NotExpressionNode
-	| SubSelectNode;
+	| SubSelectNode | LiteralNode;

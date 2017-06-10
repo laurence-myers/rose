@@ -2,7 +2,7 @@ import {
 	SelectCommandNode, AstNode, ColumnReferenceNode, ValueExpressionNode, FromItemNode,
 	BooleanExpression, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
 	AliasedExpressionNode, JoinNode, BooleanBinaryOperationNode, BinaryOperationNode, UnaryOperationNode,
-	BooleanExpressionGroupNode, NotExpressionNode, SubSelectNode, NaturalSyntaxFunctionExpressionNode
+	BooleanExpressionGroupNode, NotExpressionNode, SubSelectNode, NaturalSyntaxFunctionExpressionNode, LiteralNode
 } from "./ast";
 import {DefaultMap, assertNever, remove, difference, deepFreeze, keySet} from "../lang";
 import {GeneratedQuery} from "./dsl";
@@ -33,6 +33,8 @@ export abstract class BaseWalker {
 	protected abstract walkJoinNode(node : JoinNode) : void;
 
 	protected abstract walkLimitOffsetNode(node : LimitOffsetNode) : void;
+
+	protected abstract walkLiteralNode(node : LiteralNode) : void;
 
 	protected abstract walkNaturalSyntaxFunctionExpressionNode(node : NaturalSyntaxFunctionExpressionNode) : void;
 
@@ -74,6 +76,9 @@ export abstract class BaseWalker {
 				break;
 			case "limitOffsetNode":
 				this.walkLimitOffsetNode(node);
+				break;
+			case "literalNode":
+				this.walkLiteralNode(node);
 				break;
 			case "naturalSyntaxFunctionExpressionNode":
 				this.walkNaturalSyntaxFunctionExpressionNode(node);
@@ -131,6 +136,9 @@ export class SkippingWalker extends BaseWalker {
 	}
 
 	protected walkLimitOffsetNode(node : LimitOffsetNode) : void {
+	}
+
+	protected walkLiteralNode(node : LiteralNode) : void {
 	}
 
 	protected walkJoinNode(node : JoinNode) : void {
@@ -332,8 +340,6 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb.push('(');
 		if (node.arguments.length > 0) {
 			node.arguments.forEach(this.doListWalk());
-		} else {
-			this.sb.push('*');
 		}
 		this.sb.push(')');
 	}
@@ -343,6 +349,10 @@ export class SqlAstWalker extends BaseWalker {
 		this.walk(node.limit);
 		this.sb.push(' OFFSET ');
 		this.walk(node.offset);
+	}
+
+	protected walkLiteralNode(node : LiteralNode) : void {
+		this.sb.push(node.value);
 	}
 
 	protected walkNaturalSyntaxFunctionExpressionNode(node : NaturalSyntaxFunctionExpressionNode) : void {
@@ -398,8 +408,10 @@ export class SqlAstWalker extends BaseWalker {
 			this.sb.push("DISTINCT ");
 		}
 		node.outputExpressions.forEach(this.doListWalk());
-		this.sb.push(" FROM ");
-		node.fromItems.forEach(this.doListWalk());
+		if (node.fromItems.length > 0) {
+			this.sb.push(" FROM ");
+			node.fromItems.forEach(this.doListWalk());
+		}
 		if (node.conditions.length > 0) {
 			this.sb.push(" WHERE (");
 			node.conditions.forEach(this.doItemWalk());
