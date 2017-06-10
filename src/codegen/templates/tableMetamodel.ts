@@ -14,7 +14,6 @@ function sanitizeColumnName(columnName : string) : string {
 
 function getColumnMetamodelString(column : ColumnMetadata) : string {
 	const tsType = POSTGRES_TO_TYPESCRIPT_TYPE_MAP.get(column.type);
-	const dummyString = `StringColumnMetamodel(this.$table, "${ column.name }", String)`;
 	switch (tsType) {
 		case "string":
 			return `StringColumnMetamodel(this.$table, "${ column.name }", String)`;
@@ -25,11 +24,8 @@ function getColumnMetamodelString(column : ColumnMetadata) : string {
 		case "boolean":
 			return `BooleanColumnMetamodel(this.$table, "${ column.name }", Boolean)`;
 		default:
-			if (['_varchar', 'json'].indexOf(column.type) > -1) {
-				console.log(`Ignoring "${ column.type }" column ${ column.name }`);
-				return dummyString;
-			}
-			throw new UnsupportedOperationError(`Unsupported type "${ column.type }" for column "${ column.name }"; sorry!`);
+			console.log(`Unrecognised column type ${ column.type }, defaulting to generic column metamodel.`);
+			return `ColumnMetamodel<any>(this.$table, "${ column.name }", Object)`;
 	}
 }
 
@@ -37,7 +33,7 @@ export function TableMetamodelTemplate(tableMetadata : TableMetadata) {
 return `// Generated file; do not manually edit, as your changes will be overwritten!
 // TODO: fix these imports.
 import {deepFreeze} from "../src/lang";
-import {NumericColumnMetamodel, StringColumnMetamodel, DateColumnMetamodel, BooleanColumnMetamodel, TableMetamodel, QueryTable} from "../src/query/metamodel";
+import {ColumnMetamodel, NumericColumnMetamodel, StringColumnMetamodel, DateColumnMetamodel, BooleanColumnMetamodel, TableMetamodel, QueryTable} from "../src/query/metamodel";
 
 export class T${ sanitizeTableName(tableMetadata.name) } extends QueryTable {
 	$table = new TableMetamodel("${ tableMetadata.name }", this.$tableAlias);

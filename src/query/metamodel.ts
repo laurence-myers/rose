@@ -60,7 +60,7 @@ type BooleanUnaryOperators = 'IS NULL'
 type BooleanBinaryOperators = '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN';
 type ValueType<T> = ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode;
 
-export abstract class ColumnMetamodel<T> {
+export class ColumnMetamodel<T> {
 	constructor(
 		readonly table : TableMetamodel,
 		readonly name : string,
