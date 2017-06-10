@@ -5,7 +5,7 @@ import {InvalidDecoratorError, UnsupportedOperationError} from "../errors";
 import {
 	BooleanExpression,
 	BooleanExpressionGroupNode,
-	ColumnReferenceNode,
+	ColumnReferenceNode, ConstantNode,
 	JoinNode,
 	NotExpressionNode,
 	OrderByExpressionNode,
@@ -345,5 +345,16 @@ export function not(expr : BooleanExpression) : NotExpressionNode {
 	return {
 		type: 'notExpressionNode',
 		expression: expr
+	};
+}
+
+export function col(column : ColumnMetamodel<any>) : ColumnReferenceNode {
+	return column.toColumnReferenceNode();
+}
+
+export function constant(value : number | string) : ConstantNode<number | string> {
+	return {
+		type: "constantNode",
+		getter: () => value
 	};
 }

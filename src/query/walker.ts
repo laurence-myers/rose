@@ -2,7 +2,7 @@ import {
 	SelectCommandNode, AstNode, ColumnReferenceNode, ValueExpressionNode, FromItemNode,
 	BooleanExpression, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
 	AliasedExpressionNode, JoinNode, BooleanBinaryOperationNode, BinaryOperationNode, UnaryOperationNode,
-	BooleanExpressionGroupNode, NotExpressionNode, SubSelectNode
+	BooleanExpressionGroupNode, NotExpressionNode, SubSelectNode, NaturalSyntaxFunctionExpressionNode
 } from "./ast";
 import {DefaultMap, assertNever, remove, difference, deepFreeze, keySet} from "../lang";
 import {GeneratedQuery} from "./dsl";
@@ -33,6 +33,8 @@ export abstract class BaseWalker {
 	protected abstract walkJoinNode(node : JoinNode) : void;
 
 	protected abstract walkLimitOffsetNode(node : LimitOffsetNode) : void;
+
+	protected abstract walkNaturalSyntaxFunctionExpressionNode(node : NaturalSyntaxFunctionExpressionNode) : void;
 
 	protected abstract walkNotExpressionNode(node : NotExpressionNode) : void;
 
@@ -72,6 +74,9 @@ export abstract class BaseWalker {
 				break;
 			case "limitOffsetNode":
 				this.walkLimitOffsetNode(node);
+				break;
+			case "naturalSyntaxFunctionExpressionNode":
+				this.walkNaturalSyntaxFunctionExpressionNode(node);
 				break;
 			case "notExpressionNode":
 				this.walkNotExpressionNode(node);
@@ -136,6 +141,11 @@ export class SkippingWalker extends BaseWalker {
 		if (node.using) {
 			node.using.forEach(this.doItemWalk());
 		}
+	}
+
+	protected walkNaturalSyntaxFunctionExpressionNode(node : NaturalSyntaxFunctionExpressionNode) : void {
+		node.arguments.map((node) => node.value)
+			.forEach(this.doItemWalk());
 	}
 
 	protected walkNotExpressionNode(node : NotExpressionNode) : void {
@@ -321,7 +331,7 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb.push(node.name);
 		this.sb.push('(');
 		if (node.arguments.length > 0) {
-			node.arguments.forEach(this.doItemWalk());
+			node.arguments.forEach(this.doListWalk());
 		} else {
 			this.sb.push('*');
 		}
@@ -333,6 +343,24 @@ export class SqlAstWalker extends BaseWalker {
 		this.walk(node.limit);
 		this.sb.push(' OFFSET ');
 		this.walk(node.offset);
+	}
+
+	protected walkNaturalSyntaxFunctionExpressionNode(node : NaturalSyntaxFunctionExpressionNode) : void {
+		this.sb.push(node.name);
+		this.sb.push('(');
+		if (node.arguments.length > 0) {
+			node.arguments.forEach((arg, index) => {
+				if (arg.key) {
+					this.sb.push(arg.key);
+					this.sb.push(' ');
+				}
+				this.walk(arg.value);
+				if (index < node.arguments.length - 1) {
+					this.sb.push(" ");
+				}
+			});
+		}
+		this.sb.push(')');
 	}
 
 	protected walkNotExpressionNode(node : NotExpressionNode) : void {

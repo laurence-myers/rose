@@ -80,7 +80,18 @@ export interface FunctionExpressionNode {
 	arguments : ValueExpressionNode[];
 }
 
-export type ValueExpressionNode = ConstantNode<any> | ColumnReferenceNode | BinaryOperationNode | UnaryOperationNode | FunctionExpressionNode;
+export interface NaturalSyntaxFunctionExpressionNodeArgument {
+	key? : string;
+	value : ValueExpressionNode;
+}
+
+export interface NaturalSyntaxFunctionExpressionNode {
+	type : 'naturalSyntaxFunctionExpressionNode';
+	name : string;
+	arguments : NaturalSyntaxFunctionExpressionNodeArgument[];
+}
+
+export type ValueExpressionNode = ConstantNode<any> | ColumnReferenceNode | BinaryOperationNode | UnaryOperationNode | FunctionExpressionNode | NaturalSyntaxFunctionExpressionNode;
 
 export interface AliasedExpressionNode {
 	type : 'aliasedExpressionNode';

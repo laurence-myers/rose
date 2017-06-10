@@ -67,6 +67,7 @@ function processOutputExpression(expr : SelectOutputExpression, row : any, outpu
 			break;
 
 		case "functionExpressionNode":
+		case "naturalSyntaxFunctionExpressionNode":
 			if (!aliases || !aliases.input || !aliases.output) {
 				throw new UnsupportedOperationError("All row columns must be aliased");
 			} else {
