@@ -12,8 +12,8 @@ import {
 	SelectOutputExpression,
 	UnaryOperationNode, ValueExpressionNode
 } from "../src/query/ast";
-import {count} from "../src/query/postgresql/functions";
 import {RowMappingError, UnsupportedOperationError} from "../src/errors";
+import {count} from "../src/query/postgresql/functions/aggregate/general";
 
 function alias(name : string, node : ValueExpressionNode) : AliasedExpressionNode {
 	return {

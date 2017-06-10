@@ -1,11 +1,11 @@
 // import {describe, it} from "mocha";
 import {Column} from "../src/query/metamodel";
 import {and, Expression, Nested, not, or, select, subSelect} from "../src/query/dsl";
-import {count} from "../src/query/postgresql/functions";
 import {deepFreeze} from "../src/lang";
 import {QAgencies, QLocations, QUsers, TLocations} from "./fixtures";
 import assert = require('assert');
 import {lower} from "../src/query/postgresql/functions/string/sql";
+import {count} from "../src/query/postgresql/functions/aggregate/general";
 
 describe("Query DSL", function () {
 	it("supports selecting and where clause from one table, with an immediate value (param)", function () {

@@ -45,7 +45,7 @@ export interface BooleanBinaryOperationNode extends BinaryOperationNode {
 
 export interface UnaryOperationNode {
 	type : 'unaryOperationNode';
-	expression : ConstantNode<any> | ColumnReferenceNode | SubSelectNode;
+	expression : ValueExpressionNode;
 	operator : string;
 	position : 'left' | 'right';
 }

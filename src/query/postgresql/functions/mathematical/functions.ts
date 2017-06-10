@@ -1,5 +1,5 @@
-import {FunctionExpressionNode, ValueExpressionNode} from "../../ast";
-import {createFunctionNode} from "./common/helpers";
+import {FunctionExpressionNode, ValueExpressionNode} from "../../../ast";
+import {createFunctionNode} from "../common/helpers";
 
 /**
  * absolute value

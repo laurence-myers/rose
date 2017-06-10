@@ -1,4 +1,4 @@
-import {createFunctionNode, createNaturalSyntaxFunctionNode} from "../common/helpers";
+import {createBinaryOperatorNode, createFunctionNode, createNaturalSyntaxFunctionNode} from "../common/helpers";
 import {
 	BinaryOperationNode,
 	FunctionExpressionNode,
@@ -13,12 +13,7 @@ import {
  * String concatenation with one non-string input
  */
 export function concat(left : ValueExpressionNode, right: ValueExpressionNode) : BinaryOperationNode {
-	return {
-		type: "binaryOperationNode",
-		left,
-		right,
-		operator: '||'
-	};
+	return createBinaryOperatorNode('||', left, right);
 }
 
 /**
