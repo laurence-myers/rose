@@ -1,5 +1,13 @@
 declare module "metrohash" {
-	export class MetroHash64 {
+	interface MetroHasher {
+		// Update.
+		update(input : string | Buffer) : this;
+
+		// Finalize and get hash digest.
+		digest() : string;
+	}
+
+	export class MetroHash64 implements MetroHasher {
 		// Constructor.
 		constructor(seed? : number);
 
@@ -10,7 +18,7 @@ declare module "metrohash" {
 		digest() : string;
 	}
 
-	export class MetroHash128 {
+	export class MetroHash128 implements MetroHasher {
 		// Constructor.
 		constructor(seed? : number);
 
