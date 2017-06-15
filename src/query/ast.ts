@@ -34,18 +34,18 @@ export interface ColumnReferenceNode {
 
 export interface BinaryOperationNode {
 	type : 'binaryOperationNode';
-	left : ValueExpressionNode | SubSelectNode; // Should SubSelectNode just be part of ValueExpressionNode?
+	left : ValueExpressionNode | SubSelectNode | ExpressionListNode; // Should SubSelectNode just be part of ValueExpressionNode?
 	operator : string;
-	right : ValueExpressionNode | SubSelectNode;
+	right : ValueExpressionNode | SubSelectNode | ExpressionListNode;
 }
 
 export interface BooleanBinaryOperationNode extends BinaryOperationNode {
-	operator : '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN';
+	operator : '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN' | 'OVERLAPS';
 }
 
 export interface UnaryOperationNode {
 	type : 'unaryOperationNode';
-	expression : ValueExpressionNode;
+	expression : ValueExpressionNode | SubSelectNode;
 	operator : string;
 	position : 'left' | 'right';
 }
@@ -101,10 +101,16 @@ export interface NaturalSyntaxFunctionExpressionNode {
 
 export type ValueExpressionNode = ConstantNode<any> | ColumnReferenceNode | BinaryOperationNode | UnaryOperationNode | FunctionExpressionNode | NaturalSyntaxFunctionExpressionNode;
 
+export interface ExpressionListNode {
+	type : 'expressionListNode';
+	expressions : ValueExpressionNode[];
+}
+
 export interface AliasedExpressionNode {
 	type : 'aliasedExpressionNode';
 	alias : string;
-	expression : ValueExpressionNode;
+	aliasPath : string[];
+	expression : ValueExpressionNode | SubSelectNode;
 }
 
 export interface JoinNode {
@@ -184,7 +190,7 @@ export interface LimitOffsetNode {
 
  TABLE [ ONLY ] table_name [ * ]
  */
-export type SelectOutputExpression = ValueExpressionNode | AliasedExpressionNode;
+export type SelectOutputExpression = ValueExpressionNode | AliasedExpressionNode | SubSelectNode;
 
 export interface SelectCommandNode {
 	type : 'selectCommandNode';
@@ -205,4 +211,4 @@ export interface SubSelectNode {
 
 export type AstNode = SelectCommandNode | ValueExpressionNode | AliasedExpressionNode | JoinNode | FromItemNode
 	| OrderByExpressionNode | FunctionExpressionNode | LimitOffsetNode | BooleanExpressionGroupNode | NotExpressionNode
-	| SubSelectNode | LiteralNode;
+	| SubSelectNode | LiteralNode | ExpressionListNode;

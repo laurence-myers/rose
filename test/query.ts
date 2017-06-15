@@ -142,7 +142,7 @@ describe("Query DSL", function () {
 		}
 
 		const actual = select(QuerySelect).toSql({}).sql;
-		const expected = `SELECT "t1"."id" as "id", "t2"."id" as "locations.id", "t3"."id" as "users.id" FROM "Agencies" as "t1", "Locations" as "t2", "Users" as "t3"`;
+		const expected = `SELECT "t1"."id" as "id", "t2"."id" as "locations.id", "t3"."id" as "locations.users.id" FROM "Agencies" as "t1", "Locations" as "t2", "Users" as "t3"`;
 		assert.equal(actual, expected);
 	});
 

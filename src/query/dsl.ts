@@ -5,7 +5,7 @@ import {InvalidDecoratorError, UnsupportedOperationError} from "../errors";
 import {
 	BooleanExpression,
 	BooleanExpressionGroupNode,
-	ColumnReferenceNode, ConstantNode,
+	ColumnReferenceNode, ConstantNode, ExpressionListNode,
 	JoinNode, LiteralNode,
 	NotExpressionNode,
 	OrderByExpressionNode,
@@ -39,11 +39,11 @@ export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator
 }
 
 export const EXPRESSION_METADATA_KEY = `${ METADATA_KEY_PREFIX }expression`;
-export function Expression(functionExpressionNode : ValueExpressionNode) : PropertyDecorator {
+export function Expression(functionExpressionNode : ValueExpressionNode | SubSelectNode) : PropertyDecorator {
 	return function (target : Object, propertyKey : string | symbol) {
-		let metadata = getMetadata<Map<string, ValueExpressionNode>>(EXPRESSION_METADATA_KEY, target);
+		let metadata = getMetadata<Map<string, ValueExpressionNode | SubSelectNode>>(EXPRESSION_METADATA_KEY, target);
 		if (!metadata) {
-			metadata = new Map<string, ValueExpressionNode>();
+			metadata = new Map<string, ValueExpressionNode | SubSelectNode>();
 			Reflect.defineMetadata(EXPRESSION_METADATA_KEY, metadata, target);
 		} else if (metadata.get(<string> propertyKey) !== undefined) {
 			throw new InvalidDecoratorError(`Property "${ propertyKey }" already has an expression metadata defined.`);
@@ -203,12 +203,12 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 		return this;
 	}
 
-	limit() : this {
+	limit(limitNum? : number) : this {
 		this.queryAst.limit = {
 			type: 'limitOffsetNode',
 			limit: {
 				type: 'constantNode',
-				getter: (params) => params.limit
+				getter: limitNum !== undefined ? p => limitNum : p => p.limit
 			},
 			offset: {
 				type: 'constantNode',
@@ -219,8 +219,8 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	}
 }
 
-class QueryBuilder<TQueryClass extends QueryClass, TParams extends HasLimit> extends BaseQueryBuilder<TParams> {
-	constructor(private command : SqlCommand, private queryClass : TQueryClass) {
+class QueryBuilder<TQueryClass, TParams extends HasLimit> extends BaseQueryBuilder<TParams> {
+	constructor(private command : SqlCommand, private queryClass : { new() : TQueryClass }) {
 		super();
 		this.select();
 	}
@@ -321,7 +321,7 @@ class SubQueryBuilder<TParams extends HasLimit> extends BaseQueryBuilder<TParams
 	}
 }
 
-export function select<TQueryClass extends QueryClass, TParams>(queryClass : TQueryClass) : QueryBuilder<TQueryClass, TParams> {
+export function select<TQueryClass, TParams>(queryClass : { new() : TQueryClass }) : QueryBuilder<TQueryClass, TParams> {
 	return new QueryBuilder<TQueryClass, TParams>(SqlCommand.Select, queryClass);
 }
 
@@ -365,9 +365,28 @@ export function constant(value : number | string) : ConstantNode<number | string
 	};
 }
 
+export function param<P, R>(getter : (params : P) => R) : ConstantNode<R> {
+	return {
+		type: "constantNode",
+		getter: getter
+	};
+}
+
+export class ParamsWrapper<P> {
+	get<R>(getter : (params : P) => R) : ConstantNode<R> {
+		return param(getter);
+	}
+}
+
 export function literal(value : string) : LiteralNode {
 	return {
 		type: "literalNode",
 		value
+	};
+}
+export function row(first : ValueExpressionNode, ...rest : ValueExpressionNode[]) : ExpressionListNode {
+	return {
+		type: "expressionListNode",
+		expressions: [first].concat(rest)
 	};
 }

@@ -65,6 +65,7 @@ function processOutputExpression(expr : SelectOutputExpression, row : any, outpu
 		case "constantNode":
 		case "binaryOperationNode":
 		case "unaryOperationNode":
+		case "subSelectNode":
 			if (!aliases || !aliases.input || !aliases.output) {
 				throw new UnsupportedOperationError("All output values must be aliased");
 			} else if (row[aliases.input] === undefined) {
@@ -137,3 +138,4 @@ export function mapRowsToClass<TDataClass>(clz : { new() : TDataClass }, outputE
 		return convertedRows;
 	}
 }
+

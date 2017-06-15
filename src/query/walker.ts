@@ -2,7 +2,8 @@ import {
 	SelectCommandNode, AstNode, ColumnReferenceNode, ValueExpressionNode, FromItemNode,
 	BooleanExpression, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
 	AliasedExpressionNode, JoinNode, BooleanBinaryOperationNode, BinaryOperationNode, UnaryOperationNode,
-	BooleanExpressionGroupNode, NotExpressionNode, SubSelectNode, NaturalSyntaxFunctionExpressionNode, LiteralNode
+	BooleanExpressionGroupNode, NotExpressionNode, SubSelectNode, NaturalSyntaxFunctionExpressionNode, LiteralNode,
+	ExpressionListNode
 } from "./ast";
 import {DefaultMap, assertNever, remove, difference, deepFreeze, keySet} from "../lang";
 import {GeneratedQuery} from "./dsl";
@@ -25,6 +26,8 @@ export abstract class BaseWalker {
 	protected abstract walkColumnReferenceNode(node : ColumnReferenceNode) : void;
 
 	protected abstract walkConstantNode(node : ConstantNode<any>) : void;
+
+	protected abstract walkExpressionListNode(node : ExpressionListNode) : void;
 
 	protected abstract walkFromItemNode(node : FromItemNode) : void;
 
@@ -64,6 +67,9 @@ export abstract class BaseWalker {
 				break;
 			case "constantNode":
 				this.walkConstantNode(node);
+				break;
+			case "expressionListNode":
+				this.walkExpressionListNode(node);
 				break;
 			case "fromItemNode":
 				this.walkFromItemNode(node);
@@ -126,6 +132,10 @@ export class SkippingWalker extends BaseWalker {
 	}
 
 	protected walkConstantNode(node : ConstantNode<any>) : void {
+	}
+
+	protected walkExpressionListNode(node : ExpressionListNode) : void {
+		node.expressions.forEach(this.doItemWalk());
 	}
 
 	protected walkFromItemNode(node : FromItemNode) : void {
@@ -302,6 +312,12 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb.push(this.parameterGetters.length.toString());
 	}
 
+	protected walkExpressionListNode(node : ExpressionListNode) : void {
+		this.sb.push('(');
+		node.expressions.forEach(this.doListWalk());
+		this.sb.push(')');
+	}
+
 	protected walkFromItemNode(node : FromItemNode) : void {
 		this.sb.push(`"`);
 		this.sb.push(node.tableName);
@@ -347,6 +363,7 @@ export class SqlAstWalker extends BaseWalker {
 	protected walkLimitOffsetNode(node : LimitOffsetNode) : void {
 		this.sb.push('LIMIT ');
 		this.walk(node.limit);
+		// TODO: decouple limit and offset nodes
 		this.sb.push(' OFFSET ');
 		this.walk(node.offset);
 	}

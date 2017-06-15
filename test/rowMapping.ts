@@ -19,6 +19,7 @@ function alias(name : string, node : ValueExpressionNode) : AliasedExpressionNod
 	return {
 		type: "aliasedExpressionNode",
 		alias: name,
+		aliasPath: [name],
 		expression: node
 	};
 }
@@ -257,7 +258,6 @@ describe("Row mapping", function () {
 				}
 			}
 		];
-		// TODO: map nested rows to a single outer object
 		const row = {
 			id: 123,
 			"locations.id": 456,
@@ -279,6 +279,134 @@ describe("Row mapping", function () {
 				}
 			]
 		});
+	});
+
+	it("Can map multiple rows with deeply nested sub-queries", function () {
+		class QuerySelectDeeplyNested {
+			@Column(QUsers.id)
+			id : number;
+		}
+
+		class QuerySelectNested {
+			@Column(QLocations.id)
+			id : number;
+
+			@Nested(QuerySelectNested)
+			users : Array<QuerySelectDeeplyNested>;
+		}
+
+		class QuerySelect {
+			@Column(QAgencies.id)
+			id : number;
+
+			@Nested(QuerySelectNested)
+			locations : Array<QuerySelectNested>;
+		}
+
+		const outputExpressions : SelectOutputExpression[] = [
+			alias("id", <ColumnReferenceNode> {
+				type: "columnReferenceNode",
+				tableName: "Locations",
+				columnName: "id",
+				tableAlias: "t3"
+			}),
+			<AliasedExpressionNode> {
+				type: "aliasedExpressionNode",
+				alias: "locations.id",
+				expression: <ColumnReferenceNode> {
+					type: "columnReferenceNode",
+					tableName: "Locations",
+					columnName: "id",
+					tableAlias: "t2"
+				}
+			},
+			<AliasedExpressionNode> {
+				type: "aliasedExpressionNode",
+				alias: "locations.users.id",
+				expression: <ColumnReferenceNode> {
+					type: "columnReferenceNode",
+					tableName: "Users",
+					columnName: "id",
+					tableAlias: "t1"
+				}
+			}
+		];
+
+		const rows = [];
+		const numAgencies = 2;
+		const numLocations = 2;
+		const numUsers = 2;
+		for (let agencyId = numAgencies; agencyId > 0; agencyId--) {
+			for (let locationId = numLocations; locationId > 0; locationId--) {
+				for (let userId = numUsers; userId > 0; userId--) {
+					rows.push({
+						id: 100 + agencyId,
+						"locations.id": 200 + locationId,
+						"locations.users.id": 300 + userId
+					});
+				}
+			}
+		}
+
+
+		const result = mapRowsToClass(QuerySelect, outputExpressions, rows);
+
+		assert.deepEqual(result, [
+			{
+				id: 102,
+				locations: [
+					{
+						id: 202,
+						users: [
+							{
+								id: 302
+							},
+							{
+								id: 301
+							}
+						]
+					},
+					{
+						id: 201,
+						users: [
+							{
+								id: 302
+							},
+							{
+								id: 301
+							}
+						]
+					},
+				]
+			},
+			{
+				id: 101,
+				locations: [
+					{
+						id: 202,
+						users: [
+							{
+								id: 302
+							},
+							{
+								id: 301
+							}
+						]
+					},
+					{
+						id: 201,
+						users: [
+							{
+								id: 302
+							},
+							{
+								id: 301
+							}
+						]
+					},
+				]
+			}
+		]);
 	});
 
 	it("Can map a nested sub-query with multiple rows", function () {
