@@ -104,3 +104,7 @@ export function logObject(obj : any): void {
 export function last<T>(arr : T[]) : T {
 	return arr[arr.length - 1];
 }
+
+export function isMap<K, V>(obj : any) : obj is Map<K, V> {
+	return obj instanceof Map;
+}

@@ -633,8 +633,7 @@ describe("Row mapping", function () {
 		];
 
 		const rows = [];
-		// const numNested = 100000;
-		const numNested = 1000;
+		const numNested = 100000;
 		for (let i = 0; i < numNested; i++) {
 			rows.push({
 				id: 123,

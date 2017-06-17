@@ -1,6 +1,6 @@
 import {SelectOutputExpression} from "../query/ast";
 import {RowMappingError, UnsupportedOperationError} from "../errors";
-import {assertNever, DefaultMap, last, logObject, SettingMap} from "../lang";
+import {assertNever, DefaultMap, isMap, last, logObject, SettingMap} from "../lang";
 import {MetroHash128} from "metrohash";
 
 const HASH_SEED = Date.now();
@@ -19,8 +19,8 @@ function processNestedPathSegment(arrayKey : string, output : any) {
 	let nestedObject : any;
 	if (!(<any> output)[arrayKey]) {
 		const arr : any[] = [];
-		(<any> output)[arrayKey] = arr;
 		nestedObject = {};
+		(<any> output)[arrayKey] = arr;
 		arr.push(nestedObject);
 	} else {
 		nestedObject = (<any> output)[arrayKey][0];
@@ -96,27 +96,46 @@ function hashRow<TDataClass>(row : TDataClass, propertiesToHash : string[]) : st
 	return hash.digest();
 }
 
+type NestedObject = any;
+
 /**
  * Select statements can contain values from multiple tables, and are not limited to primary keys of those tables.
  * The only way to distinguish rows is to hash all the non-nested values.
  */
-function mergeNested(objects : any, nestedSchema : NestedSchema) : any[] {
-	const hashMap = new SettingMap<string, any>();
+function mergeNested(objects : NestedObject[], nestedSchema : NestedSchema, hashMap : SettingMap<string, any>) : void {
 	for (const obj of objects) {
 		const hash = hashRow(obj, nestedSchema.values);
 		const objToUpdate = hashMap.getOrSet(hash, obj);
 		for (const [key, value] of nestedSchema.nested.entries()) {
-			objToUpdate[key] = mergeNested(objToUpdate[key].concat(obj[key]), value);
+			let propertyValue = obj[key];
+			let nestedMap = objToUpdate[key];
+			if (!isMap(nestedMap)) {
+				nestedMap = new SettingMap<string, any>();
+				objToUpdate[key] = nestedMap;
+			}
+			mergeNested(propertyValue, value, nestedMap);
 		}
 	}
-	return Array.from(hashMap.values());
 }
 
-export function mapRowsToClass<TDataClass>(clz : { new() : TDataClass }, outputExpressions : SelectOutputExpression[], rows : any[]) : TDataClass[] {
+function convertMapsToArrays(hashMap : SettingMap<string, any>, nestedSchema : NestedSchema) : any[] {
+	const output = [];
+	for (const obj of hashMap.values()) {
+		for (const [key, value] of nestedSchema.nested.entries()) {
+			obj[key] = convertMapsToArrays(obj[key], value);
+		}
+		output.push(obj);
+	}
+	return output;
+}
+
+export function mapRowsToClass<TDataClass>(clz : { new() : TDataClass }, outputExpressions : SelectOutputExpression[], rows : NestedObject[]) : TDataClass[] {
 	const convertedRows = rows.map((row) => mapRowToClass(clz, outputExpressions, row));
 	const nestedSchema = extractNestedSchema(outputExpressions);
 	if (nestedSchema.nested.size > 0) {
-		return mergeNested(convertedRows, nestedSchema);
+		const hashMap = new SettingMap<string, any>();
+		mergeNested(convertedRows, nestedSchema, hashMap);
+		return convertMapsToArrays(hashMap, nestedSchema);
 	} else {
 		return convertedRows;
 	}
