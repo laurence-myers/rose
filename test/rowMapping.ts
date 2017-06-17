@@ -14,12 +14,13 @@ import {
 } from "../src/query/ast";
 import {RowMappingError, UnsupportedOperationError} from "../src/errors";
 import {count} from "../src/query/postgresql/functions/aggregate/general";
+import {logObject} from "../src/lang";
 
-function alias(name : string, node : ValueExpressionNode) : AliasedExpressionNode {
+function alias(aliasPath : string[], node : ValueExpressionNode) : AliasedExpressionNode {
 	return {
 		type: "aliasedExpressionNode",
-		alias: name,
-		aliasPath: [name],
+		alias: aliasPath.join('.'),
+		aliasPath: aliasPath,
 		expression: node
 	};
 }
@@ -31,7 +32,7 @@ describe("Row mapping", function () {
 			id : number;
 		}
 		const outputExpressions : SelectOutputExpression[] = [
-			alias("id", <ColumnReferenceNode> {
+			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Users",
 				columnName: "id",
@@ -53,7 +54,7 @@ describe("Row mapping", function () {
 			id : number;
 		}
 		const outputExpressions : SelectOutputExpression[] = [
-			alias("id", <ColumnReferenceNode> {
+			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Users",
 				columnName: "id",
@@ -73,16 +74,14 @@ describe("Row mapping", function () {
 			userName: string;
 		}
 		const outputExpressions : SelectOutputExpression[] = [
-			<AliasedExpressionNode> {
-				type: "aliasedExpressionNode",
-				alias: "userName",
-				expression: <ColumnReferenceNode> {
+			alias(["userName"],
+				<ColumnReferenceNode> {
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "name",
 					tableAlias: "t1"
 				}
-			},
+			)
 		];
 		const row = {
 			userName: "Phileas Fogg"
@@ -108,22 +107,20 @@ describe("Row mapping", function () {
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
-			alias("id", <ColumnReferenceNode> {
+			alias(["id"], <ColumnReferenceNode> {
 					type: "columnReferenceNode",
 					tableName: "Locations",
 					columnName: "id",
 					tableAlias: "t2"
 			}),
-			<AliasedExpressionNode> {
-				type: "aliasedExpressionNode",
-				alias: "users.id",
-				expression: <ColumnReferenceNode> {
+			alias(["users", "id"],
+				<ColumnReferenceNode> {
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
 					tableAlias: "t1"
 				}
-			}
+			)
 		];
 		// TODO: map nested rows to a single outer object
 		const row = {
@@ -161,32 +158,28 @@ describe("Row mapping", function () {
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
-			alias("id", <ColumnReferenceNode> {
+			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
 				tableAlias: "t2"
 			}),
-			<AliasedExpressionNode> {
-				type: "aliasedExpressionNode",
-				alias: "users.id",
-				expression: <ColumnReferenceNode> {
+			alias(["users", "id"],
+				<ColumnReferenceNode> {
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
 					tableAlias: "t1"
 				}
-			},
-			<AliasedExpressionNode> {
-				type: "aliasedExpressionNode",
-				alias: "users.userName",
-				expression: <ColumnReferenceNode> {
+			),
+			alias(["users", "userName"],
+				<ColumnReferenceNode> {
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
 					tableAlias: "t1"
 				}
-			}
+			)
 		];
 		// TODO: map nested rows to a single outer object
 		const row = {
@@ -231,32 +224,28 @@ describe("Row mapping", function () {
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
-			alias("id", <ColumnReferenceNode> {
+			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
 				tableAlias: "t3"
 			}),
-			<AliasedExpressionNode> {
-				type: "aliasedExpressionNode",
-				alias: "locations.id",
-				expression: <ColumnReferenceNode> {
+			alias(["locations", "id"],
+				<ColumnReferenceNode> {
 					type: "columnReferenceNode",
 					tableName: "Locations",
 					columnName: "id",
 					tableAlias: "t2"
 				}
-			},
-			<AliasedExpressionNode> {
-				type: "aliasedExpressionNode",
-				alias: "locations.users.id",
-				expression: <ColumnReferenceNode> {
+			),
+			alias(["locations", "users", "id"],
+				<ColumnReferenceNode> {
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
 					tableAlias: "t1"
 				}
-			}
+			)
 		];
 		const row = {
 			id: 123,
@@ -304,7 +293,7 @@ describe("Row mapping", function () {
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
-			alias("id", <ColumnReferenceNode> {
+			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
@@ -313,6 +302,7 @@ describe("Row mapping", function () {
 			<AliasedExpressionNode> {
 				type: "aliasedExpressionNode",
 				alias: "locations.id",
+				aliasPath: ["locations", "id"],
 				expression: <ColumnReferenceNode> {
 					type: "columnReferenceNode",
 					tableName: "Locations",
@@ -323,6 +313,7 @@ describe("Row mapping", function () {
 			<AliasedExpressionNode> {
 				type: "aliasedExpressionNode",
 				alias: "locations.users.id",
+				aliasPath: ["locations", "users", "id"],
 				expression: <ColumnReferenceNode> {
 					type: "columnReferenceNode",
 					tableName: "Users",
@@ -347,7 +338,6 @@ describe("Row mapping", function () {
 				}
 			}
 		}
-
 
 		const result = mapRowsToClass(QuerySelect, outputExpressions, rows);
 
@@ -424,22 +414,20 @@ describe("Row mapping", function () {
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
-			alias("id", <ColumnReferenceNode> {
+			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
 				tableAlias: "t2"
 			}),
-			<AliasedExpressionNode> {
-				type: "aliasedExpressionNode",
-				alias: "users.id",
-				expression: <ColumnReferenceNode> {
+			alias(["users", "id"],
+				 <ColumnReferenceNode> {
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
 					tableAlias: "t1"
 				}
-			}
+			)
 		];
 
 		const rows = [
@@ -497,22 +485,20 @@ describe("Row mapping", function () {
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
-			alias("id", <ColumnReferenceNode> {
+			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
 				tableAlias: "t2"
 			}),
-			<AliasedExpressionNode> {
-				type: "aliasedExpressionNode",
-				alias: "users.id",
-				expression: <ColumnReferenceNode> {
+			alias(["users", "id"],
+				{
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
 					tableAlias: "t1"
 				}
-			}
+			)
 		];
 
 		const rows = [];
@@ -537,7 +523,7 @@ describe("Row mapping", function () {
 			id : number;
 		}
 		const outputExpressions : SelectOutputExpression[] = [
-			alias("id", <ColumnReferenceNode> {
+			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Users",
 				columnName: "id",
@@ -589,22 +575,20 @@ describe("Row mapping", function () {
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
-			alias("id", <ColumnReferenceNode> {
+			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
 				tableAlias: "t2"
 			}),
-			<AliasedExpressionNode> {
-				type: "aliasedExpressionNode",
-				alias: "users.id",
-				expression: <ColumnReferenceNode> {
+			alias(["users", "id"],
+				<ColumnReferenceNode> {
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
 					tableAlias: "t1"
 				}
-			}
+			)
 		];
 		const numToGenerate = 5;
 		const rows = [];
