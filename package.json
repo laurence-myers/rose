@@ -29,6 +29,7 @@
   "devDependencies": {
     "@types/mocha": "2.2.32",
     "mocha": "3.1.2",
-    "source-map-support": "^0.4.6"
+    "source-map-support": "^0.4.6",
+    "ts-node": "3.0.6"
   }
 }

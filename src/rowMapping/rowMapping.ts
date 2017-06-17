@@ -1,8 +1,7 @@
 /// <reference path="../../typings/custom.d.ts" />
 import {SelectOutputExpression} from "../query/ast";
 import {RowMappingError, UnsupportedOperationError} from "../errors";
-import {assertNever} from "../lang";
-import {getNestedPropertyNames} from "../query/metadata";
+import {assertNever, DefaultMap, last, logObject, SettingMap} from "../lang";
 import {MetroHash128} from "metrohash";
 
 const HASH_SEED = Date.now();
@@ -91,51 +90,61 @@ export function mapRowToClass<TDataClass>(clz : { new() : TDataClass }, outputEx
 	return output;
 }
 
-function hashRow<TDataClass>(row : TDataClass, nestedPropertyNames : string[]) : string {
+function hashRow<TDataClass>(row : TDataClass, propertiesToHash : string[]) : string {
 	const hash = new MetroHash128(HASH_SEED);
-	for (const key of Object.keys(row)) {
-		if (nestedPropertyNames.indexOf(key) == -1) { // TODO: replace the array lookup with a set
-			hash.update(`${ key }=${ (<any> row)[key] };`);
-		}
+	for (const key of propertiesToHash) {
+		hash.update(`${ key }=${ (<any> row)[key] };`);
 	}
 	return hash.digest();
-}
-
-function mergeRows<TDataClass>(dst : TDataClass, src : TDataClass, nestedPropertyNames : string[]) : void {
-	for (const propName of nestedPropertyNames) {
-		const dstArr = (<any> dst)[propName];
-		for (const val of (<any> src)[propName]) {
-			dstArr.push(val);
-		}
-	}
 }
 
 /**
  * Select statements can contain values from multiple tables, and are not limited to primary keys of those tables.
  * The only way to distinguish rows is to hash all the non-nested values.
  */
-function mergeNestedRows<TDataClass>(convertedRows : TDataClass[], outputExpressions : SelectOutputExpression[], nestedPropertyNames : string[]) : TDataClass[] {
-	const rowMap = new Map<string, TDataClass>();
-	for (const convertedRow of convertedRows) {
-		const hash = hashRow(convertedRow, nestedPropertyNames);
-		let row = rowMap.get(hash);
-		if (row) {
-			mergeRows(row, convertedRow, nestedPropertyNames);
-		} else {
-			row = convertedRow;
-			rowMap.set(hash, row);
+function mergeNested(objects : any, nestedSchema : NestedSchema) : any[] {
+	const hashMap = new SettingMap<string, any>();
+	for (const obj of objects) {
+		const hash = hashRow(obj, nestedSchema.values);
+		const objToUpdate = hashMap.getOrSet(hash, obj);
+		for (const [key, value] of nestedSchema.nested.entries()) {
+			objToUpdate[key] = mergeNested(objToUpdate[key].concat(obj[key]), value);
 		}
 	}
-	return Array.from(rowMap.values());
+	return Array.from(hashMap.values());
 }
 
 export function mapRowsToClass<TDataClass>(clz : { new() : TDataClass }, outputExpressions : SelectOutputExpression[], rows : any[]) : TDataClass[] {
 	const convertedRows = rows.map((row) => mapRowToClass(clz, outputExpressions, row));
-	const nestedPropertyNames = getNestedPropertyNames(clz);
-	if (nestedPropertyNames.length > 0) {
-		return mergeNestedRows(convertedRows, outputExpressions, nestedPropertyNames);
+	const nestedSchema = extractNestedSchema(outputExpressions);
+	if (nestedSchema.nested.size > 0) {
+		return mergeNested(convertedRows, nestedSchema);
 	} else {
 		return convertedRows;
 	}
 }
 
+class NestedSchema {
+	values : string[] = [];
+	nested : DefaultMap<string, NestedSchema> = new DefaultMap<string, NestedSchema>(() => new NestedSchema());
+}
+
+function extractNestedSchema(outputExpressions : SelectOutputExpression[]) : NestedSchema {
+	const output = new NestedSchema();
+	for (const expr of outputExpressions) {
+		switch (expr.type) {
+			case "aliasedExpressionNode":
+				let segment = output;
+				for (let i = 0; i < expr.aliasPath.length - 1; i++) {
+					const part = expr.aliasPath[i];
+					segment = segment.nested.get(part);
+				}
+				segment.values.push(last(expr.aliasPath));
+				break;
+			default:
+				break;
+		}
+	}
+	logObject(output);
+	return output;
+}

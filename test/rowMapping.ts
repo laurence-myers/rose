@@ -10,11 +10,11 @@ import {
 	ConstantNode,
 	FunctionExpressionNode,
 	SelectOutputExpression,
-	UnaryOperationNode, ValueExpressionNode
+	UnaryOperationNode,
+	ValueExpressionNode
 } from "../src/query/ast";
 import {RowMappingError, UnsupportedOperationError} from "../src/errors";
 import {count} from "../src/query/postgresql/functions/aggregate/general";
-import {logObject} from "../src/lang";
 
 function alias(aliasPath : string[], node : ValueExpressionNode) : AliasedExpressionNode {
 	return {
@@ -502,7 +502,8 @@ describe("Row mapping", function () {
 		];
 
 		const rows = [];
-		const numNested = 100000;
+		//const numNested = 100000;
+		const numNested = 1000;
 		for (let i = 0; i < numNested; i++) {
 			rows.push({
 				id: 123,
