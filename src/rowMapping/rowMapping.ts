@@ -1,4 +1,3 @@
-/// <reference path="../../typings/custom.d.ts" />
 import {SelectOutputExpression} from "../query/ast";
 import {RowMappingError, UnsupportedOperationError} from "../errors";
 import {assertNever, DefaultMap, last, logObject, SettingMap} from "../lang";
