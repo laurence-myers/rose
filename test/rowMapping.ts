@@ -15,6 +15,7 @@ import {
 } from "../src/query/ast";
 import {RowMappingError, UnsupportedOperationError} from "../src/errors";
 import {count} from "../src/query/postgresql/functions/aggregate/general";
+import {logObject} from "../src/lang";
 
 function alias(aliasPath : string[], node : ValueExpressionNode) : AliasedExpressionNode {
 	return {
@@ -399,6 +400,136 @@ describe("Row mapping", function () {
 		]);
 	});
 
+	it("Can map multiple rows with deeply nested sub-queries and similar values", function () {
+		class QuerySelectDeeplyNested {
+			@Column(QUsers.id)
+			id : number;
+		}
+
+		class QuerySelectNested {
+			@Column(QLocations.id)
+			id : number;
+
+			@Nested(QuerySelectNested)
+			users : Array<QuerySelectDeeplyNested>;
+		}
+
+		class QuerySelect {
+			@Column(QAgencies.id)
+			id : number;
+
+			@Nested(QuerySelectNested)
+			locations : Array<QuerySelectNested>;
+		}
+
+		const outputExpressions : SelectOutputExpression[] = [
+			alias(["id"], <ColumnReferenceNode> {
+				type: "columnReferenceNode",
+				tableName: "Locations",
+				columnName: "id",
+				tableAlias: "t3"
+			}),
+			<AliasedExpressionNode> {
+				type: "aliasedExpressionNode",
+				alias: "locations.id",
+				aliasPath: ["locations", "id"],
+				expression: <ColumnReferenceNode> {
+					type: "columnReferenceNode",
+					tableName: "Locations",
+					columnName: "id",
+					tableAlias: "t2"
+				}
+			},
+			<AliasedExpressionNode> {
+				type: "aliasedExpressionNode",
+				alias: "locations.users.id",
+				aliasPath: ["locations", "users", "id"],
+				expression: <ColumnReferenceNode> {
+					type: "columnReferenceNode",
+					tableName: "Users",
+					columnName: "id",
+					tableAlias: "t1"
+				}
+			}
+		];
+
+		const rows = [];
+		const numAgencies = 2;
+		const numLocations = 2;
+		const numUsers = 2;
+		for (let agencyId = numAgencies; agencyId > 0; agencyId--) {
+			for (let locationId = numLocations; locationId > 0; locationId--) {
+				for (let userId = numUsers; userId > 0; userId--) {
+					rows.push({
+						id: agencyId,
+						"locations.id": locationId,
+						"locations.users.id": userId
+					});
+				}
+			}
+		}
+
+		const result = mapRowsToClass(QuerySelect, outputExpressions, rows);
+		logObject(result);
+
+		assert.deepEqual(result, [
+			{
+				id: 2,
+				locations: [
+					{
+						id: 2,
+						users: [
+							{
+								id: 2
+							},
+							{
+								id: 1
+							}
+						]
+					},
+					{
+						id: 1,
+						users: [
+							{
+								id: 2
+							},
+							{
+								id: 1
+							}
+						]
+					},
+				]
+			},
+			{
+				id: 1,
+				locations: [
+					{
+						id: 2,
+						users: [
+							{
+								id: 2
+							},
+							{
+								id: 1
+							}
+						]
+					},
+					{
+						id: 1,
+						users: [
+							{
+								id: 2
+							},
+							{
+								id: 1
+							}
+						]
+					},
+				]
+			}
+		]);
+	});
+
 	it("Can map a nested sub-query with multiple rows", function () {
 		class QuerySelectNested {
 			@Column(QUsers.id)
@@ -502,7 +633,7 @@ describe("Row mapping", function () {
 		];
 
 		const rows = [];
-		//const numNested = 100000;
+		// const numNested = 100000;
 		const numNested = 1000;
 		for (let i = 0; i < numNested; i++) {
 			rows.push({

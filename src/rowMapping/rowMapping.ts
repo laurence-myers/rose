@@ -29,8 +29,7 @@ function processNestedPathSegment(arrayKey : string, output : any) {
 	return nestedObject;
 }
 
-function processNestedPath(fullPath : string, output : any) : NestedPathResult {
-	const allSegments = fullPath.split('.');
+function processNestedPath(allSegments : string[], output : any) : NestedPathResult {
 	const segments = allSegments.slice(0, allSegments.length - 1);
 	let nestedObject = segments.reduce((nestedObject : any, segment : string) => {
 		return processNestedPathSegment(segment, nestedObject);
@@ -45,7 +44,7 @@ function processOutputExpression(expr : SelectOutputExpression, row : any, outpu
 	switch (expr.type) {
 		case "aliasedExpressionNode":
 			if (expr.alias.indexOf('.') > -1) {
-				const { key, nestedObject } = processNestedPath(expr.alias, output);
+				const { key, nestedObject } = processNestedPath(expr.aliasPath, output);
 				processOutputExpression(expr.expression, row, nestedObject, {
 					input: expr.alias,
 					output: key
