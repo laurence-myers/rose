@@ -42,7 +42,7 @@ export class T${ sanitizeTableName(tableMetadata.name) } extends QueryTable {
 		`${ sanitizeColumnName(col.name) } = new ${ getColumnMetamodelString(col) };`, '\n	')}
 }
 
-export const Q${ sanitizeTableName(tableMetadata.name) } = deepFreeze(T${ sanitizeTableName(tableMetadata.name) });
+export const Q${ sanitizeTableName(tableMetadata.name) } = deepFreeze(new T${ sanitizeTableName(tableMetadata.name) }());
 `;
 }
 
