@@ -11,13 +11,13 @@ import {
 	FunctionExpressionNode,
 	SelectOutputExpression,
 	UnaryOperationNode,
-	ValueExpressionNode
+	ParameterOrValueExpressionNode
 } from "../src/query/ast";
 import {RowMappingError, UnsupportedOperationError} from "../src/errors";
 import {count} from "../src/query/postgresql/functions/aggregate/general";
 import {logObject} from "../src/lang";
 
-function alias(aliasPath : string[], node : ValueExpressionNode) : AliasedExpressionNode {
+function alias(aliasPath : string[], node : ParameterOrValueExpressionNode) : AliasedExpressionNode {
 	return {
 		type: "aliasedExpressionNode",
 		alias: aliasPath.join('.'),

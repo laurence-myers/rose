@@ -34,9 +34,9 @@ export interface ColumnReferenceNode {
 
 export interface BinaryOperationNode {
 	type : 'binaryOperationNode';
-	left : ValueExpressionNode | SubSelectNode | ExpressionListNode; // Should SubSelectNode just be part of ValueExpressionNode?
+	left : ParameterOrValueExpressionNode | ExpressionListNode; // Should SubSelectNode just be part of ValueExpressionNode?
 	operator : string;
-	right : ValueExpressionNode | SubSelectNode | ExpressionListNode;
+	right : ParameterOrValueExpressionNode | ExpressionListNode;
 }
 
 export interface BooleanBinaryOperationNode extends BinaryOperationNode {
@@ -45,7 +45,7 @@ export interface BooleanBinaryOperationNode extends BinaryOperationNode {
 
 export interface UnaryOperationNode {
 	type : 'unaryOperationNode';
-	expression : ValueExpressionNode | SubSelectNode;
+	expression : ParameterOrValueExpressionNode;
 	operator : string;
 	position : 'left' | 'right';
 }
@@ -85,12 +85,12 @@ export interface LiteralNode {
 export interface FunctionExpressionNode {
 	type : 'functionExpressionNode';
 	name : string;
-	arguments : (ValueExpressionNode | LiteralNode)[];
+	arguments : (ParameterOrValueExpressionNode | LiteralNode)[];
 }
 
 export interface NaturalSyntaxFunctionExpressionNodeArgument {
 	key? : string;
-	value : ValueExpressionNode | LiteralNode;
+	value : ParameterOrValueExpressionNode | LiteralNode;
 }
 
 export interface NaturalSyntaxFunctionExpressionNode {
@@ -99,18 +99,48 @@ export interface NaturalSyntaxFunctionExpressionNode {
 	arguments : NaturalSyntaxFunctionExpressionNodeArgument[];
 }
 
-export type ValueExpressionNode = ConstantNode<any> | ColumnReferenceNode | BinaryOperationNode | UnaryOperationNode | FunctionExpressionNode | NaturalSyntaxFunctionExpressionNode;
+/**
+ * https://www.postgresql.org/docs/9.6/static/sql-expressions.html
+ *
+ * ✔ A constant or literal value - LiteralNode
+ * ✔ A column reference - ColumnReferenceNode
+ * ✔ A positional parameter reference, in the body of a function definition or prepared statement - ConstantNode
+ * x A subscripted expression
+ * x A field selection expression
+ * ✔ An operator invocation - BinaryOperationNode, UnaryOperationNode
+ * ✔ A function call - FunctionExpressionNode, NaturalSyntaxFunctionExpressionNode
+ * ~ An aggregate expression - partial support using FunctionExpressionNode, no support for FILTER or WITHIN GROUP
+ * x A window function call
+ * x A type cast
+ * x A collation expression
+ * ✔ A scalar subquery - SubSelectNode
+ * x An array constructor
+ * x A row constructor
+ * x Another value expression in parentheses (used to group subexpressions and override precedence)
+ */
+export type ValueExpressionNode =
+	LiteralNode
+	| ColumnReferenceNode
+	| BinaryOperationNode
+	| UnaryOperationNode
+	| FunctionExpressionNode
+	| NaturalSyntaxFunctionExpressionNode
+	| SubSelectNode;
+
+export type ParameterOrValueExpressionNode =
+	ConstantNode<any>
+	| ValueExpressionNode;
 
 export interface ExpressionListNode {
 	type : 'expressionListNode';
-	expressions : ValueExpressionNode[];
+	expressions : ParameterOrValueExpressionNode[];
 }
 
 export interface AliasedExpressionNode {
 	type : 'aliasedExpressionNode';
 	alias : string;
 	aliasPath : string[];
-	expression : ValueExpressionNode | SubSelectNode;
+	expression : ParameterOrValueExpressionNode;
 }
 
 export interface JoinNode {
@@ -132,7 +162,7 @@ export interface FromItemNode {
 
 export interface OrderByExpressionNode {
 	type : 'orderByExpressionNode';
-	expression : ValueExpressionNode; //?
+	expression : ParameterOrValueExpressionNode; //?
 	order? : 'asc' | 'desc' | 'using';
 	operator? : string; //?
 	nulls? : 'first' | 'last';
@@ -190,12 +220,12 @@ export interface LimitOffsetNode {
 
  TABLE [ ONLY ] table_name [ * ]
  */
-export type SelectOutputExpression = ValueExpressionNode | AliasedExpressionNode | SubSelectNode;
+export type SelectOutputExpression = ParameterOrValueExpressionNode | AliasedExpressionNode;
 
 export interface SelectCommandNode {
 	type : 'selectCommandNode';
 	distinction : 'distinct' | 'all' | 'on';
-	distinctOn? : ValueExpressionNode;
+	distinctOn? : ParameterOrValueExpressionNode;
 	outputExpressions : Array<SelectOutputExpression>; // should we also support *?
 	fromItems : FromItemNode[];
 	joins : JoinNode[];
@@ -209,6 +239,6 @@ export interface SubSelectNode {
 	query : SelectCommandNode;
 }
 
-export type AstNode = SelectCommandNode | ValueExpressionNode | AliasedExpressionNode | JoinNode | FromItemNode
+export type AstNode = SelectCommandNode | ParameterOrValueExpressionNode | AliasedExpressionNode | JoinNode | FromItemNode
 	| OrderByExpressionNode | FunctionExpressionNode | LimitOffsetNode | BooleanExpressionGroupNode | NotExpressionNode
 	| SubSelectNode | LiteralNode | ExpressionListNode;

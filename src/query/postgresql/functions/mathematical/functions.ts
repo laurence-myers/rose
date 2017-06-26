@@ -1,24 +1,24 @@
-import {FunctionExpressionNode, ValueExpressionNode} from "../../../ast";
+import {FunctionExpressionNode, ParameterOrValueExpressionNode} from "../../../ast";
 import {createFunctionNode} from "../common/helpers";
 
 /**
  * absolute value
  */
-export function abs(valueExpression : ValueExpressionNode) : FunctionExpressionNode {
+export function abs(valueExpression : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('abs', valueExpression);
 }
 
 /**
  * cube root
  */
-export function cbrt(valueExpression : ValueExpressionNode) : FunctionExpressionNode {
+export function cbrt(valueExpression : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('cbrt', valueExpression);
 }
 
 /**
  * smallest integer not less than argument
  */
-export function ceil(valueExpression : ValueExpressionNode) : FunctionExpressionNode {
+export function ceil(valueExpression : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('ceil', valueExpression);
 }
 
@@ -30,35 +30,35 @@ export const ceiling = ceil;
 /**
  * radians to degrees
  */
-export function degrees(valueExpression : ValueExpressionNode) : FunctionExpressionNode {
+export function degrees(valueExpression : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('degrees', valueExpression);
 }
 
 /**
  * integer quotient of y/x
  */
-export function div(y : ValueExpressionNode, x : ValueExpressionNode) : FunctionExpressionNode {
+export function div(y : ParameterOrValueExpressionNode, x : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('div', y, x);
 }
 
 /**
  * exponential
  */
-export function exp(valueExpression : ValueExpressionNode) : FunctionExpressionNode {
+export function exp(valueExpression : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('exp', valueExpression);
 }
 
 /**
  * largest integer not greater than argument
  */
-export function floor(valueExpression : ValueExpressionNode) : FunctionExpressionNode {
+export function floor(valueExpression : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('floor', valueExpression);
 }
 
 /**
  * natural logarithm
  */
-export function ln(valueExpression : ValueExpressionNode) : FunctionExpressionNode {
+export function ln(valueExpression : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('ln', valueExpression);
 }
 
@@ -68,7 +68,7 @@ export function ln(valueExpression : ValueExpressionNode) : FunctionExpressionNo
  * When second argument is provided:
  * logarithm to base b
  */
-export function log(b : ValueExpressionNode, x? : ValueExpressionNode) : FunctionExpressionNode {
+export function log(b : ParameterOrValueExpressionNode, x? : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	if (x !== undefined) {
 		return createFunctionNode('log', b, x);
 	} else {
@@ -79,7 +79,7 @@ export function log(b : ValueExpressionNode, x? : ValueExpressionNode) : Functio
 /**
  * remainder of y/x
  */
-export function mod(y : ValueExpressionNode, x : ValueExpressionNode) : FunctionExpressionNode {
+export function mod(y : ParameterOrValueExpressionNode, x : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('mod', y, x);
 }
 
@@ -93,14 +93,14 @@ export function pi() : FunctionExpressionNode {
 /**
  * a raised to the power of b
  */
-export function power(a : ValueExpressionNode, b : ValueExpressionNode) : FunctionExpressionNode {
+export function power(a : ParameterOrValueExpressionNode, b : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('power', a, b);
 }
 
 /**
  * degrees to radians
  */
-export function radians(valueExpression : ValueExpressionNode) : FunctionExpressionNode {
+export function radians(valueExpression : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('radians', valueExpression);
 }
 
@@ -109,7 +109,7 @@ export function radians(valueExpression : ValueExpressionNode) : FunctionExpress
  * or
  * round to s decimal places
  */
-export function round(v : ValueExpressionNode, s? : ValueExpressionNode) : FunctionExpressionNode {
+export function round(v : ParameterOrValueExpressionNode, s? : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	if (s !== undefined) {
 		return createFunctionNode('round', s);
 	} else {
@@ -120,14 +120,14 @@ export function round(v : ValueExpressionNode, s? : ValueExpressionNode) : Funct
 /**
  * sign of the argument (-1, 0, +1)
  */
-export function sign(valueExpression : ValueExpressionNode) : FunctionExpressionNode {
+export function sign(valueExpression : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('sign', valueExpression);
 }
 
 /**
  * square root
  */
-export function sqrt(valueExpression : ValueExpressionNode) : FunctionExpressionNode {
+export function sqrt(valueExpression : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('sqrt', valueExpression);
 }
 
@@ -136,7 +136,7 @@ export function sqrt(valueExpression : ValueExpressionNode) : FunctionExpression
  * or
  * truncate to s decimal places
  */
-export function trunc(v : ValueExpressionNode, s : ValueExpressionNode) : FunctionExpressionNode {
+export function trunc(v : ParameterOrValueExpressionNode, s : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	if (s !== undefined) {
 		return createFunctionNode('trunc', s);
 	} else {
@@ -147,6 +147,6 @@ export function trunc(v : ValueExpressionNode, s : ValueExpressionNode) : Functi
 /**
  * return the bucket to which operand would be assigned in an equidepth histogram with count buckets, in the range b1 to b2
  */
-export function width_bucket(op : ValueExpressionNode, b1 : ValueExpressionNode, b2 : ValueExpressionNode, count : ValueExpressionNode) : FunctionExpressionNode {
+export function width_bucket(op : ParameterOrValueExpressionNode, b1 : ParameterOrValueExpressionNode, b2 : ParameterOrValueExpressionNode, count : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('width_bucket', op, b1, b2, count);
 }

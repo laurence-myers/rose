@@ -1,5 +1,5 @@
 import {
-	SelectCommandNode, AstNode, ColumnReferenceNode, ValueExpressionNode, FromItemNode,
+	SelectCommandNode, AstNode, ColumnReferenceNode, ParameterOrValueExpressionNode, FromItemNode,
 	BooleanExpression, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
 	AliasedExpressionNode, JoinNode, BooleanBinaryOperationNode, BinaryOperationNode, UnaryOperationNode,
 	BooleanExpressionGroupNode, NotExpressionNode, SubSelectNode, NaturalSyntaxFunctionExpressionNode, LiteralNode,
@@ -446,7 +446,7 @@ export class SqlAstWalker extends BaseWalker {
 		}
 		if (node.joins.length > 0) {
 			this.sb.push(" ");
-			node.joins.forEach(this.doListWalk());
+			node.joins.forEach(this.doItemWalk());
 		}
 		if (node.conditions.length > 0) {
 			this.sb.push(" WHERE ");

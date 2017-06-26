@@ -3,8 +3,11 @@ import {InvalidTableDefinitionError, InvalidColumnDefinitionError} from "../erro
 import {getMetadata} from "../lang";
 import {
 	ColumnReferenceNode, ConstantNode, OrderByExpressionNode,
-	BooleanBinaryOperationNode, BooleanUnaryOperationNode, SubSelectNode, FunctionExpressionNode
+	BooleanBinaryOperationNode, BooleanUnaryOperationNode, SubSelectNode, FunctionExpressionNode, ExpressionListNode,
+	ParameterOrValueExpressionNode, ValueExpressionNode
 } from "./ast";
+import {row} from "./dsl";
+import {any} from "./postgresql/functions/array/functions";
 
 export const METADATA_KEY_PREFIX = "arbaon.";
 export const TABLE_METADATA_KEY = `${ METADATA_KEY_PREFIX }table`;
@@ -41,12 +44,10 @@ export class TableMetamodel {
 	}
 }
 
-function isSubSelectNode(node : { type? : string }) : node is SubSelectNode {
-	return node && node.type == 'subSelectNode';
-}
+export type ParamGetter<P, R> = (params : P) => R;
 
-function isFunctionExpressionNode(node : { type? : string }) : node is FunctionExpressionNode {
-	return node && node.type == 'functionExpressionNode';
+function isParamGetter<R>(value : any) : value is ParamGetter<any, R> {
+	return value && typeof value == 'function';
 }
 
 export interface ColumnMetamodelOptions<R> {
@@ -62,7 +63,7 @@ type BooleanUnaryOperators = 'IS NULL'
 	| 'IS UNKNOWN'
 	| 'IS NOT UNKNOWN';
 type BooleanBinaryOperators = '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN';
-type ValueType<T> = ((params : any) => T) | ColumnMetamodel<T> | SubSelectNode | FunctionExpressionNode; // TODO: replace this with ValueExpressionNode
+type ValueType<T> = ((params : any) => T) | ColumnMetamodel<T> | ParameterOrValueExpressionNode;
 
 export class ColumnMetamodel<T> {
 	constructor(
@@ -90,20 +91,23 @@ export class ColumnMetamodel<T> {
 		};
 	}
 
-	protected createBooleanBinaryOperationNode(
-		operator : BooleanBinaryOperators,
-		value : ValueType<T>) : BooleanBinaryOperationNode {
-		let right : ColumnReferenceNode | ConstantNode<T> | SubSelectNode | FunctionExpressionNode;
+	protected coerceToNode<T>(value : ValueType<T>) : ParameterOrValueExpressionNode {
 		if (value instanceof ColumnMetamodel) {
-			right = value.toColumnReferenceNode();
-		} else if (isSubSelectNode(value) || isFunctionExpressionNode(value)) {
-			right = value;
-		} else {
-			right = <ConstantNode<T>> {
+			return value.toColumnReferenceNode();
+		} else if (isParamGetter(value)) {
+			return <ConstantNode<T>> {
 				type: 'constantNode',
 				getter: value
 			};
+		} else {
+			return value;
 		}
+	}
+
+	protected createBooleanBinaryOperationNode(
+		operator : BooleanBinaryOperators,
+		value : ValueType<T>) : BooleanBinaryOperationNode {
+		let right : ParameterOrValueExpressionNode = this.coerceToNode(value);
 		return {
 			type: 'binaryOperationNode',
 			left: this.toColumnReferenceNode(),
@@ -144,8 +148,17 @@ export class ColumnMetamodel<T> {
 		return this.createBooleanBinaryOperationNode('IS NOT DISTINCT FROM', value);
 	}
 
-	in(value : ValueType<T>) : BooleanBinaryOperationNode {
+	/**
+	 * "in" cannot accept a parameter, since the row literal can only substitute each value in the row, and not the
+	 * entire row.
+	 * Instead, use "eqAny", which allows you to substitute an entire array value.
+	 */
+	in(value : ValueExpressionNode) : BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('IN', value);
+	}
+
+	eqAny(value : ValueType<T | T[]>) : BooleanBinaryOperationNode {
+		return this.eq(any(this.coerceToNode(value)));
 	}
 
 	protected createBooleanUnaryOperationNode(operator : BooleanUnaryOperators) : BooleanUnaryOperationNode {

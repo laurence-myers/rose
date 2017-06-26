@@ -4,7 +4,7 @@ import {
 	FunctionExpressionNode,
 	NaturalSyntaxFunctionExpressionNode,
 	NaturalSyntaxFunctionExpressionNodeArgument,
-	ValueExpressionNode
+	ParameterOrValueExpressionNode
 } from "../../../ast";
 
 /**
@@ -12,21 +12,21 @@ import {
  * or
  * String concatenation with one non-string input
  */
-export function concat(left : ValueExpressionNode, right: ValueExpressionNode) : BinaryOperationNode {
+export function concat(left : ParameterOrValueExpressionNode, right: ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('||', left, right);
 }
 
 /**
  * Number of bits in string
  */
-export function bit_length(string : ValueExpressionNode) : FunctionExpressionNode {
+export function bit_length(string : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('bit_length', string);
 }
 
 /**
  * Number of characters in string
  */
-export function char_length(string : ValueExpressionNode) : FunctionExpressionNode {
+export function char_length(string : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('char_length', string);
 }
 
@@ -35,14 +35,14 @@ export const character_length = char_length;
 /**
  * Convert string to lower case
  */
-export function lower(string : ValueExpressionNode) : FunctionExpressionNode {
+export function lower(string : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('lower', string);
 }
 
 /**
  * Number of bytes in string
  */
-export function octet_length(string : ValueExpressionNode) : FunctionExpressionNode {
+export function octet_length(string : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('octet_length', string);
 }
 
@@ -50,7 +50,7 @@ export function octet_length(string : ValueExpressionNode) : FunctionExpressionN
  * Replace substring
  * overlay('Txxxxas' placing 'hom' from 2 for 4)
  */
-export function overlay(string : ValueExpressionNode, placing : ValueExpressionNode, from : ValueExpressionNode, forNum? : ValueExpressionNode) : NaturalSyntaxFunctionExpressionNode {
+export function overlay(string : ParameterOrValueExpressionNode, placing : ParameterOrValueExpressionNode, from : ParameterOrValueExpressionNode, forNum? : ParameterOrValueExpressionNode) : NaturalSyntaxFunctionExpressionNode {
 	const args = [
 		{
 			value: string
@@ -76,7 +76,7 @@ export function overlay(string : ValueExpressionNode, placing : ValueExpressionN
 /**
  * Location of specified substring
  */
-export function position(substring : ValueExpressionNode, string : ValueExpressionNode) : NaturalSyntaxFunctionExpressionNode {
+export function position(substring : ParameterOrValueExpressionNode, string : ParameterOrValueExpressionNode) : NaturalSyntaxFunctionExpressionNode {
 	return createNaturalSyntaxFunctionNode('position', [
 		{
 			value: substring
@@ -93,7 +93,7 @@ export function position(substring : ValueExpressionNode, string : ValueExpressi
  * or
  * Extract substring matching POSIX regular expression. See Section 9.7 for more information on pattern matching.
  */
-export function substring(string : ValueExpressionNode, from : ValueExpressionNode, forExpr : ValueExpressionNode) : NaturalSyntaxFunctionExpressionNode {
+export function substring(string : ParameterOrValueExpressionNode, from : ParameterOrValueExpressionNode, forExpr : ParameterOrValueExpressionNode) : NaturalSyntaxFunctionExpressionNode {
 	const args = [
 		{
 			value: string
@@ -116,7 +116,7 @@ export function substring(string : ValueExpressionNode, from : ValueExpressionNo
  * Remove the longest string containing only the characters (a space by default) from the start/end/both ends of the string
  * NOTE: the order of arguments is different to the PostgreSQL function; "characters" is last, because it is optional.
  */
-export function trim(where : 'leading' | 'trailing' | 'both', from : ValueExpressionNode, characters? : ValueExpressionNode) : NaturalSyntaxFunctionExpressionNode {
+export function trim(where : 'leading' | 'trailing' | 'both', from : ParameterOrValueExpressionNode, characters? : ParameterOrValueExpressionNode) : NaturalSyntaxFunctionExpressionNode {
 	const args : NaturalSyntaxFunctionExpressionNodeArgument[] = [
 		{
 			value: {
@@ -140,6 +140,6 @@ export function trim(where : 'leading' | 'trailing' | 'both', from : ValueExpres
 /**
  * Convert string to upper case
  */
-export function upper(string : ValueExpressionNode) : FunctionExpressionNode {
+export function upper(string : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('upper', string);
 }

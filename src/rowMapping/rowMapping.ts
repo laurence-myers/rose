@@ -56,13 +56,14 @@ function processOutputExpression(expr : SelectOutputExpression, row : any, outpu
 			}
 			break;
 
-		case "columnReferenceNode":
-		case "functionExpressionNode":
-		case "naturalSyntaxFunctionExpressionNode":
-		case "constantNode":
 		case "binaryOperationNode":
-		case "unaryOperationNode":
+		case "columnReferenceNode":
+		case "constantNode":
+		case "functionExpressionNode":
+		case "literalNode":
+		case "naturalSyntaxFunctionExpressionNode":
 		case "subSelectNode":
+		case "unaryOperationNode":
 			if (!aliases || !aliases.input || !aliases.output) {
 				throw new UnsupportedOperationError("All output values must be aliased");
 			} else if (row[aliases.input] === undefined) {

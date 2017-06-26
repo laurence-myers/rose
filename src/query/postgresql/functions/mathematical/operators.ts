@@ -1,66 +1,66 @@
 import {createBinaryOperatorNode, createUnaryOperatorNode} from "../common/helpers";
-import {BinaryOperationNode, SubSelectNode, UnaryOperationNode, ValueExpressionNode} from "../../../ast";
+import {BinaryOperationNode, SubSelectNode, UnaryOperationNode, ParameterOrValueExpressionNode} from "../../../ast";
 
-export function add(left : ValueExpressionNode | SubSelectNode, right : ValueExpressionNode | SubSelectNode) : BinaryOperationNode {
+export function add(left : ParameterOrValueExpressionNode, right : ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('+', left, right);
 }
 
-export function subtract(left : ValueExpressionNode | SubSelectNode, right : ValueExpressionNode | SubSelectNode) : BinaryOperationNode {
+export function subtract(left : ParameterOrValueExpressionNode, right : ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('-', left, right);
 }
 
-export function multiply(left : ValueExpressionNode | SubSelectNode, right : ValueExpressionNode | SubSelectNode) : BinaryOperationNode {
+export function multiply(left : ParameterOrValueExpressionNode, right : ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('*', left, right);
 }
 
-export function divide(left : ValueExpressionNode | SubSelectNode, right : ValueExpressionNode | SubSelectNode) : BinaryOperationNode {
+export function divide(left : ParameterOrValueExpressionNode, right : ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('/', left, right);
 }
 
-export function modulo(left : ValueExpressionNode | SubSelectNode, right : ValueExpressionNode | SubSelectNode) : BinaryOperationNode {
+export function modulo(left : ParameterOrValueExpressionNode, right : ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('+', left, right);
 }
 
-export function exponentiate(left : ValueExpressionNode | SubSelectNode, right : ValueExpressionNode | SubSelectNode) : BinaryOperationNode {
+export function exponentiate(left : ParameterOrValueExpressionNode, right : ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('+', left, right);
 }
 
-export function squareRoot(left : ValueExpressionNode | SubSelectNode, right : ValueExpressionNode | SubSelectNode) : BinaryOperationNode {
+export function squareRoot(left : ParameterOrValueExpressionNode, right : ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('|/', left, right);
 }
 
-export function cubeRoot(left : ValueExpressionNode | SubSelectNode, right : ValueExpressionNode | SubSelectNode) : BinaryOperationNode {
+export function cubeRoot(left : ParameterOrValueExpressionNode, right : ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('||/', left, right);
 }
 
-export function factorial(expression : ValueExpressionNode) : UnaryOperationNode {
+export function factorial(expression : ParameterOrValueExpressionNode) : UnaryOperationNode {
 	return createUnaryOperatorNode('!', "right", expression);
 }
 
-export function absolute(expression : ValueExpressionNode) : UnaryOperationNode {
+export function absolute(expression : ParameterOrValueExpressionNode) : UnaryOperationNode {
 	return createUnaryOperatorNode('@', "left", expression);
 }
 
-export function bitwiseAnd(left : ValueExpressionNode | SubSelectNode, right : ValueExpressionNode | SubSelectNode) : BinaryOperationNode {
+export function bitwiseAnd(left : ParameterOrValueExpressionNode, right : ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('&', left, right);
 }
 
-export function bitwiseOr(left : ValueExpressionNode | SubSelectNode, right : ValueExpressionNode | SubSelectNode) : BinaryOperationNode {
+export function bitwiseOr(left : ParameterOrValueExpressionNode, right : ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('|', left, right);
 }
 
-export function bitwiseXor(left : ValueExpressionNode | SubSelectNode, right : ValueExpressionNode | SubSelectNode) : BinaryOperationNode {
+export function bitwiseXor(left : ParameterOrValueExpressionNode, right : ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('#', left, right);
 }
 
-export function bitwiseNot(expression : ValueExpressionNode) : UnaryOperationNode {
+export function bitwiseNot(expression : ParameterOrValueExpressionNode) : UnaryOperationNode {
 	return createUnaryOperatorNode('~', "left", expression);
 }
 
-export function bitwiseShiftLeft(left : ValueExpressionNode | SubSelectNode, right : ValueExpressionNode | SubSelectNode) : BinaryOperationNode {
+export function bitwiseShiftLeft(left : ParameterOrValueExpressionNode, right : ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('<<', left, right);
 }
 
-export function bitwiseShiftRight(left : ValueExpressionNode | SubSelectNode, right : ValueExpressionNode | SubSelectNode) : BinaryOperationNode {
+export function bitwiseShiftRight(left : ParameterOrValueExpressionNode, right : ParameterOrValueExpressionNode) : BinaryOperationNode {
 	return createBinaryOperatorNode('>>', left, right);
 }

@@ -2,7 +2,7 @@ import {InvalidQueryClassError} from "../errors";
 import {EXPRESSION_METADATA_KEY, NESTED_METADATA_KEY, NestedQuery} from "./dsl";
 import {
 	AliasedExpressionNode, FunctionExpressionNode, SelectOutputExpression, SubSelectNode,
-	ValueExpressionNode
+	ParameterOrValueExpressionNode
 } from "./ast";
 import {getMetadata} from "../lang";
 import {ColumnMetamodel, SELECT_METADATA_KEY} from "./metamodel";
@@ -43,11 +43,11 @@ export class SelectMetadataProcessor {
 		}
 	}
 
-	protected processExpressionMetadata(entries : IterableIterator<[string, ValueExpressionNode | SubSelectNode]>, aliasPath : string[]) : void {
+	protected processExpressionMetadata(entries : IterableIterator<[string, ParameterOrValueExpressionNode]>, aliasPath : string[]) : void {
 		for (const entry of entries) {
 			const fullPath = aliasPath.concat(entry[0]);
 			const columnAlias : string = fullPath.join('.');
-			const expression : ValueExpressionNode | SubSelectNode = entry[1];
+			const expression : ParameterOrValueExpressionNode = entry[1];
 			// TODO: resolve table references within the expression?
 			// TODO: support the property name as the alias
 			const aliasedExpressionNode : AliasedExpressionNode = {

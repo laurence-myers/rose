@@ -12,7 +12,7 @@ import {
 	SelectCommandNode,
 	SelectOutputExpression,
 	SubSelectNode,
-	ValueExpressionNode
+	ParameterOrValueExpressionNode
 } from "./ast";
 import {RectifyingWalker, SqlAstWalker} from "./walker";
 import {QueryClass, SelectMetadataProcessor} from "./metadata";
@@ -39,11 +39,11 @@ export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator
 }
 
 export const EXPRESSION_METADATA_KEY = `${ METADATA_KEY_PREFIX }expression`;
-export function Expression(functionExpressionNode : ValueExpressionNode | SubSelectNode) : PropertyDecorator {
+export function Expression(functionExpressionNode : ParameterOrValueExpressionNode) : PropertyDecorator {
 	return function (target : Object, propertyKey : string | symbol) {
-		let metadata = getMetadata<Map<string, ValueExpressionNode | SubSelectNode>>(EXPRESSION_METADATA_KEY, target);
+		let metadata = getMetadata<Map<string, ParameterOrValueExpressionNode>>(EXPRESSION_METADATA_KEY, target);
 		if (!metadata) {
-			metadata = new Map<string, ValueExpressionNode | SubSelectNode>();
+			metadata = new Map<string, ParameterOrValueExpressionNode>();
 			Reflect.defineMetadata(EXPRESSION_METADATA_KEY, metadata, target);
 		} else if (metadata.get(<string> propertyKey) !== undefined) {
 			throw new InvalidDecoratorError(`Property "${ propertyKey }" already has an expression metadata defined.`);
@@ -165,7 +165,7 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 		return this;
 	}
 
-	distinctOn(expression : ValueExpressionNode) : this {
+	distinctOn(expression : ParameterOrValueExpressionNode) : this {
 		this.queryAst.distinction = 'on';
 		this.queryAst.distinctOn = expression;
 		return this;
@@ -384,7 +384,7 @@ export function literal(value : string) : LiteralNode {
 		value
 	};
 }
-export function row(first : ValueExpressionNode, ...rest : ValueExpressionNode[]) : ExpressionListNode {
+export function row(first : ParameterOrValueExpressionNode, ...rest : ParameterOrValueExpressionNode[]) : ExpressionListNode {
 	return {
 		type: "expressionListNode",
 		expressions: [first].concat(rest)

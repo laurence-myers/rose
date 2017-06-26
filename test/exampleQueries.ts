@@ -1,9 +1,19 @@
 import {Column} from "../src/query/metamodel";
-import {QLocations, QRecurringPayments} from "./fixtures";
-import {and, col, constant, Expression, or, param, ParamsWrapper, row, select, subSelect} from "../src/query/dsl";
+import {
+	QBuilderTemplateCategories,
+	QBuilderTemplates,
+	QBuilderTemplateTags,
+	QBuilderTemplateToCategoryMap,
+	QLocations,
+	QRecurringPayments,
+	QTags,
+	QUploads
+} from "./fixtures";
+import {and, col, Expression, Nested, or, param, ParamsWrapper, row, select, subSelect} from "../src/query/dsl";
 import {now, overlaps} from "../src/query/postgresql/functions/dateTime/functions";
 import * as assert from "assert";
 import {exists} from "../src/query/postgresql/functions/subquery/expressions";
+import {any} from "../src/query/postgresql/functions/array/functions";
 
 describe(`Example queries`, function () {
 	describe(`Recurring payments`, function () {
@@ -98,11 +108,11 @@ describe(`Example queries`, function () {
 			// Define our sub-query before the query class. (We could also define it inline, at the expense of readability.)
 			const subQuery = subSelect<QueryParams>(QRP.id)
 				.where(and(
-					QRP.locationId.eq(p => p.locationId),
+					QRP.locationId.eq(P.get(p => p.locationId)),
 					or(
 						and(
 							QRP.endDate.isNull(),
-							QRP.startDate.eq(p => p.startDate)
+							QRP.startDate.eq(P.get(p => p.startDate))
 						),
 						overlaps(
 							row(col(QRP.startDate), col(QRP.endDate)),
@@ -137,6 +147,113 @@ describe(`Example queries`, function () {
 				'as "exists"';
 
 			assert.equal(result.sql, expected);
+		});
+	});
+
+	describe(`Builder templates`, function () {
+		interface FindAllCriteria {
+			categories? : number[];
+			clients? : number[];
+			tags? : string;
+			platforms? : number[];
+		}
+
+		interface Page {
+			limit? : number;
+			offset? : number;
+		}
+
+		interface Params {
+			criteria : FindAllCriteria;
+			page : Page;
+		}
+
+		class Upload {
+			@Column(QUploads.id)
+			id : number;
+		}
+
+		class Tag {
+			@Column(QTags.id)
+			id : number;
+
+			@Column(QTags.title)
+			title : string;
+		}
+
+		class BuilderTemplateCategory {
+			@Column(QBuilderTemplateCategories.id)
+			id : number;
+
+			@Column(QBuilderTemplateCategories.groupLabel)
+			groupLabel : string;
+
+			@Column(QBuilderTemplateCategories.label)
+			label : string;
+
+			@Column(QBuilderTemplateCategories.width)
+			width : number;
+
+			@Column(QBuilderTemplateCategories.height)
+			height : number;
+
+			@Column(QBuilderTemplateCategories.platformId)
+			platformId : number;
+		}
+
+		class BuilderTemplate {
+			@Column(QBuilderTemplates.id)
+			id : number;
+
+			@Column(QBuilderTemplates.title)
+			title : string;
+
+			@Column(QBuilderTemplates.createdAt)
+			createdAt : Date;
+
+			@Column(QBuilderTemplates.clientId)
+			clientId : number;
+
+			@Nested()
+			compositeImage : Upload;
+
+			@Nested(Tag)
+			tags : Tag[];
+
+			@Nested(BuilderTemplateCategory)
+			categories : BuilderTemplateCategory[];
+		}
+
+		it(`find all by client IDs`, function () {
+			// Let's assign some locals for brevity
+			const QCategories = QBuilderTemplateCategories;
+			const QCategoryMap = QBuilderTemplateToCategoryMap;
+
+			const result = select<BuilderTemplate, Params>(BuilderTemplate)
+				.join(QCategoryMap)
+					.on(QCategoryMap.builderTemplateId.eq(QBuilderTemplates.id))
+				.join(QCategories)
+					.on(QCategories.id.eq(QCategoryMap.builderTemplateCategoryId))
+				.join(QBuilderTemplateTags)
+					.on(QBuilderTemplateTags.builderTemplateId.eq(QBuilderTemplates.id))
+				.join(QTags)
+					.on(QTags.id.eq(QBuilderTemplateTags.tagId))
+				.join(QUploads)
+					.on(QUploads.id.eq(QBuilderTemplates.compositeImageId))
+				.where(QBuilderTemplates.clientId.eqAny((p) => p.clients || []))
+				.orderBy(QBuilderTemplates.createdAt.desc())
+				.toSql({
+					criteria: {
+						clients: [1]
+					},
+					page: {
+						limit: 10, // TODO: support limit
+						offset: 0
+					}
+				});
+
+			console.log(result.sql);
+			console.log(result.parameters);
 		});
 	});
 });

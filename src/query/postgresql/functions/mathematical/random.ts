@@ -1,10 +1,10 @@
 import {createFunctionNode} from "../common/helpers";
-import {FunctionExpressionNode, ValueExpressionNode} from "../../../ast";
+import {FunctionExpressionNode, ParameterOrValueExpressionNode} from "../../../ast";
 
 export function random() : FunctionExpressionNode {
 	return createFunctionNode('random');
 }
 
-export function setseed(valueExpression : ValueExpressionNode) : FunctionExpressionNode {
+export function setseed(valueExpression : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('setseed', valueExpression);
 }

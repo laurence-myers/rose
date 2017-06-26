@@ -1,34 +1,34 @@
 import {createFunctionNode} from "../common/helpers";
-import {FunctionExpressionNode, ValueExpressionNode} from "../../../ast";
+import {FunctionExpressionNode, ParameterOrValueExpressionNode} from "../../../ast";
 
-export function acos(x : ValueExpressionNode) : FunctionExpressionNode {
+export function acos(x : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('acos', x);
 }
 
-export function asin(x : ValueExpressionNode) : FunctionExpressionNode {
+export function asin(x : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('asin', x);
 }
 
-export function atan(x : ValueExpressionNode) : FunctionExpressionNode {
+export function atan(x : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('atan', x);
 }
 
-export function atan2(y : ValueExpressionNode, x : ValueExpressionNode) : FunctionExpressionNode {
+export function atan2(y : ParameterOrValueExpressionNode, x : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('atan2', y, x);
 }
 
-export function cos(x : ValueExpressionNode) : FunctionExpressionNode {
+export function cos(x : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('cos', x);
 }
 
-export function cot(x : ValueExpressionNode) : FunctionExpressionNode {
+export function cot(x : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('cot', x);
 }
 
-export function sin(x : ValueExpressionNode) : FunctionExpressionNode {
+export function sin(x : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('sin', x);
 }
 
-export function tan(x : ValueExpressionNode) : FunctionExpressionNode {
+export function tan(x : ParameterOrValueExpressionNode) : FunctionExpressionNode {
 	return createFunctionNode('tan', x);
 }

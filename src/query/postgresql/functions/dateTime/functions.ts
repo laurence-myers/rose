@@ -1,6 +1,6 @@
 import {
 	BinaryOperationNode, BooleanBinaryOperationNode, ExpressionListNode, FunctionExpressionNode,
-	ValueExpressionNode
+	ParameterOrValueExpressionNode
 } from "../../../ast";
 import {createBinaryOperatorNode, createFunctionNode} from "../common/helpers";
 /**
