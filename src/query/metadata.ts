@@ -1,7 +1,7 @@
 import {InvalidQueryClassError} from "../errors";
 import {EXPRESSION_METADATA_KEY, NESTED_METADATA_KEY, NestedQuery} from "./dsl";
 import {
-	AliasedExpressionNode, FunctionExpressionNode, SelectOutputExpression, SubSelectNode,
+	AliasedSelectExpressionNode, FunctionExpressionNode, SelectOutputExpression, SubSelectNode,
 	ParameterOrValueExpressionNode
 } from "./ast";
 import {getMetadata} from "../lang";
@@ -50,7 +50,7 @@ export class SelectMetadataProcessor {
 			const expression : ParameterOrValueExpressionNode = entry[1];
 			// TODO: resolve table references within the expression?
 			// TODO: support the property name as the alias
-			const aliasedExpressionNode : AliasedExpressionNode = {
+			const aliasedExpressionNode : AliasedSelectExpressionNode = {
 				type: 'aliasedExpressionNode',
 				alias: columnAlias,
 				aliasPath: fullPath,

@@ -1,7 +1,7 @@
 import {
 	SelectCommandNode, AstNode, ColumnReferenceNode, ParameterOrValueExpressionNode, FromItemNode,
 	BooleanExpression, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
-	AliasedExpressionNode, JoinNode, BooleanBinaryOperationNode, BinaryOperationNode, UnaryOperationNode,
+	AliasedSelectExpressionNode, JoinNode, BooleanBinaryOperationNode, BinaryOperationNode, UnaryOperationNode,
 	BooleanExpressionGroupNode, NotExpressionNode, SubSelectNode, NaturalSyntaxFunctionExpressionNode, LiteralNode,
 	ExpressionListNode
 } from "./ast";
@@ -17,7 +17,7 @@ export abstract class BaseWalker {
 		};
 	}
 
-	protected abstract walkAliasedExpressionNode(node : AliasedExpressionNode) : void;
+	protected abstract walkAliasedExpressionNode(node : AliasedSelectExpressionNode) : void;
 
 	protected abstract walkBinaryOperationNode(node : BinaryOperationNode) : void;
 
@@ -115,7 +115,7 @@ export abstract class BaseWalker {
  * Extend this class to implement your own behaviour, such as static analysis.
  */
 export class SkippingWalker extends BaseWalker {
-	protected walkAliasedExpressionNode(node : AliasedExpressionNode) : void {
+	protected walkAliasedExpressionNode(node : AliasedSelectExpressionNode) : void {
 		this.walk(node.expression);
 	}
 
@@ -265,7 +265,7 @@ export class SqlAstWalker extends BaseWalker {
 		}
 	}
 
-	protected walkAliasedExpressionNode(node : AliasedExpressionNode) : void {
+	protected walkAliasedExpressionNode(node : AliasedSelectExpressionNode) : void {
 		this.walk(node.expression);
 		this.sb.push(` as "`);
 		this.sb.push(node.alias);

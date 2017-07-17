@@ -136,12 +136,14 @@ export interface ExpressionListNode {
 	expressions : ParameterOrValueExpressionNode[];
 }
 
-export interface AliasedExpressionNode {
+export interface AliasedExpressionNode<TNode> {
 	type : 'aliasedExpressionNode';
 	alias : string;
 	aliasPath : string[];
 	expression : ParameterOrValueExpressionNode;
 }
+
+export type AliasedSelectExpressionNode = AliasedExpressionNode<ParameterOrValueExpressionNode>;
 
 export interface JoinNode {
 	type : 'joinNode';
@@ -220,7 +222,7 @@ export interface LimitOffsetNode {
 
  TABLE [ ONLY ] table_name [ * ]
  */
-export type SelectOutputExpression = ParameterOrValueExpressionNode | AliasedExpressionNode;
+export type SelectOutputExpression = ParameterOrValueExpressionNode | AliasedSelectExpressionNode;
 
 export interface SelectCommandNode {
 	type : 'selectCommandNode';
@@ -239,6 +241,6 @@ export interface SubSelectNode {
 	query : SelectCommandNode;
 }
 
-export type AstNode = SelectCommandNode | ParameterOrValueExpressionNode | AliasedExpressionNode | JoinNode | FromItemNode
+export type AstNode = SelectCommandNode | ParameterOrValueExpressionNode | AliasedSelectExpressionNode | JoinNode | FromItemNode
 	| OrderByExpressionNode | FunctionExpressionNode | LimitOffsetNode | BooleanExpressionGroupNode | NotExpressionNode
-	| SubSelectNode | LiteralNode | ExpressionListNode;
+	| ExpressionListNode;

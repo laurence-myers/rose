@@ -4,7 +4,7 @@ import {Column} from "../src/query/metamodel";
 import {mapRowsToClass, mapRowToClass} from "../src/rowMapping/rowMapping";
 import {Expression, Nested} from "../src/query/dsl";
 import {
-	AliasedExpressionNode,
+	AliasedSelectExpressionNode,
 	BinaryOperationNode,
 	ColumnReferenceNode,
 	ConstantNode,
@@ -17,7 +17,7 @@ import {RowMappingError, UnsupportedOperationError} from "../src/errors";
 import {count} from "../src/query/postgresql/functions/aggregate/general";
 import {logObject} from "../src/lang";
 
-function alias(aliasPath : string[], node : ParameterOrValueExpressionNode) : AliasedExpressionNode {
+function alias(aliasPath : string[], node : ParameterOrValueExpressionNode) : AliasedSelectExpressionNode {
 	return {
 		type: "aliasedExpressionNode",
 		alias: aliasPath.join('.'),
@@ -300,7 +300,7 @@ describe("Row mapping", function () {
 				columnName: "id",
 				tableAlias: "t3"
 			}),
-			<AliasedExpressionNode> {
+			<AliasedSelectExpressionNode> {
 				type: "aliasedExpressionNode",
 				alias: "locations.id",
 				aliasPath: ["locations", "id"],
@@ -311,7 +311,7 @@ describe("Row mapping", function () {
 					tableAlias: "t2"
 				}
 			},
-			<AliasedExpressionNode> {
+			<AliasedSelectExpressionNode> {
 				type: "aliasedExpressionNode",
 				alias: "locations.users.id",
 				aliasPath: ["locations", "users", "id"],
@@ -429,7 +429,7 @@ describe("Row mapping", function () {
 				columnName: "id",
 				tableAlias: "t3"
 			}),
-			<AliasedExpressionNode> {
+			<AliasedSelectExpressionNode> {
 				type: "aliasedExpressionNode",
 				alias: "locations.id",
 				aliasPath: ["locations", "id"],
@@ -440,7 +440,7 @@ describe("Row mapping", function () {
 					tableAlias: "t2"
 				}
 			},
-			<AliasedExpressionNode> {
+			<AliasedSelectExpressionNode> {
 				type: "aliasedExpressionNode",
 				alias: "locations.users.id",
 				aliasPath: ["locations", "users", "id"],
@@ -754,7 +754,7 @@ describe("Row mapping", function () {
 			countValue : number;
 		}
 		const outputExpressions : SelectOutputExpression[] = [
-			<AliasedExpressionNode> {
+			<AliasedSelectExpressionNode> {
 				type: "aliasedExpressionNode",
 				alias: "countValue",
 				expression: <FunctionExpressionNode> {
