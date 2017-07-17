@@ -1,7 +1,15 @@
 import {RectifyingWalker} from "../src/query/walker";
-import {SelectCommandNode, SubSelectNode} from "../src/query/ast";
+import {AliasedFromExpressionNode, FromItemNode, SelectCommandNode, SubSelectNode} from "../src/query/ast";
 import {DefaultMap} from "../src/lang";
-import {equal} from "assert";
+import {equal, fail} from "assert";
+
+function getFromItem(fromItem : FromItemNode) : AliasedFromExpressionNode | never {
+	if (fromItem.type == "aliasedExpressionNode") {
+		return fromItem;
+	} else {
+		throw fail(fromItem, "AliasedFromExpressionNode", "Expected an AliasedFromExpressionNode", "!=");
+	}
+}
 
 describe("AST Walkers", function () {
 	describe("Rectifying Walker", function () {
@@ -25,8 +33,9 @@ describe("AST Walkers", function () {
 			const walker = new RectifyingWalker(ast, tableMap);
 			walker.rectify();
 			equal(ast.fromItems.length, 1);
-			equal(ast.fromItems[0].tableName, "Users");
-			equal(ast.fromItems[0].alias, "t1");
+			const fromItem = getFromItem(ast.fromItems[0]);
+			equal(fromItem.expression.tableName, "Users");
+			equal(fromItem.alias, "t1");
 		});
 
 		it("Does not rectify a table referenced in a column reference node and in a from item node", function () {
@@ -42,9 +51,13 @@ describe("AST Walkers", function () {
 				distinction: 'all',
 				fromItems: [
 					{
-						type: 'fromItemNode',
-						tableName: "Users",
-						alias: "t1"
+						type: "aliasedExpressionNode",
+						alias: "t1",
+						aliasPath: ["t1"],
+						expression: {
+							type: "tableReferenceNode",
+							tableName: "Users"
+						}
 					}
 				],
 				joins: [],
@@ -55,8 +68,11 @@ describe("AST Walkers", function () {
 			const walker = new RectifyingWalker(ast, tableMap);
 			walker.rectify();
 			equal(ast.fromItems.length, 1);
-			equal(ast.fromItems[0].tableName, "Users");
-			equal(ast.fromItems[0].alias, "t1");
+			const fromItem = getFromItem(ast.fromItems[0]);
+			equal(fromItem.expression.tableName, "Users");
+			equal(fromItem.alias, "t1");
+			equal(fromItem.expression.tableName, "Users");
+			equal(fromItem.alias, "t1");
 		});
 
 		it("Rectifies nested sub-queries individually, separate from the outer query", function () {
@@ -123,12 +139,14 @@ describe("AST Walkers", function () {
 			const walker = new RectifyingWalker(ast, tableMap);
 			walker.rectify();
 			equal(ast.fromItems.length, 1);
-			equal(ast.fromItems[0].tableName, "Users");
-			equal(ast.fromItems[0].alias, "t2");
+			const fromItem = getFromItem(ast.fromItems[0]);
+			equal(fromItem.expression.tableName, "Users");
+			equal(fromItem.alias, "t2");
 			equal(ast.conditions.length, 1);
 			equal(subSelectNode.query.fromItems.length, 1);
-			equal(subSelectNode.query.fromItems[0].tableName, "Locations");
-			equal(subSelectNode.query.fromItems[0].alias, "t1");
+			const nestedFromItem = getFromItem(subSelectNode.query.fromItems[0]);
+			equal(nestedFromItem.expression.tableName, "Locations");
+			equal(nestedFromItem.alias, "t1");
 		});
 	});
 });

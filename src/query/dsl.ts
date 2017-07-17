@@ -133,13 +133,18 @@ class JoinBuilder<TResult> {
 			throw new UnsupportedOperationError(`Cannot make a cross join with "on" or "using" criteria.`);
 		}
 		const tableName = this.qtable.$table.name;
+		const alias = this.tableMap.get(tableName);
 		const joinNode : JoinNode = {
 			type: 'joinNode',
 			joinType: this.joinType,
 			fromItem: {
-				type: 'fromItemNode',
-				tableName: tableName,
-				alias: this.tableMap.get(tableName)
+				type: 'aliasedExpressionNode',
+				alias,
+				aliasPath: [alias],
+				expression: {
+					type: 'tableReferenceNode',
+					tableName: tableName,
+				}
 			},
 			on: this.onNode,
 			using: this.usingNodes
@@ -174,10 +179,15 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	from(first : QueryTable, ...rest: QueryTable[]) : this {
 		for (const qtable of [first].concat(rest)) {
 			const tableName = qtable.$table.name;
+			const alias = qtable.$table.alias || this.tableMap.get(tableName);
 			this.queryAst.fromItems.push({
-				type: 'fromItemNode',
-				tableName: tableName,
-				alias: qtable.$table.alias || this.tableMap.get(tableName)
+				type: 'aliasedExpressionNode',
+				alias,
+				aliasPath: [alias],
+				expression: {
+					type: 'tableReferenceNode',
+					tableName: tableName,
+				}
 			});
 		}
 		return this;

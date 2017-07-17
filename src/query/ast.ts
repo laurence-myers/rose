@@ -32,6 +32,11 @@ export interface ColumnReferenceNode {
 	columnName : string;
 }
 
+export interface TableReferenceNode {
+	type : 'tableReferenceNode';
+	tableName : string;
+}
+
 export interface BinaryOperationNode {
 	type : 'binaryOperationNode';
 	left : ParameterOrValueExpressionNode | ExpressionListNode; // Should SubSelectNode just be part of ValueExpressionNode?
@@ -140,7 +145,7 @@ export interface AliasedExpressionNode<TNode> {
 	type : 'aliasedExpressionNode';
 	alias : string;
 	aliasPath : string[];
-	expression : ParameterOrValueExpressionNode;
+	expression : TNode;
 }
 
 export type AliasedSelectExpressionNode = AliasedExpressionNode<ParameterOrValueExpressionNode>;
@@ -155,12 +160,13 @@ export interface JoinNode {
 	// TODO: support natural
 }
 
-export interface FromItemNode {
-	type : 'fromItemNode';
-	//schema? : string;
-	tableName : string;
-	alias : string;
-}
+export type FromExpressionNode = TableReferenceNode;
+
+export type AliasedFromExpressionNode = AliasedExpressionNode<TableReferenceNode>;
+
+export type FromItemNode = AliasedFromExpressionNode | FromExpressionNode;
+
+export type AnyAliasedExpressionNode = AliasedFromExpressionNode | AliasedSelectExpressionNode;
 
 export interface OrderByExpressionNode {
 	type : 'orderByExpressionNode';

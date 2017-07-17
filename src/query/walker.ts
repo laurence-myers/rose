@@ -3,7 +3,7 @@ import {
 	BooleanExpression, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
 	AliasedSelectExpressionNode, JoinNode, BooleanBinaryOperationNode, BinaryOperationNode, UnaryOperationNode,
 	BooleanExpressionGroupNode, NotExpressionNode, SubSelectNode, NaturalSyntaxFunctionExpressionNode, LiteralNode,
-	ExpressionListNode
+	ExpressionListNode, TableReferenceNode, AliasedExpressionNode, AnyAliasedExpressionNode
 } from "./ast";
 import {DefaultMap, assertNever, remove, difference, deepFreeze, keySet} from "../lang";
 import {GeneratedQuery} from "./dsl";
@@ -17,7 +17,7 @@ export abstract class BaseWalker {
 		};
 	}
 
-	protected abstract walkAliasedExpressionNode(node : AliasedSelectExpressionNode) : void;
+	protected abstract walkAliasedExpressionNode(node : AnyAliasedExpressionNode) : void;
 
 	protected abstract walkBinaryOperationNode(node : BinaryOperationNode) : void;
 
@@ -28,8 +28,6 @@ export abstract class BaseWalker {
 	protected abstract walkConstantNode(node : ConstantNode<any>) : void;
 
 	protected abstract walkExpressionListNode(node : ExpressionListNode) : void;
-
-	protected abstract walkFromItemNode(node : FromItemNode) : void;
 
 	protected abstract walkFunctionExpressionNode(node : FunctionExpressionNode) : void;
 
@@ -48,6 +46,8 @@ export abstract class BaseWalker {
 	protected abstract walkSelectCommandNode(node : SelectCommandNode) : void;
 
 	protected abstract walkSubSelectNode(node : SubSelectNode) : void;
+
+	protected abstract walkTableReferenceNode(node : TableReferenceNode) : void;
 
 	protected abstract walkUnaryOperationNode(node : UnaryOperationNode) : void;
 
@@ -70,9 +70,6 @@ export abstract class BaseWalker {
 				break;
 			case "expressionListNode":
 				this.walkExpressionListNode(node);
-				break;
-			case "fromItemNode":
-				this.walkFromItemNode(node);
 				break;
 			case "functionExpressionNode":
 				this.walkFunctionExpressionNode(node);
@@ -101,6 +98,9 @@ export abstract class BaseWalker {
 			case "subSelectNode":
 				this.walkSubSelectNode(node);
 				break;
+			case "tableReferenceNode":
+				this.walkTableReferenceNode(node);
+				break;
 			case "unaryOperationNode":
 				this.walkUnaryOperationNode(node);
 				break;
@@ -115,7 +115,7 @@ export abstract class BaseWalker {
  * Extend this class to implement your own behaviour, such as static analysis.
  */
 export class SkippingWalker extends BaseWalker {
-	protected walkAliasedExpressionNode(node : AliasedSelectExpressionNode) : void {
+	protected walkAliasedExpressionNode(node : AnyAliasedExpressionNode) : void {
 		this.walk(node.expression);
 	}
 
@@ -136,9 +136,6 @@ export class SkippingWalker extends BaseWalker {
 
 	protected walkExpressionListNode(node : ExpressionListNode) : void {
 		node.expressions.forEach(this.doItemWalk());
-	}
-
-	protected walkFromItemNode(node : FromItemNode) : void {
 	}
 
 	protected walkFunctionExpressionNode(node : FunctionExpressionNode) : void {
@@ -186,6 +183,9 @@ export class SkippingWalker extends BaseWalker {
 		this.walk(node.query);
 	}
 
+	protected walkTableReferenceNode(node : TableReferenceNode) : void {
+	}
+
 	protected walkUnaryOperationNode(node : UnaryOperationNode) : void {
 		this.walk(node.expression);
 	}
@@ -207,14 +207,14 @@ export class RectifyingWalker extends SkippingWalker {
 		super.walkColumnReferenceNode(node);
 	}
 
-	protected walkFromItemNode(node : FromItemNode) : void {
-		this.specifiedTables.add(node.tableName);
-		super.walkFromItemNode(node);
-	}
-
 	protected walkSubSelectNode(node : SubSelectNode) : void {
 		const subWalker = new RectifyingWalker(node.query, this.tableMap);
 		subWalker.rectify();
+	}
+
+	protected walkTableReferenceNode(node : TableReferenceNode) : void {
+		this.specifiedTables.add(node.tableName);
+		super.walkTableReferenceNode(node);
 	}
 
 	rectify() : void {
@@ -224,9 +224,13 @@ export class RectifyingWalker extends SkippingWalker {
 			const tableAlias = this.tableMap.get(tableName);
 
 			this.ast.fromItems.push({
-				type: 'fromItemNode',
-				tableName: tableName,
-				alias: tableAlias
+				type: "aliasedExpressionNode",
+				alias: tableAlias,
+				aliasPath: [tableAlias],
+				expression: {
+					type: "tableReferenceNode",
+					tableName,
+				}
 			});
 		});
 	}
@@ -265,7 +269,7 @@ export class SqlAstWalker extends BaseWalker {
 		}
 	}
 
-	protected walkAliasedExpressionNode(node : AliasedSelectExpressionNode) : void {
+	protected walkAliasedExpressionNode(node : AnyAliasedExpressionNode) : void {
 		this.walk(node.expression);
 		this.sb.push(` as "`);
 		this.sb.push(node.alias);
@@ -316,14 +320,6 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb.push('(');
 		node.expressions.forEach(this.doListWalk());
 		this.sb.push(')');
-	}
-
-	protected walkFromItemNode(node : FromItemNode) : void {
-		this.sb.push(`"`);
-		this.sb.push(node.tableName);
-		this.sb.push(`" as "`);
-		this.sb.push(node.alias);
-		this.sb.push(`"`);
 	}
 
 	protected walkJoinNode(node : JoinNode) : void {
@@ -466,6 +462,12 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb.push(`(`);
 		this.walk(node.query);
 		this.sb.push(`)`);
+	}
+
+	protected walkTableReferenceNode(node : TableReferenceNode) : void {
+		this.sb.push(`"`);
+		this.sb.push(node.tableName);
+		this.sb.push(`"`);
 	}
 
 	protected walkUnaryOperationNode(node : UnaryOperationNode) : void {
