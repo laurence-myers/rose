@@ -9,11 +9,10 @@ import {
 	QTags,
 	QUploads
 } from "./fixtures";
-import {and, col, Expression, Nested, or, param, ParamsWrapper, row, select, subSelect} from "../src/query/dsl";
+import {and, col, Expression, Nested, or, ParamsWrapper, row, select, subSelect} from "../src/query/dsl";
 import {now, overlaps} from "../src/query/postgresql/functions/dateTime/functions";
 import * as assert from "assert";
 import {exists} from "../src/query/postgresql/functions/subquery/expressions";
-import {any} from "../src/query/postgresql/functions/array/functions";
 
 describe(`Example queries`, function () {
 	describe(`Recurring payments`, function () {
@@ -163,9 +162,8 @@ describe(`Example queries`, function () {
 			offset? : number;
 		}
 
-		interface Params {
+		interface Params extends Page {
 			criteria : FindAllCriteria;
-			page : Page;
 		}
 
 		class Upload {
@@ -224,36 +222,62 @@ describe(`Example queries`, function () {
 			categories : BuilderTemplateCategory[];
 		}
 
-		it(`find all by client IDs`, function () {
+		function prepareDynamicQuery(params : Params) {
 			// Let's assign some locals for brevity
 			const QCategories = QBuilderTemplateCategories;
 			const QCategoryMap = QBuilderTemplateToCategoryMap;
 
-			const result = select<BuilderTemplate, Params>(BuilderTemplate)
-				.join(QCategoryMap)
-					.on(QCategoryMap.builderTemplateId.eq(QBuilderTemplates.id))
-				.join(QCategories)
-					.on(QCategories.id.eq(QCategoryMap.builderTemplateCategoryId))
-				.join(QBuilderTemplateTags)
-					.on(QBuilderTemplateTags.builderTemplateId.eq(QBuilderTemplates.id))
-				.join(QTags)
-					.on(QTags.id.eq(QBuilderTemplateTags.tagId))
-				.join(QUploads)
-					.on(QUploads.id.eq(QBuilderTemplates.compositeImageId))
-				.where(QBuilderTemplates.clientId.eqAny((p) => p.clients || []))
+			const idSubQueryBuilder = subSelect<Params>(QBuilderTemplates.id)
 				.orderBy(QBuilderTemplates.createdAt.desc())
-				.toSql({
-					criteria: {
-						clients: [1]
-					},
-					page: {
-						limit: 10, // TODO: support limit
-						offset: 0
-					}
-				});
+				.limit();
+			if (params.criteria.clients) {
+				idSubQueryBuilder.where(QBuilderTemplates.clientId.eqAny((p) => p.criteria.clients || []));
+			} else if (params.criteria.platforms) {
+				idSubQueryBuilder.where(and(
+					QBuilderTemplateCategories.platformId.eqAny((p) => p.criteria.platforms),
+					QBuilderTemplateToCategoryMap.builderTemplateId.eq(QBuilderTemplates.id),
+					QBuilderTemplateToCategoryMap.builderTemplateCategoryId.eq(QBuilderTemplateCategories.id)
+				));
+			}
+			const idSubQuery = idSubQueryBuilder.toSubQuery();
 
-			console.log(result.sql);
-			console.log(result.parameters);
+			return select<BuilderTemplate, Params>(BuilderTemplate)
+				.join(QCategoryMap)
+				.on(QCategoryMap.builderTemplateId.eq(QBuilderTemplates.id))
+				.join(QCategories)
+				.on(QCategories.id.eq(QCategoryMap.builderTemplateCategoryId))
+				.join(QBuilderTemplateTags)
+				.on(QBuilderTemplateTags.builderTemplateId.eq(QBuilderTemplates.id))
+				.join(QTags)
+				.on(QTags.id.eq(QBuilderTemplateTags.tagId))
+				.join(QUploads)
+				.on(QUploads.id.eq(QBuilderTemplates.compositeImageId))
+				.where(QBuilderTemplates.id.in(idSubQuery))
+				.toSql(params);
+		}
+
+		it(`find all by client IDs`, function () {
+			const result = prepareDynamicQuery({
+				criteria: {
+					clients: [1]
+				},
+				limit: 10,
+				offset: 0
+			});
+			assert.equal(result.sql, `SELECT "t6"."id" as "id", "t6"."title" as "title", "t6"."createdAt" as "createdAt", "t6"."clientId" as "clientId", "t5"."id" as "compositeImage.id", "t4"."id" as "tags.id", "t4"."title" as "tags.title", "t2"."id" as "categories.id", "t2"."groupLabel" as "categories.groupLabel", "t2"."label" as "categories.label", "t2"."width" as "categories.width", "t2"."height" as "categories.height", "t2"."platformId" as "categories.platformId" FROM "BuilderTemplates" as "t6" INNER JOIN "BuilderTemplateToCategoryMap" as "t1" ON "t1"."builderTemplateId" = "t6"."id"INNER JOIN "BuilderTemplateCategories" as "t2" ON "t2"."id" = "t1"."builderTemplateCategoryId"INNER JOIN "BuilderTemplateTags" as "t3" ON "t3"."builderTemplateId" = "t6"."id"INNER JOIN "Tags" as "t4" ON "t4"."id" = "t3"."tagId"INNER JOIN "Uploads" as "t5" ON "t5"."id" = "t6"."compositeImageId" WHERE "t6"."id" IN (SELECT "t6"."id" FROM "BuilderTemplates" as "t6" WHERE "t6"."clientId" = ANY($1) ORDER BY "t6"."createdAt" DESC LIMIT $2 OFFSET $3)`);
+			assert.deepEqual(result.parameters, [[1], 10, 0]);
+		});
+
+		it(`find all by platforms`, function () {
+			const result = prepareDynamicQuery({
+				criteria: {
+					platforms: [123]
+				},
+				limit: 10,
+				offset: 0
+			});
+			assert.equal(result.sql, `SELECT "t6"."id" as "id", "t6"."title" as "title", "t6"."createdAt" as "createdAt", "t6"."clientId" as "clientId", "t5"."id" as "compositeImage.id", "t4"."id" as "tags.id", "t4"."title" as "tags.title", "t2"."id" as "categories.id", "t2"."groupLabel" as "categories.groupLabel", "t2"."label" as "categories.label", "t2"."width" as "categories.width", "t2"."height" as "categories.height", "t2"."platformId" as "categories.platformId" FROM "BuilderTemplates" as "t6" INNER JOIN "BuilderTemplateToCategoryMap" as "t1" ON "t1"."builderTemplateId" = "t6"."id"INNER JOIN "BuilderTemplateCategories" as "t2" ON "t2"."id" = "t1"."builderTemplateCategoryId"INNER JOIN "BuilderTemplateTags" as "t3" ON "t3"."builderTemplateId" = "t6"."id"INNER JOIN "Tags" as "t4" ON "t4"."id" = "t3"."tagId"INNER JOIN "Uploads" as "t5" ON "t5"."id" = "t6"."compositeImageId" WHERE "t6"."id" IN (SELECT "t6"."id" FROM "BuilderTemplates" as "t6", "BuilderTemplateCategories" as "t2", "BuilderTemplateToCategoryMap" as "t1" WHERE ("t2"."platformId" = ANY($1) AND "t1"."builderTemplateId" = "t6"."id" AND "t1"."builderTemplateCategoryId" = "t2"."id") ORDER BY "t6"."createdAt" DESC LIMIT $2 OFFSET $3)`);
+			assert.deepEqual(result.parameters, [[123], 10, 0]);
 		});
 	});
 });
