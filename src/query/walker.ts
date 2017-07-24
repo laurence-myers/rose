@@ -250,7 +250,7 @@ const BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP = deepFreeze(new Map([
 ]));
 
 export class SqlAstWalker extends BaseWalker {
-	protected sb : string[] = [];
+	protected sb : string = '';
 	protected parameterGetters : Array<(p : Object) => any> = [];
 
 	constructor(
@@ -263,7 +263,7 @@ export class SqlAstWalker extends BaseWalker {
 	protected doListWalk<N extends AstNode>() {
 		return (node : N, index : number) : void => {
 			if (index > 0) {
-				this.sb.push(`, `);
+				this.sb += `, `;
 			}
 			this.walk(node);
 		}
@@ -271,9 +271,9 @@ export class SqlAstWalker extends BaseWalker {
 
 	protected walkAliasedExpressionNode(node : AnyAliasedExpressionNode) : void {
 		this.walk(node.expression);
-		this.sb.push(` as "`);
-		this.sb.push(node.alias);
-		this.sb.push(`"`);
+		this.sb += ` as "`;
+		this.sb += node.alias;
+		this.sb += `"`;
 	}
 
 	protected walkBooleanExpressionGroupNode(node : BooleanExpressionGroupNode) : void {
@@ -281,45 +281,45 @@ export class SqlAstWalker extends BaseWalker {
 		if (!operator) {
 			throw new UnsupportedOperationError(`Unrecognised boolean expression group operator: "${ node.operator }"`);
 		}
-		this.sb.push(`(`);
+		this.sb += `(`;
 		node.expressions.forEach((node : BooleanExpression, index : number) : void => {
 			if (index > 0) {
-				this.sb.push(` `);
-				this.sb.push(operator);
-				this.sb.push(` `);
+				this.sb += ` `;
+				this.sb += operator;
+				this.sb += ` `;
 			}
 			this.walk(node);
 		});
-		this.sb.push(`)`);
+		this.sb += `)`;
 	}
 
 	protected walkBinaryOperationNode(node : BinaryOperationNode) : void {
 		this.walk(node.left);
-		this.sb.push(` `);
-		this.sb.push(node.operator);
-		this.sb.push(` `);
+		this.sb += ` `;
+		this.sb += node.operator;
+		this.sb += ` `;
 		this.walk(node.right);
 	}
 
 	protected walkColumnReferenceNode(node : ColumnReferenceNode) : void {
 		const tableAlias = node.tableAlias || this.tableMap.get(node.tableName);
-		this.sb.push(`"`);
-		this.sb.push(tableAlias);
-		this.sb.push(`"."`);
-		this.sb.push(node.columnName);
-		this.sb.push(`"`);
+		this.sb += `"`;
+		this.sb += tableAlias;
+		this.sb += `"."`;
+		this.sb += node.columnName;
+		this.sb += `"`;
 	}
 
 	protected walkConstantNode(node : ConstantNode<any>) : void {
 		this.parameterGetters.push(node.getter);
-		this.sb.push(`$`);
-		this.sb.push(this.parameterGetters.length.toString());
+		this.sb += `$`;
+		this.sb += this.parameterGetters.length.toString();
 	}
 
 	protected walkExpressionListNode(node : ExpressionListNode) : void {
-		this.sb.push('(');
+		this.sb += '(';
 		node.expressions.forEach(this.doListWalk());
-		this.sb.push(')');
+		this.sb += ')';
 	}
 
 	protected walkJoinNode(node : JoinNode) : void {
@@ -334,62 +334,62 @@ export class SqlAstWalker extends BaseWalker {
 			throw new UnsupportedOperationError(`Joins cannot specify both "on" and "using" conditions.`);
 		}
 
-		this.sb.push(joinText);
-		this.sb.push(` JOIN `);
+		this.sb += joinText;
+		this.sb += ` JOIN `;
 		this.walk(node.fromItem);
 		if (node.on) {
-			this.sb.push(` ON `);
+			this.sb += ` ON `;
 			this.walk(node.on);
 		} else if (node.using) {
-			this.sb.push(` USING `);
+			this.sb += ` USING `;
 			node.using.forEach(this.doListWalk());
 		}
 		// TODO: support "natural"
 	}
 
 	protected walkFunctionExpressionNode(node : FunctionExpressionNode) : void {
-		this.sb.push(node.name);
-		this.sb.push('(');
+		this.sb += node.name;
+		this.sb += '(';
 		if (node.arguments.length > 0) {
 			node.arguments.forEach(this.doListWalk());
 		}
-		this.sb.push(')');
+		this.sb += ')';
 	}
 
 	protected walkLimitOffsetNode(node : LimitOffsetNode) : void {
-		this.sb.push('LIMIT ');
+		this.sb += 'LIMIT ';
 		this.walk(node.limit);
 		// TODO: decouple limit and offset nodes
-		this.sb.push(' OFFSET ');
+		this.sb += ' OFFSET ';
 		this.walk(node.offset);
 	}
 
 	protected walkLiteralNode(node : LiteralNode) : void {
-		this.sb.push(node.value);
+		this.sb += node.value;
 	}
 
 	protected walkNaturalSyntaxFunctionExpressionNode(node : NaturalSyntaxFunctionExpressionNode) : void {
-		this.sb.push(node.name);
-		this.sb.push('(');
+		this.sb += node.name;
+		this.sb += '(';
 		if (node.arguments.length > 0) {
 			node.arguments.forEach((arg, index) => {
 				if (arg.key) {
-					this.sb.push(arg.key);
-					this.sb.push(' ');
+					this.sb += arg.key;
+					this.sb += ' ';
 				}
 				this.walk(arg.value);
 				if (index < node.arguments.length - 1) {
-					this.sb.push(" ");
+					this.sb += " ";
 				}
 			});
 		}
-		this.sb.push(')');
+		this.sb += ')';
 	}
 
 	protected walkNotExpressionNode(node : NotExpressionNode) : void {
-		this.sb.push(`NOT (`);
+		this.sb += `NOT (`;
 		this.walk(node.expression);
-		this.sb.push(`)`);
+		this.sb += `)`;
 	}
 
 	protected walkOrderByExpressionNode(node : OrderByExpressionNode) : void {
@@ -397,17 +397,17 @@ export class SqlAstWalker extends BaseWalker {
 		if (node.order) {
 			switch (node.order) {
 				case 'asc':
-					this.sb.push(' ASC');
+					this.sb += ' ASC';
 					break;
 				case 'desc':
-					this.sb.push(' DESC');
+					this.sb += ' DESC';
 					break;
 				case 'using':
-					this.sb.push(' USING ');
+					this.sb += ' USING ';
 					if (!node.operator) {
 						throw new UnsupportedOperationError(`An order by expression with "using" must also have an operator.`);
 					}
-					this.sb.push(node.operator);
+					this.sb += node.operator;
 					break;
 				default:
 					return assertNever(node.order);
@@ -416,76 +416,76 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkSelectCommandNode(node : SelectCommandNode) : void {
-		this.sb.push("SELECT ");
+		this.sb += "SELECT ";
 		switch (node.distinction) {
 			case "distinct":
-				this.sb.push("DISTINCT ");
+				this.sb += "DISTINCT ";
 				break;
 			case "all":
 				break;
 			case "on":
-				this.sb.push("DISTINCT ON (");
+				this.sb += "DISTINCT ON (";
 				if (node.distinctOn) {
 					this.walk(node.distinctOn);
 				} else {
 					throw new UnsupportedOperationError(`When using "distinct on", you must provide a distinctOn expression.`);
 				}
-				this.sb.push(") ");
+				this.sb += ") ";
 				break;
 			default:
 				assertNever(node.distinction);
 		}
 		node.outputExpressions.forEach(this.doListWalk());
 		if (node.fromItems.length > 0) {
-			this.sb.push(" FROM ");
+			this.sb += " FROM ";
 			node.fromItems.forEach(this.doListWalk());
 		}
 		if (node.joins.length > 0) {
-			this.sb.push(" ");
+			this.sb += " ";
 			node.joins.forEach(this.doItemWalk());
 		}
 		if (node.conditions.length > 0) {
-			this.sb.push(" WHERE ");
+			this.sb += " WHERE ";
 			node.conditions.forEach(this.doItemWalk());
 		}
 		if (node.ordering.length > 0) {
-			this.sb.push(" ORDER BY ");
+			this.sb += " ORDER BY ";
 			node.ordering.forEach(this.doListWalk());
 		}
 		if (node.limit) {
-			this.sb.push(" ");
+			this.sb += " ";
 			this.walk(node.limit);
 		}
 	}
 
 	protected walkSubSelectNode(node : SubSelectNode) : void {
-		this.sb.push(`(`);
+		this.sb += `(`;
 		this.walk(node.query);
-		this.sb.push(`)`);
+		this.sb += `)`;
 	}
 
 	protected walkTableReferenceNode(node : TableReferenceNode) : void {
-		this.sb.push(`"`);
-		this.sb.push(node.tableName);
-		this.sb.push(`"`);
+		this.sb += `"`;
+		this.sb += node.tableName;
+		this.sb += `"`;
 	}
 
 	protected walkUnaryOperationNode(node : UnaryOperationNode) : void {
 		if (node.position == 'left') {
-			this.sb.push(node.operator);
-			this.sb.push(` `);
+			this.sb += node.operator;
+			this.sb += ` `;
 			this.walk(node.expression);
 		} else {
 			this.walk(node.expression);
-			this.sb.push(` `);
-			this.sb.push(node.operator);
+			this.sb += ` `;
+			this.sb += node.operator;
 		}
 	}
 
 	prepare() : PreparedQueryData {
 		this.walk(this.queryAst);
 		return {
-			sql: this.sb.join(''),
+			sql: this.sb,
 			parameterGetters: this.parameterGetters
 		};
 	}
