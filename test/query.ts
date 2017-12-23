@@ -1,6 +1,6 @@
 // import {describe, it} from "mocha";
 import {Column} from "../src/query/metamodel";
-import {and, Expression, Nested, not, or, select, subSelect} from "../src/query/dsl";
+import {and, col, Expression, Nested, not, or, select, subSelect} from "../src/query/dsl";
 import {deepFreeze} from "../src/lang";
 import {QAgencies, QLocations, QUsers, TLocations} from "./fixtures";
 import assert = require('assert');
@@ -520,5 +520,34 @@ describe("Query DSL", function () {
 			};
 			assert.deepEqual(actual, expected);
 		});
+	});
+
+	it(`QueryBuilder's public query composition methods are immutable`, function () {
+		class QuerySelect {
+			@Column(QUsers.id)
+			id : number;
+		}
+
+		const builder1 = select(QuerySelect);
+		const builder2 = builder1.where(QUsers.id.eq((p) => p.userId));
+		console.log((builder2 as any).tableMap);
+		assert.notStrictEqual(builder1, builder2, "where() should create a new QueryBuilder");
+		assert.notStrictEqual((builder1 as any).queryAst, (builder2 as any).queryAst, "immutable methods should deep clone the queryAst property");
+		// assert.notStrictEqual((builder1 as any).tableMap, (builder2 as any).tableMap, "immutable methods should deep clone the tableMap property");
+		const builder3 = builder2.from(QUsers);
+		console.log((builder3 as any).tableMap);
+		assert.notStrictEqual(builder2, builder3, "from() should create a new QueryBuilder");
+		assert.ok((builder3 as any).tableMap.size > 0, "from() should populate the tableMap");
+		const builder4 = builder3.join(QUsers).cross();
+		assert.notStrictEqual(builder3, builder4, "join() should create a new QueryBuilder");
+		// assert.ok((builder4 as any).tableMap.size > 0, "join() should populate the tableMap");
+		const builder5 = builder4.distinct();
+		assert.notStrictEqual(builder4, builder5, "distinct() should create a new QueryBuilder");
+		const builder6 = builder5.distinctOn(col(QUsers.id));
+		assert.notStrictEqual(builder5, builder6, "distinctOn() should create a new QueryBuilder");
+		const builder7 = builder6.limit();
+		assert.notStrictEqual(builder6, builder7, "limit() should create a new QueryBuilder");
+		const builder8 = builder7.orderBy(QUsers.id.asc());
+		assert.notStrictEqual(builder7, builder8, "orderBy() should create a new QueryBuilder");
 	});
 });

@@ -19,6 +19,7 @@
     "@types/pg": "^6.1.34",
     "@types/ramda": "0.0.2",
     "@types/reflect-metadata": "0.0.5",
+    "fast-deepclone": "1.0.0",
     "inflection": "^1.12.0",
     "metrohash": "2.3.0",
     "pg": "^6.1.0",

@@ -470,7 +470,7 @@ describe("Row mapping", function () {
 		}
 
 		const result = mapRowsToClass(QuerySelect, outputExpressions, rows);
-		logObject(result);
+		// logObject(result);
 
 		assert.deepEqual(result, [
 			{

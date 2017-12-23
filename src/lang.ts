@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import deepClone = require("fast-deepclone");
 import fs = require('fs');
 import path = require('path');
 import * as util from "util";
@@ -107,4 +108,26 @@ export function last<T>(arr : T[]) : T {
 
 export function isMap<K, V>(obj : any) : obj is Map<K, V> {
 	return obj instanceof Map;
+}
+
+export function clone<T>(obj : T) : T {
+	return deepClone(obj, true);
+}
+
+function isFunction(value : any) : value is Function {
+	return typeof(value) === 'function';
+}
+
+export function Clone() : MethodDecorator {
+	return function<O, K extends keyof O, T>(target: O, propertyKey: K, descriptor: TypedPropertyDescriptor<T>) : TypedPropertyDescriptor<T> | void {
+		const original = descriptor.value;
+		if (isFunction(original)) {
+			descriptor.value = function(this : any, ...args : any[]) {
+				const newObj = clone(this);
+				console.log((this as any).tableMap, (newObj as any).tableMap);
+				return original.apply(newObj, args);
+			} as any;
+		}
+		return descriptor;
+	};
 }

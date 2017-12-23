@@ -163,6 +163,6 @@ function extractNestedSchema(outputExpressions : SelectOutputExpression[]) : Nes
 				break;
 		}
 	}
-	logObject(output);
+	// logObject(output);
 	return output;
 }

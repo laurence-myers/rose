@@ -227,13 +227,13 @@ describe(`Example queries`, function () {
 			const QCategories = QBuilderTemplateCategories;
 			const QCategoryMap = QBuilderTemplateToCategoryMap;
 
-			const idSubQueryBuilder = subSelect<Params>(QBuilderTemplates.id)
+			let idSubQueryBuilder = subSelect<Params>(QBuilderTemplates.id)
 				.orderBy(QBuilderTemplates.createdAt.desc())
 				.limit();
 			if (params.criteria.clients) {
-				idSubQueryBuilder.where(QBuilderTemplates.clientId.eqAny((p) => p.criteria.clients || []));
+				idSubQueryBuilder = idSubQueryBuilder.where(QBuilderTemplates.clientId.eqAny((p) => p.criteria.clients || []));
 			} else if (params.criteria.platforms) {
-				idSubQueryBuilder.where(and(
+				idSubQueryBuilder = idSubQueryBuilder.where(and(
 					QBuilderTemplateCategories.platformId.eqAny((p) => p.criteria.platforms),
 					QBuilderTemplateToCategoryMap.builderTemplateId.eq(QBuilderTemplates.id),
 					QBuilderTemplateToCategoryMap.builderTemplateCategoryId.eq(QBuilderTemplateCategories.id)

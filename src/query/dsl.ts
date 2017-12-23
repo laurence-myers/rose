@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import {ColumnMetamodel, METADATA_KEY_PREFIX, QueryTable} from "./metamodel";
-import {DefaultMap, getMetadata, getType} from "../lang";
+import {Clone, DefaultMap, getMetadata, getType} from "../lang";
 import {InvalidDecoratorError, UnsupportedOperationError} from "../errors";
 import {
 	BooleanExpression,
@@ -15,7 +15,7 @@ import {
 	ParameterOrValueExpressionNode
 } from "./ast";
 import {RectifyingWalker, SqlAstWalker} from "./walker";
-import {QueryClass, SelectMetadataProcessor} from "./metadata";
+import {SelectMetadataProcessor} from "./metadata";
 import {execute, Queryable} from "../execution/execution";
 
 export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
@@ -165,17 +165,20 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 		rectifier.rectify();
 	}
 
+	@Clone()
 	distinct() : this {
 		this.queryAst.distinction = 'distinct';
 		return this;
 	}
 
+	@Clone()
 	distinctOn(expression : ParameterOrValueExpressionNode) : this {
 		this.queryAst.distinction = 'on';
 		this.queryAst.distinctOn = expression;
 		return this;
 	}
 
+	@Clone()
 	from(first : QueryTable, ...rest: QueryTable[]) : this {
 		for (const qtable of [first].concat(rest)) {
 			const tableName = qtable.$table.name;
@@ -193,6 +196,7 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 		return this;
 	}
 
+	@Clone()
 	join(queryTable : QueryTable) : JoinBuilder<this> {
 		return new JoinBuilder(this.tableMap, queryTable, (joinNode) => {
 			this.queryAst.joins.push(joinNode);
@@ -200,11 +204,13 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 		});
 	}
 
+	@Clone()
 	where(whereExpression : BooleanExpression) : this {
 		this.queryAst.conditions.push(whereExpression);
 		return this;
 	}
 
+	@Clone()
 	orderBy(first : OrderByExpressionNode, ...rest : OrderByExpressionNode[]) : this {
 		this.queryAst.ordering.push(first);
 		if (rest && rest.length > 0) {
@@ -213,6 +219,7 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 		return this;
 	}
 
+	@Clone()
 	limit(limitNum? : number) : this {
 		this.queryAst.limit = {
 			type: 'limitOffsetNode',
