@@ -78,6 +78,15 @@ export interface HasLimit {
 	offset? : number;
 }
 
+// TODO: support nested (+ arrays)
+// TODO: support expressions
+export type ColumnTypes = string | number | Date;
+export type SelectObjectValue = ColumnMetamodel<ColumnTypes>;
+
+export interface SelectObject {
+	[key : string] : SelectObjectValue;
+}
+
 class JoinBuilder<TResult> {
 	protected joinType : 'inner' | 'left' | 'right' | 'full' | 'cross' = 'inner';
 	protected onNode : BooleanExpression;

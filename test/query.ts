@@ -8,6 +8,20 @@ import {lower} from "../src/query/postgresql/functions/string/sql";
 import {count} from "../src/query/postgresql/functions/aggregate/general";
 
 describe("Query DSL", function () {
+	it("can select by an object", function () {
+		const selectObject = {
+			id : QUsers.id
+		};
+
+		const actual = select(selectObject)
+			.toSql();
+		const expected = {
+			sql: `SELECT "t1"."id" FROM "Users"`,
+			parameters: []
+		};
+		assert.deepEqual(actual, expected);
+	});
+
 	it("supports selecting and where clause from one table, with an immediate value (param)", function () {
 		class QuerySelect {
 			@Column(QUsers.id)
