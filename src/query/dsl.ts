@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import {ColumnMetamodel, METADATA_KEY_PREFIX, QueryTable} from "./metamodel";
-import {Clone, DefaultMap, getMetadata, getType} from "../lang";
+import {Clone, Constructor, DefaultMap, getMetadata, getType} from "../lang";
 import {InvalidDecoratorError, UnsupportedOperationError} from "../errors";
 import {
 	BooleanExpression,
@@ -237,7 +237,7 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 }
 
 class QueryBuilder<TQueryClass, TParams extends HasLimit> extends BaseQueryBuilder<TParams> {
-	constructor(private command : SqlCommand, private queryClass : { new() : TQueryClass }) {
+	constructor(private command : SqlCommand, private queryClass : Constructor<TQueryClass>) {
 		super();
 		this.select();
 	}
@@ -278,7 +278,7 @@ class QueryBuilder<TQueryClass, TParams extends HasLimit> extends BaseQueryBuild
 
 class PreparedQuery<TDataClass, TParams> {
 	constructor(
-		protected readonly queryClass : { new() : TDataClass },
+		protected readonly queryClass : Constructor<TDataClass>,
 		protected readonly selectOutputExpressions : SelectOutputExpression[],
 		protected readonly sql : string,
 		protected readonly paramGetters : Array<(params : TParams) => any>) {
@@ -338,7 +338,7 @@ class SubQueryBuilder<TParams extends HasLimit> extends BaseQueryBuilder<TParams
 	}
 }
 
-export function select<TQueryClass, TParams>(queryClass : { new() : TQueryClass }) : QueryBuilder<TQueryClass, TParams> {
+export function select<TQueryClass, TParams>(queryClass : Constructor<TQueryClass>) : QueryBuilder<TQueryClass, TParams> {
 	return new QueryBuilder<TQueryClass, TParams>(SqlCommand.Select, queryClass);
 }
 

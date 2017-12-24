@@ -131,3 +131,5 @@ export function Clone() : MethodDecorator {
 		return descriptor;
 	};
 }
+
+export type Constructor<T> = { new() : T };
