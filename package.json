@@ -14,7 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "fast-deepclone": "1.0.0",
+    "fast-deepclone": "github:laurence-myers/fast-deepclone#43c4ed58057e691589b1294ec1fbe1d55c35e682",
     "inflection": "^1.12.0",
     "metrohash": "2.3.0",
     "pg": "^6.1.0",
