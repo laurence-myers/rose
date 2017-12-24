@@ -119,7 +119,7 @@ function isFunction(value : any) : value is Function {
 }
 
 export function Clone() : MethodDecorator {
-	return function<O, K extends keyof O, T>(target: O, propertyKey: K, descriptor: TypedPropertyDescriptor<T>) : TypedPropertyDescriptor<T> | void {
+	return function<O, K extends keyof O, T>(target: O, propertyKey: K | string | symbol, descriptor: TypedPropertyDescriptor<T>) : TypedPropertyDescriptor<T> | void {
 		const original = descriptor.value;
 		if (isFunction(original)) {
 			descriptor.value = function(this : any, ...args : any[]) {
