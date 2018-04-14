@@ -18,7 +18,7 @@ export class InvalidColumnDefinitionError extends ArbaonError {
 
 }
 
-export class InvalidQueryClassError extends ArbaonError {
+export class InvalidQuerySelectorError extends ArbaonError {
 
 }
 

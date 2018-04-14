@@ -1,65 +1,46 @@
 import "reflect-metadata";
 import {ColumnMetamodel, METADATA_KEY_PREFIX, QueryTable} from "./metamodel";
-import {Clone, Constructor, DefaultMap, getMetadata, getType} from "../lang";
+import {Clone, DefaultMap, getMetadata, getType} from "../lang";
 import {InvalidDecoratorError, UnsupportedOperationError} from "../errors";
 import {
 	BooleanExpression,
 	BooleanExpressionGroupNode,
-	ColumnReferenceNode, ConstantNode, ExpressionListNode,
-	JoinNode, LiteralNode,
+	ColumnReferenceNode,
+	ConstantNode,
+	ExpressionListNode,
+	JoinNode,
+	LiteralNode,
 	NotExpressionNode,
 	OrderByExpressionNode,
+	ParameterOrValueExpressionNode,
 	SelectCommandNode,
 	SelectOutputExpression,
-	SubSelectNode,
-	ParameterOrValueExpressionNode
+	SubSelectNode
 } from "./ast";
 import {RectifyingWalker, SqlAstWalker} from "./walker";
-import {SelectMetadataProcessor} from "./metadata";
-import {execute, Queryable} from "../execution/execution";
-
-export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
-export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator {
-	return function (target : Object, propertyKey : string | symbol) {
-		const type = getType(target, propertyKey);
-		const isArray = type == Array;
-		if (isArray && !nestedClass) {
-			throw new InvalidDecoratorError(`When nesting an array, you must pass the nested class as an argument to the decorator.`);
-		}
-		let metadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, target);
-		if (!metadata) {
-			metadata = new Map<string, NestedQuery>();
-			Reflect.defineMetadata(NESTED_METADATA_KEY, metadata, target);
-		} else if (metadata.get(<string> propertyKey) !== undefined) {
-			throw new InvalidDecoratorError(`Property "${ propertyKey }" already has nested metadata defined.`);
-		}
-		const nestedQuery = new NestedQuery(isArray ? nestedClass : <any>type, isArray);
-		metadata.set(<string> propertyKey, nestedQuery);
-	}
-}
-
-export const EXPRESSION_METADATA_KEY = `${ METADATA_KEY_PREFIX }expression`;
-export function Expression(functionExpressionNode : ParameterOrValueExpressionNode) : PropertyDecorator {
-	return function (target : Object, propertyKey : string | symbol) {
-		let metadata = getMetadata<Map<string, ParameterOrValueExpressionNode>>(EXPRESSION_METADATA_KEY, target);
-		if (!metadata) {
-			metadata = new Map<string, ParameterOrValueExpressionNode>();
-			Reflect.defineMetadata(EXPRESSION_METADATA_KEY, metadata, target);
-		} else if (metadata.get(<string> propertyKey) !== undefined) {
-			throw new InvalidDecoratorError(`Property "${ propertyKey }" already has an expression metadata defined.`);
-		}
-		metadata.set(<string> propertyKey, functionExpressionNode);
-	}
-}
-
-export class NestedQuery {
-	constructor(
-		public queryClass : Function,
-		public isArray : boolean
-	) {
-
-	}
-}
+import {QuerySelectorProcessor} from "./metadata";
+// import {execute, Queryable} from "../execution/execution";
+import {QuerySelector, SelectorExpression, SelectorNested} from "./querySelector";
+//
+// export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
+// export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator {
+// 	return function (target : Object, propertyKey : string | symbol) {
+// 		const type = getType(target, propertyKey);
+// 		const isArray = type == Array;
+// 		if (isArray && !nestedClass) {
+// 			throw new InvalidDecoratorError(`When nesting an array, you must pass the nested class as an argument to the decorator.`);
+// 		}
+// 		let metadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, target);
+// 		if (!metadata) {
+// 			metadata = new Map<string, NestedQuery>();
+// 			Reflect.defineMetadata(NESTED_METADATA_KEY, metadata, target);
+// 		} else if (metadata.get(<string> propertyKey) !== undefined) {
+// 			throw new InvalidDecoratorError(`Property "${ propertyKey }" already has nested metadata defined.`);
+// 		}
+// 		const nestedQuery = new NestedQuery(isArray ? nestedClass : <any>type, isArray);
+// 		metadata.set(<string> propertyKey, nestedQuery);
+// 	}
+// }
 
 export const enum SqlCommand {
 	Select,
@@ -76,15 +57,6 @@ export interface GeneratedQuery {
 export interface HasLimit {
 	limit? : number;
 	offset? : number;
-}
-
-// TODO: support nested (+ arrays)
-// TODO: support expressions
-export type ColumnTypes = string | number | Date;
-export type SelectObjectValue = ColumnMetamodel<ColumnTypes>;
-
-export interface SelectObject {
-	[key : string] : SelectObjectValue;
 }
 
 class JoinBuilder<TResult> {
@@ -253,14 +225,14 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	}
 }
 
-class QueryBuilder<TQueryClass, TParams extends HasLimit> extends BaseQueryBuilder<TParams> {
-	constructor(private command : SqlCommand, private queryClass : Constructor<TQueryClass>) {
+class QueryBuilder<TParams extends HasLimit> extends BaseQueryBuilder<TParams> {
+	constructor(private command : SqlCommand, private querySelector : QuerySelector) {
 		super();
 		this.select();
 	}
 
-	protected processSelectQueryClass() : Array<SelectOutputExpression> {
-		const processor = new SelectMetadataProcessor(this.queryClass);
+	protected processQuerySelector() : Array<SelectOutputExpression> {
+		const processor = new QuerySelectorProcessor(this.querySelector);
 		return processor.process();
 	}
 
@@ -268,7 +240,7 @@ class QueryBuilder<TQueryClass, TParams extends HasLimit> extends BaseQueryBuild
 		this.queryAst = {
 			type: 'selectCommandNode',
 			distinction: 'all',
-			outputExpressions: this.processSelectQueryClass(),
+			outputExpressions: this.processQuerySelector(),
 			fromItems: [],
 			joins: [],
 			conditions: [],
@@ -277,25 +249,25 @@ class QueryBuilder<TQueryClass, TParams extends HasLimit> extends BaseQueryBuild
 		return this;
 	}
 
-	prepare() : PreparedQuery<TQueryClass, TParams> {
+	prepare() : PreparedQuery<TParams> {
 		this.rectifyTableReferences();
 		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
 		const data = walker.prepare();
-		return new PreparedQuery<TQueryClass, TParams>(this.queryClass, this.queryAst.outputExpressions, data.sql, data.parameterGetters);
+		return new PreparedQuery<TParams>(this.queryAst.outputExpressions, data.sql, data.parameterGetters);
 	}
 
 	toSql(params : TParams) : GeneratedQuery {
 		return this.prepare().generate(params);
 	}
 
-	execute(queryable : Queryable, params : TParams) : Promise<TQueryClass[]> {
-		return this.prepare().execute(queryable, params);
-	}
+	// execute(queryable : Queryable, params : TParams) : Promise<TQueryClass[]> {
+	// 	return this.prepare().execute(queryable, params);
+	// }
 }
 
-class PreparedQuery<TDataClass, TParams> {
+class PreparedQuery<TParams> {
 	constructor(
-		protected readonly queryClass : Constructor<TDataClass>,
+		// protected readonly queryClass : Constructor<TDataClass>,
 		protected readonly selectOutputExpressions : SelectOutputExpression[],
 		protected readonly sql : string,
 		protected readonly paramGetters : Array<(params : TParams) => any>) {
@@ -310,9 +282,9 @@ class PreparedQuery<TDataClass, TParams> {
 		};
 	}
 
-	execute(queryable : Queryable, params : TParams) : Promise<TDataClass[]> {
-		return execute(queryable, this.generate(params), this.queryClass, this.selectOutputExpressions);
-	}
+	// execute(queryable : Queryable, params : TParams) : Promise<TDataClass[]> {
+	// 	return execute(queryable, this.generate(params), this.queryClass, this.selectOutputExpressions);
+	// }
 }
 
 // TODO: how to reference expressions defined outside of this sub-query?
@@ -355,8 +327,8 @@ class SubQueryBuilder<TParams extends HasLimit> extends BaseQueryBuilder<TParams
 	}
 }
 
-export function select<TQueryClass, TParams>(queryClass : Constructor<TQueryClass>) : QueryBuilder<TQueryClass, TParams> {
-	return new QueryBuilder<TQueryClass, TParams>(SqlCommand.Select, queryClass);
+export function select<TParams>(querySelector : QuerySelector) : QueryBuilder<TParams> {
+	return new QueryBuilder<TParams>(SqlCommand.Select, querySelector);
 }
 
 type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<any>;
@@ -422,5 +394,23 @@ export function row(first : ParameterOrValueExpressionNode, ...rest : ParameterO
 	return {
 		type: "expressionListNode",
 		expressions: [first].concat(rest)
+	};
+}
+
+export function selectExpression(expression : ParameterOrValueExpressionNode) : SelectorExpression {
+	return {
+		$selectorKind: 'expression',
+		expression
+	};
+}
+
+export function selectNested(querySelector : QuerySelector, constructor : Function, isArray : boolean) : SelectorNested {
+	return {
+		$selectorKind: 'nested',
+		nestedSelector: {
+			querySelector,
+			constructor,
+			isArray
+		}
 	};
 }

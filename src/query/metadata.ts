@@ -1,26 +1,19 @@
-import {InvalidQueryClassError} from "../errors";
-import {EXPRESSION_METADATA_KEY, NESTED_METADATA_KEY, NestedQuery} from "./dsl";
-import {
-	AliasedSelectExpressionNode, FunctionExpressionNode, SelectOutputExpression, SubSelectNode,
-	ParameterOrValueExpressionNode
-} from "./ast";
-import {getMetadata} from "../lang";
-import {ColumnMetamodel, SELECT_METADATA_KEY} from "./metamodel";
+import {InvalidQuerySelectorError} from "../errors";
+import {AliasedSelectExpressionNode, ParameterOrValueExpressionNode, SelectOutputExpression} from "./ast";
+import {assertNever} from "../lang";
+import {ColumnMetamodel} from "./metamodel";
+import {NestedQuery, QuerySelector, SelectorColumnTypes} from "./querySelector";
 
-export interface QueryClass {
-	new() : any;
-}
-
-export class SelectMetadataProcessor {
+export class QuerySelectorProcessor {
 	protected outputExpressions : Array<SelectOutputExpression> = [];
 
 	constructor(
-		protected queryClass : QueryClass
+		protected querySelector : QuerySelector
 	) {
 
 	}
 
-	protected processSelectMetadata(entries : IterableIterator<[string, ColumnMetamodel<any>]>, aliasPath : string[]) : void {
+	protected processColumnEntries(entries : Iterable<[string, SelectorColumnTypes]>, aliasPath : string[]) : void {
 		for (const entry of entries) {
 			const columnMetamodel : ColumnMetamodel<any> = entry[1];
 			const fullPath = aliasPath.concat(entry[0]);
@@ -35,15 +28,15 @@ export class SelectMetadataProcessor {
 		}
 	}
 
-	protected processNestedMetadata(entries : IterableIterator<[string, NestedQuery]>, aliasPath : string[]) : void {
+	protected processNestedEntries(entries : Iterable<[string, NestedQuery]>, aliasPath : string[]) : void {
 		for (const entry of entries) {
 			const aliasPrefix : string = entry[0];
 			const nestedQuery : NestedQuery = entry[1];
-			this.processSelectQueryClass(nestedQuery.queryClass, aliasPath.concat(aliasPrefix));
+			this.processSelectQueryClass(nestedQuery.querySelector, aliasPath.concat(aliasPrefix));
 		}
 	}
 
-	protected processExpressionMetadata(entries : IterableIterator<[string, ParameterOrValueExpressionNode]>, aliasPath : string[]) : void {
+	protected processExpressionEntries(entries : Iterable<[string, ParameterOrValueExpressionNode]>, aliasPath : string[]) : void {
 		for (const entry of entries) {
 			const fullPath = aliasPath.concat(entry[0]);
 			const columnAlias : string = fullPath.join('.');
@@ -60,40 +53,57 @@ export class SelectMetadataProcessor {
 		}
 	}
 
-	protected getSelectMetadata(queryClass : Function) : Map<string, ColumnMetamodel<any>> | undefined {
-		const selectMetadata = getMetadata<Map<string, ColumnMetamodel<any>>>(SELECT_METADATA_KEY, queryClass.prototype);
-		return selectMetadata;
+	protected getAllEntries(querySelector : QuerySelector) {
+		const columns = [];
+		const expressions = [];
+		const nesteds = [];
+		for (const key of Object.keys(querySelector)) {
+			const value = querySelector[key];
+			switch (value.$selectorKind) {
+				case "column":
+					const columnEntry : [string, SelectorColumnTypes] = [key, value];
+					columns.push(columnEntry);
+					break;
+				case "expression":
+					const expressionEntry : [string, ParameterOrValueExpressionNode] = [key, value.expression];
+					expressions.push(expressionEntry);
+					break;
+				case "nested":
+					const nestedEntry : [string, NestedQuery] = [key, value.nestedSelector];
+					nesteds.push(nestedEntry);
+					break;
+				default:
+					throw assertNever(value);
+			}
+		}
+		return {
+			columns,
+			expressions,
+			nesteds
+		};
 	}
 
-	protected processSelectQueryClass(queryClass : Function, aliasPath : string[]) : void {
-		const selectMetadata = this.getSelectMetadata(queryClass);
-		if (selectMetadata) {
-			this.processSelectMetadata(selectMetadata.entries(), aliasPath);
+	protected processSelectQueryClass(querySelector : QuerySelector, aliasPath : string[]) : void {
+		const allEntries = this.getAllEntries(querySelector);
+		const columnEntries = allEntries.columns;
+		if (columnEntries) {
+			this.processColumnEntries(columnEntries, aliasPath);
 		}
-		const nestedMetadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, queryClass.prototype);
-		if (nestedMetadata) {
-			this.processNestedMetadata(nestedMetadata.entries(), aliasPath);
+		const nestedEntries = allEntries.nesteds;
+		if (nestedEntries) {
+			this.processNestedEntries(nestedEntries, aliasPath);
 		}
-		const expressionMetadata = getMetadata<Map<string, FunctionExpressionNode>>(EXPRESSION_METADATA_KEY, queryClass.prototype);
-		if (expressionMetadata) {
-			this.processExpressionMetadata(expressionMetadata.entries(), aliasPath);
+		const expressionEntries = allEntries.expressions;
+		if (expressionEntries) {
+			this.processExpressionEntries(expressionEntries, aliasPath);
 		}
-		if (!selectMetadata && !nestedMetadata && !expressionMetadata) {
-			throw new InvalidQueryClassError("The class provided to the select function does not have any output columns, expressions, or nested queries.");
+		if (!columnEntries.length && !nestedEntries.length && !expressionEntries.length) {
+			throw new InvalidQuerySelectorError("The selector object provided to the select function does not have any output columns, expressions, or nested queries.");
 		}
 	}
 
 	process() : Array<SelectOutputExpression> {
-		this.processSelectQueryClass(this.queryClass, []);
+		this.processSelectQueryClass(this.querySelector, []);
 		return this.outputExpressions;
-	}
-}
-
-export function getNestedPropertyNames(queryClass : Function) : string[] {
-	const nestedMetadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, queryClass.prototype);
-	if (nestedMetadata) {
-		return Array.from(nestedMetadata.keys());
-	} else {
-		return [];
 	}
 }

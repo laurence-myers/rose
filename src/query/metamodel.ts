@@ -8,6 +8,7 @@ import {
 } from "./ast";
 import {row} from "./dsl";
 import {any} from "./postgresql/functions/array/functions";
+import {SelectorKind} from "./querySelector";
 
 export const METADATA_KEY_PREFIX = "arbaon.";
 export const TABLE_METADATA_KEY = `${ METADATA_KEY_PREFIX }table`;
@@ -66,6 +67,9 @@ type BooleanBinaryOperators = '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINC
 type ValueType<T> = ((params : any) => T) | ColumnMetamodel<T> | ParameterOrValueExpressionNode;
 
 export class ColumnMetamodel<T> {
+	public readonly $selectorKind : 'column' = 'column';
+	protected readonly $resultType! : T; // type-only value
+
 	constructor(
 		readonly table : TableMetamodel,
 		readonly name : string,
