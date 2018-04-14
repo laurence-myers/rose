@@ -14,23 +14,24 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "fast-deepclone": "github:laurence-myers/fast-deepclone#43c4ed58057e691589b1294ec1fbe1d55c35e682",
-    "inflection": "^1.12.0",
+    "inflection": "1.12.0",
+    "lodash.clonedeep": "4.5.0",
     "metrohash": "2.3.0",
-    "pg": "^6.1.0",
-    "ramda": "^0.22.1",
-    "reflect-metadata": "^0.1.8"
+    "pg": "6.1.0",
+    "ramda": "0.22.1",
+    "reflect-metadata": "0.1.8"
   },
   "devDependencies": {
-    "@types/inflection": "^1.5.28",
+    "@types/inflection": "1.5.28",
+    "@types/lodash.clonedeep": "4.5.3",
     "@types/mocha": "2.2.32",
-    "@types/node": "^6.0.46",
-    "@types/pg": "^6.1.34",
+    "@types/node": "6.0.46",
+    "@types/pg": "6.1.34",
     "@types/ramda": "0.0.2",
     "@types/reflect-metadata": "0.0.5",
     "mocha": "3.1.2",
-    "source-map-support": "^0.4.6",
+    "source-map-support": "0.4.6",
     "ts-node": "3.0.6",
-    "typescript": "^2.6.2"
+    "typescript": "2.6.2"
   }
 }

@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import deepClone = require("fast-deepclone");
+import cloneDeep = require("lodash.clonedeep");
 import fs = require('fs');
 import path = require('path');
 import * as util from "util";
@@ -111,7 +111,7 @@ export function isMap<K, V>(obj : any) : obj is Map<K, V> {
 }
 
 export function clone<T>(obj : T) : T {
-	return deepClone(obj, true);
+	return cloneDeep(obj);
 }
 
 function isFunction(value : any) : value is Function {
