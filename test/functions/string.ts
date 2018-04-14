@@ -9,7 +9,7 @@ describe(`String functions`, function () {
 		it(`without characters`, function () {
 			class QuerySelect {
 				@Expression(btrim(col(QUsers.name)))
-				name : string;
+				name! : string;
 			}
 
 			const actual = select(QuerySelect).toSql({});
@@ -23,7 +23,7 @@ describe(`String functions`, function () {
 		it(`with characters`, function () {
 			class QuerySelect {
 				@Expression(btrim(col(QUsers.name), constant("abcd1234")))
-				name : string;
+				name! : string;
 			}
 
 			const actual = select(QuerySelect).toSql({});
@@ -38,7 +38,7 @@ describe(`String functions`, function () {
 	it(`pg_client_encoding()`, function() {
 		class QuerySelect {
 			@Expression(pg_client_encoding())
-			clientEncoding : string;
+			clientEncoding! : string;
 		}
 
 		const actual = select(QuerySelect).toSql({});
@@ -53,7 +53,7 @@ describe(`String functions`, function () {
 		it(`without characters`, function () {
 			class QuerySelect {
 				@Expression(trim("both", col(QUsers.name)))
-				name : string;
+				name! : string;
 			}
 
 			const actual = select(QuerySelect).toSql({});
@@ -67,7 +67,7 @@ describe(`String functions`, function () {
 		it(`with characters`, function () {
 			class QuerySelect {
 				@Expression(trim("both", col(QUsers.name), constant("abcd1234")))
-				name : string;
+				name! : string;
 			}
 
 			const actual = select(QuerySelect).toSql({});

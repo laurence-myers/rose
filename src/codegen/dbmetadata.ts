@@ -31,38 +31,35 @@ function yesOrNoToBoolean(yesOrNo : yes_or_no) : boolean {
  */
 
 export class ColumnMetadata {
-	public type : string;
-	public isNullable : boolean;
-
-	constructor(public name : string) {
-
+	constructor(
+		public readonly name : string,
+		public readonly type : string,
+		public readonly isNullable : boolean
+	) {
 	}
 }
 
 export class TableMetadata {
-	public columns = new DefaultMap<string, ColumnMetadata>((key : string) => new ColumnMetadata(key));
+	public readonly columns = new Map<string, ColumnMetadata>();
 
-	constructor(public name : string) {
+	constructor(public readonly name : string) {
 	}
 }
 
 const SCHEMA = 'public';
 
-async function populateColumnTypes(client : Client, tablesMetadata : Map<string, TableMetadata>) : Promise<void> {
+async function populateColumnTypes(client : Client, tablesMetadata : DefaultMap<string, TableMetadata>) : Promise<void> {
 	const result : QueryResult = await client.query(`SELECT "udt_name", "table_name", "column_name", "is_nullable" FROM "information_schema"."columns" WHERE "table_schema" = '${ SCHEMA }'`);
 	const rows : ColumnsRow[] = result.rows;
 	rows.forEach((row) => {
 		const tableMetadata = tablesMetadata.get(row.table_name);
-		if (tableMetadata == undefined) throw new Error("Table metadata should never be undefined");
-		const column : ColumnMetadata = tableMetadata.columns.get(row.column_name);
-		if (column == undefined) throw new Error("Column metadata should never be undefined");
-		column.type = row.udt_name;
-		column.isNullable = yesOrNoToBoolean(row.is_nullable);
+		const column = new ColumnMetadata(row.column_name, row.udt_name, yesOrNoToBoolean(row.is_nullable));
+		tableMetadata.columns.set(row.column_name, column);
 	});
 }
 
-export async function getTableMetadata(client : Client) : Promise<Map<string, TableMetadata>> {
-	const tablesMetadata : Map<string, TableMetadata> = new DefaultMap<string, TableMetadata>((key : string) => new TableMetadata(key));
+export async function getTableMetadata(client : Client) : Promise<DefaultMap<string, TableMetadata>> {
+	const tablesMetadata : DefaultMap<string, TableMetadata> = new DefaultMap<string, TableMetadata>((key : string) => new TableMetadata(key));
 	await populateColumnTypes(client, tablesMetadata);
 	return tablesMetadata;
 }

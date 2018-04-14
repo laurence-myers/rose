@@ -1,7 +1,6 @@
 import inflection = require("inflection");
 import {ColumnMetadata, TableMetadata} from "../dbmetadata";
 import {mmap} from "../helpers";
-import {UnsupportedOperationError} from "../../errors";
 import {POSTGRES_TO_TYPESCRIPT_TYPE_MAP} from "../dbtypes";
 
 function sanitizeTableName(tableName : string) : string {
@@ -36,7 +35,7 @@ import {deepFreeze} from "../src/lang";
 import {ColumnMetamodel, NumericColumnMetamodel, StringColumnMetamodel, DateColumnMetamodel, BooleanColumnMetamodel, TableMetamodel, QueryTable} from "../src/query/metamodel";
 
 export class T${ sanitizeTableName(tableMetadata.name) } extends QueryTable {
-	$table = new TableMetamodel("${ tableMetadata.name }", this.$tableAlias);
+	constructor($tableAlias? : string) { super(new TableMetamodel("${ tableMetadata.name }", $tableAlias)); }
 	
 	${ mmap(Array.from(tableMetadata.columns.values()), (col : ColumnMetadata) => 
 		`${ sanitizeColumnName(col.name) } = new ${ getColumnMetamodelString(col) };`, '\n	')}

@@ -25,7 +25,7 @@ describe("Query DSL", function () {
 	it("supports selecting and where clause from one table, with an immediate value (param)", function () {
 		class QuerySelect {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		interface QueryParams {
@@ -45,7 +45,7 @@ describe("Query DSL", function () {
 	it("supports ordering", function () {
 		class QuerySelect {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		interface QueryParams {
@@ -84,7 +84,7 @@ describe("Query DSL", function () {
 
 		class QuerySelect {
 			@Expression(nameExpr)
-			userName : string;
+			userName! : string;
 		}
 
 		// TODO: don't require manually constructing an OrderByExpressionNode to "orderBy"
@@ -102,10 +102,10 @@ describe("Query DSL", function () {
 	it("supports selecting and where clause from multiple tables", function () {
 		class QuerySelect {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 
 			@Column(QLocations.id)
-			locationId : number;
+			locationId! : number;
 		}
 
 		const actual = select(QuerySelect).where(QLocations.id.eq(QUsers.locationId)).toSql({}).sql;
@@ -116,15 +116,15 @@ describe("Query DSL", function () {
 	it("supports nested select objects", function () {
 		class QuerySelectNested {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		class QuerySelect {
 			@Column(QLocations.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNested)
-			users : Array<QuerySelectNested>;
+			users! : Array<QuerySelectNested>;
 		}
 
 		// TODO: specify the type of join for nested items
@@ -136,23 +136,23 @@ describe("Query DSL", function () {
 	it("supports deeply nested select objects", function () {
 		class QuerySelectNestedNested {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		class QuerySelectNested {
 			@Column(QLocations.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNestedNested)
-			users : Array<QuerySelectNestedNested>;
+			users! : Array<QuerySelectNestedNested>;
 		}
 
 		class QuerySelect {
 			@Column(QAgencies.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNested)
-			locations : Array<QuerySelectNested>;
+			locations! : Array<QuerySelectNested>;
 		}
 
 		const actual = select(QuerySelect).toSql({}).sql;
@@ -163,7 +163,7 @@ describe("Query DSL", function () {
 	it("supports function expressions as select output", function () {
 		class QuerySelect {
 			@Expression(count())
-			count : number;
+			count! : number;
 		}
 
 		const actual = select(QuerySelect).from(QUsers, QLocations).toSql({}).sql;
@@ -174,7 +174,7 @@ describe("Query DSL", function () {
 	it("supports distinct rows", function () {
 		class QuerySelect {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		const actual = select(QuerySelect).distinct().toSql({}).sql;
@@ -185,7 +185,7 @@ describe("Query DSL", function () {
 	it("supports limit and offset", function () {
 		class QuerySelect {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		const actual = select(QuerySelect).limit().toSql({
@@ -203,10 +203,10 @@ describe("Query DSL", function () {
 
 		class QuerySelect {
 			@Column(QLocations.id)
-			id : number;
+			id! : number;
 
 			@Column(QUsers.id)
-			userId : number;
+			userId! : number;
 		}
 
 		// TODO: see if we can fix the generated alias ordering. Although, does it matter?
@@ -251,7 +251,7 @@ describe("Query DSL", function () {
 	describe("Boolean Binary Operations", function () {
 		class QuerySelect {
 			@Column(QLocations.id)
-			id : number;
+			id! : number;
 		}
 
 		it("can test for equality", function () {
@@ -357,7 +357,7 @@ describe("Query DSL", function () {
 	describe("Boolean Unary Operations", function () {
 		class QuerySelect {
 			@Column(QLocations.id)
-			id : number;
+			id! : number;
 		}
 
 		it("can test for null", function () {
@@ -436,10 +436,10 @@ describe("Query DSL", function () {
 	describe("Boolean Expression Groups", function () {
 		class QuerySelect {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 
 			@Column(QUsers.name)
-			name : string;
+			name! : string;
 		}
 
 		it("can group with 'and'", function () {
@@ -474,7 +474,7 @@ describe("Query DSL", function () {
 	it("can negate a boolean expression", function () {
 		class QuerySelect {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		const actual = select(QuerySelect).where(
@@ -493,7 +493,7 @@ describe("Query DSL", function () {
 		it("can include a basic sub-query", function () {
 			class QuerySelect {
 				@Column(QUsers.id)
-				id : number;
+				id! : number;
 			}
 
 			const actual = select(QuerySelect).where(
@@ -518,7 +518,7 @@ describe("Query DSL", function () {
 			const QOuterLocations = deepFreeze(new TLocations("outerLocations"));
 			class QuerySelect {
 				@Column(QOuterLocations.id)
-				id : number;
+				id! : number;
 			}
 
 			const actual = select(QuerySelect)
@@ -539,7 +539,7 @@ describe("Query DSL", function () {
 	it(`QueryBuilder's public query composition methods are immutable`, function () {
 		class QuerySelect {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		const builder1 = select(QuerySelect);

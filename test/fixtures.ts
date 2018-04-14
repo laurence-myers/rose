@@ -7,7 +7,7 @@ import {
 import {deepFreeze} from "../src/lang";
 
 export class TUsers extends QueryTable {
-	$table = new TableMetamodel("Users", this.$tableAlias);
+	constructor($tableAlias? : string) { super(new TableMetamodel("Users", $tableAlias)); }
 
 	id = new NumericColumnMetamodel(this.$table, "id", Number);
 	locationId = new NumericColumnMetamodel(this.$table, "locationId", Number);
@@ -16,7 +16,7 @@ export class TUsers extends QueryTable {
 export const QUsers = deepFreeze(new TUsers());
 
 export class TLocations extends QueryTable {
-	$table = new TableMetamodel("Locations", this.$tableAlias);
+	constructor($tableAlias? : string) { super(new TableMetamodel("Locations", $tableAlias)); }
 
 	id = new NumericColumnMetamodel(this.$table, "id", Number);
 	clientId = new NumericColumnMetamodel(this.$table, "clientId", Number);
@@ -25,14 +25,14 @@ export class TLocations extends QueryTable {
 export const QLocations = deepFreeze(new TLocations());
 
 export class TAgencies extends QueryTable {
-	$table = new TableMetamodel("Agencies", this.$tableAlias);
+	constructor($tableAlias? : string) { super(new TableMetamodel("Agencies", $tableAlias)); }
 
 	id = new NumericColumnMetamodel(this.$table, "id", Number);
 }
 export const QAgencies = deepFreeze(new TAgencies());
 
 export class TRecurringPayments extends QueryTable {
-	$table = new TableMetamodel("RecurringPayments", this.$tableAlias);
+	constructor($tableAlias? : string) { super(new TableMetamodel("RecurringPayments", $tableAlias)); }
 
 	id = new NumericColumnMetamodel(this.$table, "id", Number);
 	startDate = new DateColumnMetamodel(this.$table, "startDate", Date);
@@ -44,7 +44,7 @@ export class TRecurringPayments extends QueryTable {
 export const QRecurringPayments = deepFreeze(new TRecurringPayments);
 
 export class TBuilderTemplates extends QueryTable {
-	$table = new TableMetamodel("BuilderTemplates", this.$tableAlias);
+	constructor($tableAlias? : string) { super(new TableMetamodel("BuilderTemplates", $tableAlias)); }
 
 	id = new NumericColumnMetamodel(this.$table, "id", Number);
 	title = new StringColumnMetamodel(this.$table, "title", String);
@@ -56,7 +56,7 @@ export class TBuilderTemplates extends QueryTable {
 export const QBuilderTemplates = deepFreeze(new TBuilderTemplates());
 
 export class TBuilderTemplateCategories extends QueryTable {
-	$table = new TableMetamodel("BuilderTemplateCategories", this.$tableAlias);
+	constructor($tableAlias? : string) { super(new TableMetamodel("BuilderTemplateCategories", $tableAlias)); }
 
 	id = new NumericColumnMetamodel(this.$table, "id", Number);
 	groupLabel = new StringColumnMetamodel(this.$table, "groupLabel", String);
@@ -69,7 +69,7 @@ export class TBuilderTemplateCategories extends QueryTable {
 export const QBuilderTemplateCategories = deepFreeze(new TBuilderTemplateCategories());
 
 export class TBuilderTemplateToCategoryMap extends QueryTable {
-	$table = new TableMetamodel("BuilderTemplateToCategoryMap", this.$tableAlias);
+	constructor($tableAlias? : string) { super(new TableMetamodel("BuilderTemplateToCategoryMap", $tableAlias)); }
 
 	createdAt = new DateColumnMetamodel(this.$table, "createdAt", Date);
 	updatedAt = new DateColumnMetamodel(this.$table, "updatedAt", Date);
@@ -80,7 +80,7 @@ export class TBuilderTemplateToCategoryMap extends QueryTable {
 export const QBuilderTemplateToCategoryMap = deepFreeze(new TBuilderTemplateToCategoryMap());
 
 export class TTags extends QueryTable {
-	$table = new TableMetamodel("Tags", this.$tableAlias);
+	constructor($tableAlias? : string) { super(new TableMetamodel("Tags", $tableAlias)); }
 
 	id = new NumericColumnMetamodel(this.$table, "id", Number);
 	title = new StringColumnMetamodel(this.$table, "title", String);
@@ -89,7 +89,7 @@ export class TTags extends QueryTable {
 export const QTags = deepFreeze(new TTags());
 
 export class TUploads extends QueryTable {
-	$table = new TableMetamodel("Uploads", this.$tableAlias);
+	constructor($tableAlias? : string) { super(new TableMetamodel("Uploads", $tableAlias)); }
 
 	id = new NumericColumnMetamodel(this.$table, "id", Number);
 }
@@ -97,7 +97,7 @@ export class TUploads extends QueryTable {
 export const QUploads = deepFreeze(new TUploads());
 
 export class TBuilderTemplateTags extends QueryTable {
-	$table = new TableMetamodel("BuilderTemplateTags", this.$tableAlias);
+	constructor($tableAlias? : string) { super(new TableMetamodel("BuilderTemplateTags", $tableAlias)); }
 
 	builderTemplateId = new NumericColumnMetamodel(this.$table, "builderTemplateId", Number);
 	tagId = new NumericColumnMetamodel(this.$table, "tagId", Number);

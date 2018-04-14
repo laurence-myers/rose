@@ -35,10 +35,10 @@ describe(`Example queries`, function () {
 			const QRP = QRecurringPayments; // alias for brevity
 			class QueryClass {
 				@Column(QRP.id)
-				id : number;
+				id! : number;
 
 				@Column(QLocations.id)
-				locationId : number;
+				locationId! : number;
 			}
 			const params = {
 				clientId: 123
@@ -124,7 +124,7 @@ describe(`Example queries`, function () {
 			// Make the returned values type safe.
 			class QueryClass {
 				@Expression(exists(subQuery))
-				exists : boolean;
+				exists! : boolean;
 			}
 
 			const query = select<QueryClass, QueryParams>(QueryClass);
@@ -168,58 +168,58 @@ describe(`Example queries`, function () {
 
 		class Upload {
 			@Column(QUploads.id)
-			id : number;
+			id! : number;
 		}
 
 		class Tag {
 			@Column(QTags.id)
-			id : number;
+			id! : number;
 
 			@Column(QTags.title)
-			title : string;
+			title! : string;
 		}
 
 		class BuilderTemplateCategory {
 			@Column(QBuilderTemplateCategories.id)
-			id : number;
+			id! : number;
 
 			@Column(QBuilderTemplateCategories.groupLabel)
-			groupLabel : string;
+			groupLabel! : string;
 
 			@Column(QBuilderTemplateCategories.label)
-			label : string;
+			label! : string;
 
 			@Column(QBuilderTemplateCategories.width)
-			width : number;
+			width! : number;
 
 			@Column(QBuilderTemplateCategories.height)
-			height : number;
+			height! : number;
 
 			@Column(QBuilderTemplateCategories.platformId)
-			platformId : number;
+			platformId! : number;
 		}
 
 		class BuilderTemplate {
 			@Column(QBuilderTemplates.id)
-			id : number;
+			id! : number;
 
 			@Column(QBuilderTemplates.title)
-			title : string;
+			title! : string;
 
 			@Column(QBuilderTemplates.createdAt)
-			createdAt : Date;
+			createdAt! : Date;
 
 			@Column(QBuilderTemplates.clientId)
-			clientId : number;
+			clientId! : number;
 
 			@Nested()
-			compositeImage : Upload;
+			compositeImage! : Upload;
 
 			@Nested(Tag)
-			tags : Tag[];
+			tags! : Tag[];
 
 			@Nested(BuilderTemplateCategory)
-			categories : BuilderTemplateCategory[];
+			categories! : BuilderTemplateCategory[];
 		}
 
 		function prepareDynamicQuery(params : Params) {

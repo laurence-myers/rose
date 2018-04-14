@@ -24,7 +24,7 @@ describe("Execution", function () {
 	it("Full execution path", async function () {
 		class QuerySelect {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		const rows = [

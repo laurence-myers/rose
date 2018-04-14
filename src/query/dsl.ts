@@ -89,8 +89,8 @@ export interface SelectObject {
 
 class JoinBuilder<TResult> {
 	protected joinType : 'inner' | 'left' | 'right' | 'full' | 'cross' = 'inner';
-	protected onNode : BooleanExpression;
-	protected usingNodes : ColumnReferenceNode[];
+	protected onNode? : BooleanExpression;
+	protected usingNodes? : ColumnReferenceNode[];
 
 	constructor(
 		protected tableMap : DefaultMap<string, string>,
@@ -164,7 +164,15 @@ class JoinBuilder<TResult> {
 
 abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
-	protected queryAst : SelectCommandNode;
+	protected queryAst : SelectCommandNode = {
+		type: 'selectCommandNode',
+		distinction: 'all',
+		outputExpressions: [],
+		fromItems: [],
+		joins: [],
+		conditions: [],
+		ordering: []
+	};
 
 	/**
 	 * Adds referenced tables as "FROM" clauses for any tables not explicitly joined/from-ed.

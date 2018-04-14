@@ -15,7 +15,6 @@ import {
 } from "../src/query/ast";
 import {RowMappingError, UnsupportedOperationError} from "../src/errors";
 import {count} from "../src/query/postgresql/functions/aggregate/general";
-import {logObject} from "../src/lang";
 
 function alias(aliasPath : string[], node : ParameterOrValueExpressionNode) : AliasedSelectExpressionNode {
 	return {
@@ -30,7 +29,7 @@ describe("Row mapping", function () {
 	it("Can map a single number column to a data class", function () {
 		class QuerySelect {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 		const outputExpressions : SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
@@ -52,7 +51,7 @@ describe("Row mapping", function () {
 	it("Dies attempting to map a non-existing alias", function () {
 		class QuerySelect {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 		const outputExpressions : SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
@@ -72,7 +71,7 @@ describe("Row mapping", function () {
 	it("Can map a single string column to a data class, with the property name a different name to the column", function () {
 		class QuerySelect {
 			@Column(QUsers.name)
-			userName: string;
+			userName!: string;
 		}
 		const outputExpressions : SelectOutputExpression[] = [
 			alias(["userName"],
@@ -96,15 +95,15 @@ describe("Row mapping", function () {
 	it("Can map a nested sub-query", function () {
 		class QuerySelectNested {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		class QuerySelect {
 			@Column(QLocations.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNested)
-			users : Array<QuerySelectNested>;
+			users! : Array<QuerySelectNested>;
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
@@ -144,18 +143,18 @@ describe("Row mapping", function () {
 	it("Can map a nested sub-query with multiple columns", function () {
 		class QuerySelectNested {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 
 			@Column(QUsers.name)
-			userName: string;
+			userName!: string;
 		}
 
 		class QuerySelect {
 			@Column(QLocations.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNested)
-			users : Array<QuerySelectNested>;
+			users! : Array<QuerySelectNested>;
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
@@ -205,23 +204,23 @@ describe("Row mapping", function () {
 	it("Can map a deeply nested sub-query", function () {
 		class QuerySelectDeeplyNested {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		class QuerySelectNested {
 			@Column(QLocations.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNested)
-			users : Array<QuerySelectDeeplyNested>;
+			users! : Array<QuerySelectDeeplyNested>;
 		}
 
 		class QuerySelect {
 			@Column(QAgencies.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNested)
-			locations : Array<QuerySelectNested>;
+			locations! : Array<QuerySelectNested>;
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
@@ -274,23 +273,23 @@ describe("Row mapping", function () {
 	it("Can map multiple rows with deeply nested sub-queries", function () {
 		class QuerySelectDeeplyNested {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		class QuerySelectNested {
 			@Column(QLocations.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNested)
-			users : Array<QuerySelectDeeplyNested>;
+			users! : Array<QuerySelectDeeplyNested>;
 		}
 
 		class QuerySelect {
 			@Column(QAgencies.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNested)
-			locations : Array<QuerySelectNested>;
+			locations! : Array<QuerySelectNested>;
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
@@ -403,23 +402,23 @@ describe("Row mapping", function () {
 	it("Can map multiple rows with deeply nested sub-queries and similar values", function () {
 		class QuerySelectDeeplyNested {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		class QuerySelectNested {
 			@Column(QLocations.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNested)
-			users : Array<QuerySelectDeeplyNested>;
+			users! : Array<QuerySelectDeeplyNested>;
 		}
 
 		class QuerySelect {
 			@Column(QAgencies.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNested)
-			locations : Array<QuerySelectNested>;
+			locations! : Array<QuerySelectNested>;
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
@@ -533,15 +532,15 @@ describe("Row mapping", function () {
 	it("Can map a nested sub-query with multiple rows", function () {
 		class QuerySelectNested {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		class QuerySelect {
 			@Column(QLocations.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNested)
-			users : Array<QuerySelectNested>;
+			users! : Array<QuerySelectNested>;
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
@@ -604,15 +603,15 @@ describe("Row mapping", function () {
 	it("Can map a nested sub-query with loooots of rows", function () {
 		class QuerySelectNested {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		class QuerySelect {
 			@Column(QLocations.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNested)
-			users : Array<QuerySelectNested>;
+			users! : Array<QuerySelectNested>;
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
@@ -651,7 +650,7 @@ describe("Row mapping", function () {
 	it("Preserves order of the rows", function () {
 		class QuerySelect {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 		const outputExpressions : SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
@@ -694,15 +693,15 @@ describe("Row mapping", function () {
 	it("Preserves order of the rows with nesting", function () {
 		class QuerySelectNested {
 			@Column(QUsers.id)
-			id : number;
+			id! : number;
 		}
 
 		class QuerySelect {
 			@Column(QLocations.id)
-			id : number;
+			id! : number;
 
 			@Nested(QuerySelectNested)
-			users : Array<QuerySelectNested>;
+			users! : Array<QuerySelectNested>;
 		}
 
 		const outputExpressions : SelectOutputExpression[] = [
@@ -751,7 +750,7 @@ describe("Row mapping", function () {
 	it("Can map from function expressions", function () {
 		class QuerySelect {
 			@Expression(count())
-			countValue : number;
+			countValue! : number;
 		}
 		const outputExpressions : SelectOutputExpression[] = [
 			<AliasedSelectExpressionNode> {
@@ -775,7 +774,7 @@ describe("Row mapping", function () {
 	it("Cannot map from un-aliased function expressions", function () {
 		class QuerySelect {
 			@Expression(count())
-			countValue : number;
+			countValue! : number;
 		}
 		const outputExpressions : SelectOutputExpression[] = [
 			<FunctionExpressionNode> {

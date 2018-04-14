@@ -229,9 +229,8 @@ export class DateColumnMetamodel extends ColumnMetamodel<Date> {
 }
 
 export abstract class QueryTable {
-	$table : TableMetamodel;
-
-	constructor(
+	protected constructor(
+		readonly $table : TableMetamodel,
 		readonly $tableAlias? : string
 	) {
 		// TODO: validate that $tableAlias does not match the pattern of automatically generated aliases, e.g. "t1".
