@@ -8,33 +8,41 @@ export type SelectorColumnTypes = (
 	StringColumnMetamodel
 );
 
-export interface SelectorExpression {
+export interface SelectorExpression<T> {
 	readonly $selectorKind : 'expression';
 	readonly expression : ParameterOrValueExpressionNode;
 }
 
-export class NestedQuery {
-	constructor(
-		public readonly querySelector : QuerySelector,
-		public readonly constructor : Function,
-		public readonly isArray : boolean
-	) {
-
-	}
+export interface NestedQueryOne {
+	readonly querySelector : QuerySelector;
+	readonly constructor : Function;
 }
 
-export interface SelectorNested {
-	readonly $selectorKind : 'nested';
-	readonly nestedSelector : NestedQuery;
+export interface NestedQueryMany {
+	readonly querySelector : QuerySelector;
+	readonly constructor : Function;
+}
+
+// export type NestedQuery = NestedQueryOne | NestedQueryMany;
+
+export interface SelectorNestedOne {
+	readonly $selectorKind : 'nestedOne';
+	readonly nestedSelector : NestedQueryOne;
+}
+
+export interface SelectorNestedMany<T> {
+	readonly $selectorKind : 'nestedMany';
+	readonly nestedSelector : NestedQueryMany;
 }
 
 export type SelectorTypes = (
 	SelectorColumnTypes
-	| SelectorExpression
-	| SelectorNested
+	| SelectorExpression<any>
+	| SelectorNestedOne
+	| SelectorNestedMany<any>
 );
 
-export type SelectorKind = 'column' | 'expression' | 'nested';
+export type SelectorKind = 'column' | 'expression' | 'nestedOne' | 'nestedMany';
 
 export interface QuerySelector {
 	[key: string] : SelectorTypes;

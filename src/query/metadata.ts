@@ -2,7 +2,7 @@ import {InvalidQuerySelectorError} from "../errors";
 import {AliasedSelectExpressionNode, ParameterOrValueExpressionNode, SelectOutputExpression} from "./ast";
 import {assertNever} from "../lang";
 import {ColumnMetamodel} from "./metamodel";
-import {NestedQuery, QuerySelector, SelectorColumnTypes} from "./querySelector";
+import {NestedQueryMany, NestedQueryOne, QuerySelector, SelectorColumnTypes} from "./querySelector";
 
 export class QuerySelectorProcessor {
 	protected outputExpressions : Array<SelectOutputExpression> = [];
@@ -28,10 +28,10 @@ export class QuerySelectorProcessor {
 		}
 	}
 
-	protected processNestedEntries(entries : Iterable<[string, NestedQuery]>, aliasPath : string[]) : void {
+	protected processNestedEntries(entries : Iterable<[string, NestedQueryOne | NestedQueryMany]>, aliasPath : string[]) : void {
 		for (const entry of entries) {
 			const aliasPrefix : string = entry[0];
-			const nestedQuery : NestedQuery = entry[1];
+			const nestedQuery : NestedQueryOne | NestedQueryMany = entry[1];
 			this.processSelectQueryClass(nestedQuery.querySelector, aliasPath.concat(aliasPrefix));
 		}
 	}
@@ -68,8 +68,9 @@ export class QuerySelectorProcessor {
 					const expressionEntry : [string, ParameterOrValueExpressionNode] = [key, value.expression];
 					expressions.push(expressionEntry);
 					break;
-				case "nested":
-					const nestedEntry : [string, NestedQuery] = [key, value.nestedSelector];
+				case "nestedOne":
+				case "nestedMany":
+					const nestedEntry : [string, NestedQueryOne | NestedQueryMany] = [key, value.nestedSelector];
 					nesteds.push(nestedEntry);
 					break;
 				default:

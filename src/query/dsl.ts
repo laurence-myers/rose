@@ -20,7 +20,12 @@ import {
 import {RectifyingWalker, SqlAstWalker} from "./walker";
 import {QuerySelectorProcessor} from "./metadata";
 // import {execute, Queryable} from "../execution/execution";
-import {QuerySelector, SelectorExpression, SelectorNested} from "./querySelector";
+import {
+	QuerySelector,
+	SelectorExpression,
+	SelectorNestedMany,
+	SelectorNestedOne
+} from "./querySelector";
 //
 // export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
 // export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator {
@@ -397,20 +402,29 @@ export function row(first : ParameterOrValueExpressionNode, ...rest : ParameterO
 	};
 }
 
-export function selectExpression(expression : ParameterOrValueExpressionNode) : SelectorExpression {
+export function selectExpression<T = never>(expression : ParameterOrValueExpressionNode) : SelectorExpression<T> {
 	return {
 		$selectorKind: 'expression',
 		expression
+	} as SelectorExpression<T>;
+}
+
+export function selectNestedOne(querySelector : QuerySelector, constructor : Function) : SelectorNestedOne {
+	return {
+		$selectorKind: 'nestedOne',
+		nestedSelector: {
+			querySelector,
+			constructor
+		}
 	};
 }
 
-export function selectNested(querySelector : QuerySelector, constructor : Function, isArray : boolean) : SelectorNested {
+export function selectNestedMany<T extends QuerySelector>(querySelector : T, constructor : Function) : SelectorNestedMany<T> {
 	return {
-		$selectorKind: 'nested',
+		$selectorKind: 'nestedMany',
 		nestedSelector: {
 			querySelector,
-			constructor,
-			isArray
+			constructor
 		}
 	};
 }

@@ -1,4 +1,4 @@
-import {and, col, not, or, select, selectExpression, selectNested, subSelect} from "../src/query/dsl";
+import {and, col, not, or, select, selectExpression, selectNestedMany, subSelect} from "../src/query/dsl";
 import {QAgencies, QLocations, QUsers, TLocations} from "./fixtures";
 import assert = require('assert');
 import {lower} from "../src/query/postgresql/functions/string/sql";
@@ -100,7 +100,7 @@ describe("Query DSL", function () {
 
 		const querySelect = {
 			id: QLocations.id,
-			users: selectNested(querySelectNested, () => {}, true)
+			users: selectNestedMany(querySelectNested, () => {})
 		};
 
 		// TODO: specify the type of join for nested items
@@ -116,13 +116,13 @@ describe("Query DSL", function () {
 
 		const querySelectNested = {
 			id: QLocations.id,
-			users: selectNested(querySelectNestedNested, () => {}, true)
+			users: selectNestedMany(querySelectNestedNested, () => {})
 		};
 
 		const querySelect = {
 			id: QAgencies.id,
 
-			locations: selectNested(querySelectNested, () => {}, true)
+			locations: selectNestedMany(querySelectNested, () => {})
 		};
 
 		const actual = select(querySelect).toSql({}).sql;
