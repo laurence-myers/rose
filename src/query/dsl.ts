@@ -1,7 +1,7 @@
 import "reflect-metadata";
-import {ColumnMetamodel, METADATA_KEY_PREFIX, QueryTable} from "./metamodel";
-import {Clone, DefaultMap, getMetadata, getType} from "../lang";
-import {InvalidDecoratorError, UnsupportedOperationError} from "../errors";
+import {ColumnMetamodel, QueryTable} from "./metamodel";
+import {Clone, DefaultMap} from "../lang";
+import {UnsupportedOperationError} from "../errors";
 import {
 	BooleanExpression,
 	BooleanExpressionGroupNode,
@@ -409,7 +409,7 @@ export function selectExpression<T = never>(expression : ParameterOrValueExpress
 	} as SelectorExpression<T>;
 }
 
-export function selectNestedOne(querySelector : QuerySelector, constructor : Function) : SelectorNestedOne {
+export function selectNestedOne<T extends QuerySelector>(querySelector : T, constructor : Function) : SelectorNestedOne<T> {
 	return {
 		$selectorKind: 'nestedOne',
 		nestedSelector: {

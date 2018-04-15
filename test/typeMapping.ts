@@ -2,7 +2,7 @@ import assert = require('assert');
 import {QUsers} from "./fixtures";
 import {QueryOutput} from "../src/query/typeMapping";
 import {concat} from "../src/query/postgresql/functions/string/sql";
-import {constant, selectExpression, selectNestedMany} from "../src/query/dsl";
+import {constant, selectExpression, selectNestedMany, selectNestedOne} from "../src/query/dsl";
 
 describe(`Type mapping`, function () {
 	it(`can derive column output types from a query selector object`, function () {
@@ -29,7 +29,7 @@ describe(`Type mapping`, function () {
 		};
 	});
 
-	it(`can derive nested output types from a query selector object`, function () {
+	it(`can derive nestedMany output types from a query selector object`, function () {
 		const querySelect = {
 			users: selectNestedMany({
 				name: QUsers.name
@@ -44,6 +44,23 @@ describe(`Type mapping`, function () {
 					// foo: 123
 				}
 			],
+			// foo: [123]
+		};
+	});
+
+	it(`can derive nestedOne output types from a query selector object`, function () {
+		const querySelect = {
+			user: selectNestedOne({
+				name: QUsers.name
+			}, () => {})
+		};
+
+		const result : QueryOutput<typeof querySelect> = {
+			user: {
+				// id: 123,
+				name: 'Henry',
+			}
+			,
 			// foo: [123]
 		};
 	});

@@ -25,7 +25,7 @@ export interface NestedQueryMany {
 
 // export type NestedQuery = NestedQueryOne | NestedQueryMany;
 
-export interface SelectorNestedOne {
+export interface SelectorNestedOne<T> {
 	readonly $selectorKind : 'nestedOne';
 	readonly nestedSelector : NestedQueryOne;
 }
@@ -38,7 +38,7 @@ export interface SelectorNestedMany<T> {
 export type SelectorTypes = (
 	SelectorColumnTypes
 	| SelectorExpression<any>
-	| SelectorNestedOne
+	| SelectorNestedOne<any>
 	| SelectorNestedMany<any>
 );
 
