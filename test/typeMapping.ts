@@ -33,7 +33,7 @@ describe(`Type mapping`, function () {
 		const querySelect = {
 			users: selectNestedMany({
 				name: QUsers.name
-			}, () => {})
+			})
 		};
 
 		const result : QueryOutput<typeof querySelect> = {
@@ -52,7 +52,7 @@ describe(`Type mapping`, function () {
 		const querySelect = {
 			user: selectNestedOne({
 				name: QUsers.name
-			}, () => {})
+			})
 		};
 
 		const result : QueryOutput<typeof querySelect> = {

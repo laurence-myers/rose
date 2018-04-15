@@ -12,5 +12,5 @@ export async function execute<TDataClass>(queryable : Queryable,
 										  outputClass : { new() : TDataClass },
 										  selectOutputExpressions : SelectOutputExpression[]) {
 	const queryResult = await queryable.query(query.sql, query.parameters);
-	return mapRowsToClass(outputClass, selectOutputExpressions, queryResult.rows);
+	return mapRowsToClass(selectOutputExpressions, queryResult.rows);
 }

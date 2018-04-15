@@ -26,26 +26,6 @@ import {
 	SelectorNestedMany,
 	SelectorNestedOne
 } from "./querySelector";
-//
-// export const NESTED_METADATA_KEY = `${ METADATA_KEY_PREFIX }nested`;
-// export function Nested<T extends Function>(nestedClass? : T) : PropertyDecorator {
-// 	return function (target : Object, propertyKey : string | symbol) {
-// 		const type = getType(target, propertyKey);
-// 		const isArray = type == Array;
-// 		if (isArray && !nestedClass) {
-// 			throw new InvalidDecoratorError(`When nesting an array, you must pass the nested class as an argument to the decorator.`);
-// 		}
-// 		let metadata = getMetadata<Map<string, NestedQuery>>(NESTED_METADATA_KEY, target);
-// 		if (!metadata) {
-// 			metadata = new Map<string, NestedQuery>();
-// 			Reflect.defineMetadata(NESTED_METADATA_KEY, metadata, target);
-// 		} else if (metadata.get(<string> propertyKey) !== undefined) {
-// 			throw new InvalidDecoratorError(`Property "${ propertyKey }" already has nested metadata defined.`);
-// 		}
-// 		const nestedQuery = new NestedQuery(isArray ? nestedClass : <any>type, isArray);
-// 		metadata.set(<string> propertyKey, nestedQuery);
-// 	}
-// }
 
 export const enum SqlCommand {
 	Select,
@@ -409,22 +389,20 @@ export function selectExpression<T = never>(expression : ParameterOrValueExpress
 	} as SelectorExpression<T>;
 }
 
-export function selectNestedOne<T extends QuerySelector>(querySelector : T, constructor : Function) : SelectorNestedOne<T> {
+export function selectNestedOne<T extends QuerySelector>(querySelector : T) : SelectorNestedOne<T> {
 	return {
 		$selectorKind: 'nestedOne',
 		nestedSelector: {
-			querySelector,
-			constructor
+			querySelector
 		}
 	};
 }
 
-export function selectNestedMany<T extends QuerySelector>(querySelector : T, constructor : Function) : SelectorNestedMany<T> {
+export function selectNestedMany<T extends QuerySelector>(querySelector : T) : SelectorNestedMany<T> {
 	return {
 		$selectorKind: 'nestedMany',
 		nestedSelector: {
-			querySelector,
-			constructor
+			querySelector
 		}
 	};
 }

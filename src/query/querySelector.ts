@@ -15,12 +15,10 @@ export interface SelectorExpression<T> {
 
 export interface NestedQueryOne {
 	readonly querySelector : QuerySelector;
-	readonly constructor : Function;
 }
 
 export interface NestedQueryMany {
 	readonly querySelector : QuerySelector;
-	readonly constructor : Function;
 }
 
 // export type NestedQuery = NestedQueryOne | NestedQueryMany;

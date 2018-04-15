@@ -100,7 +100,7 @@ describe("Query DSL", function () {
 
 		const querySelect = {
 			id: QLocations.id,
-			users: selectNestedMany(querySelectNested, () => {})
+			users: selectNestedMany(querySelectNested)
 		};
 
 		// TODO: specify the type of join for nested items
@@ -116,13 +116,13 @@ describe("Query DSL", function () {
 
 		const querySelectNested = {
 			id: QLocations.id,
-			users: selectNestedMany(querySelectNestedNested, () => {})
+			users: selectNestedMany(querySelectNestedNested)
 		};
 
 		const querySelect = {
 			id: QAgencies.id,
 
-			locations: selectNestedMany(querySelectNested, () => {})
+			locations: selectNestedMany(querySelectNested)
 		};
 
 		const actual = select(querySelect).toSql({}).sql;

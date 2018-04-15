@@ -80,13 +80,13 @@ function processOutputExpression(expr : SelectOutputExpression, row : any, outpu
 	}
 }
 
-export function mapRowToClass<TDataClass>(clz : { new() : TDataClass }, outputExpressions : SelectOutputExpression[], row : any) : TDataClass {
-	const output = new clz();
+export function mapRowToClass<TDataClass = never>(outputExpressions : SelectOutputExpression[], row : any) : TDataClass {
+	const output = {};
 
 	for (const expr of outputExpressions) {
 		processOutputExpression(expr, row, output);
 	}
-	return output;
+	return output as TDataClass;
 }
 
 function hashRow<TDataClass>(row : TDataClass, propertiesToHash : string[]) : string {
@@ -130,8 +130,8 @@ function convertMapsToArrays(hashMap : SettingMap<string, any>, nestedSchema : N
 	return output;
 }
 
-export function mapRowsToClass<TDataClass>(clz : { new() : TDataClass }, outputExpressions : SelectOutputExpression[], rows : NestedObject[]) : TDataClass[] {
-	const convertedRows = rows.map((row) => mapRowToClass(clz, outputExpressions, row));
+export function mapRowsToClass<TDataClass>(outputExpressions : SelectOutputExpression[], rows : NestedObject[]) : TDataClass[] {
+	const convertedRows = rows.map((row) => mapRowToClass(outputExpressions, row));
 	const nestedSchema = extractNestedSchema(outputExpressions);
 	if (nestedSchema.nested.size > 0) {
 		const hashMap = new SettingMap<string, any>();
