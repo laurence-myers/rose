@@ -1,7 +1,7 @@
 import {
 	BooleanColumnMetamodel,
 	ColumnMetamodel,
-	DateColumnMetamodel, NumericColumnMetamodel, QueryTable, StringColumnMetamodel,
+	DateColumnMetamodel, NullableDateColumnMetamodel, NumericColumnMetamodel, QueryTable, StringColumnMetamodel,
 	TableMetamodel
 } from "../src/query/metamodel";
 import {deepFreeze} from "../src/lang";
@@ -12,6 +12,7 @@ export class TUsers extends QueryTable {
 	id = new NumericColumnMetamodel(this.$table, "id", Number);
 	locationId = new NumericColumnMetamodel(this.$table, "locationId", Number);
 	name = new StringColumnMetamodel(this.$table, "name", String);
+	deletedAt = new NullableDateColumnMetamodel(this.$table, "deletedAt", Date);
 }
 export const QUsers = deepFreeze(new TUsers());
 

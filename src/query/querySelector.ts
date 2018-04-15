@@ -1,11 +1,8 @@
-import {BooleanColumnMetamodel, DateColumnMetamodel, NumericColumnMetamodel, StringColumnMetamodel} from "./metamodel";
+import {ColumnMetamodel} from "./metamodel";
 import {ParameterOrValueExpressionNode} from "./ast";
 
 export type SelectorColumnTypes = (
-	BooleanColumnMetamodel |
-	DateColumnMetamodel |
-	NumericColumnMetamodel |
-	StringColumnMetamodel
+	ColumnMetamodel<any>
 );
 
 export interface SelectorExpression<T> {

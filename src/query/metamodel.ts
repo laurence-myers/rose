@@ -220,7 +220,15 @@ export class NumericColumnMetamodel extends ColumnMetamodel<number> {
 
 }
 
+export class NullableNumericColumnMetamodel extends ColumnMetamodel<number | null> {
+
+}
+
 export class StringColumnMetamodel extends ColumnMetamodel<string> {
+
+}
+
+export class NullableStringColumnMetamodel extends ColumnMetamodel<string | null> {
 
 }
 
@@ -228,7 +236,15 @@ export class BooleanColumnMetamodel extends ColumnMetamodel<boolean> {
 
 }
 
+export class NullableBooleanColumnMetamodel extends ColumnMetamodel<boolean | null> {
+
+}
+
 export class DateColumnMetamodel extends ColumnMetamodel<Date> {
+
+}
+
+export class NullableDateColumnMetamodel extends ColumnMetamodel<Date | null> {
 
 }
 

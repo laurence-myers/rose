@@ -64,4 +64,14 @@ describe(`Type mapping`, function () {
 			// foo: [123]
 		};
 	});
+
+	it(`can derive a nullable column's output type`, function () {
+		const querySelect = {
+			deletedAt: QUsers.deletedAt
+		};
+
+		const result : QueryOutput<typeof querySelect> = {
+			deletedAt: null
+		};
+	});
 });
