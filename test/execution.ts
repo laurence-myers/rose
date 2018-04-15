@@ -1,6 +1,5 @@
 import assert = require('assert');
 import {QUsers} from "./fixtures";
-import {Column} from "../src/query/metamodel";
 import {select} from "../src/query/dsl";
 import {Queryable} from "../src/execution/execution";
 import {QueryResult} from "pg";
@@ -22,10 +21,9 @@ class MockQueryable implements Queryable {
 
 describe("Execution", function () {
 	it("Full execution path", async function () {
-		class QuerySelect {
-			@Column(QUsers.id)
-			id! : number;
-		}
+		const querySelect = {
+			id: QUsers.id
+		};
 
 		const rows = [
 			{
@@ -33,10 +31,11 @@ describe("Execution", function () {
 			}
 		];
 		const mockDb : Queryable = new MockQueryable(rows);
-		const expectedMappedRow = new QuerySelect();
-		expectedMappedRow.id = rows[0].id;
+		const expectedMappedRow = {
+			id: rows[0].id
+		};
 
-		const result = await select(QuerySelect)
+		const result = await select(querySelect)
 			.orderBy(QUsers.id.desc())
 			.execute(mockDb, {});
 

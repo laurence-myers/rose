@@ -80,7 +80,7 @@ describe("Row mapping", function () {
 			userName: "Phileas Fogg"
 		};
 
-		const result = mapRowToClass<QueryOutput<typeof querySelect>>(outputExpressions, row);
+		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
 
 		assert.equal(result.userName, "Phileas Fogg");
 	});
@@ -117,7 +117,7 @@ describe("Row mapping", function () {
 			"users.id": 456
 		};
 
-		const result = mapRowToClass<QueryOutput<typeof querySelect>>(outputExpressions, row);
+		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
 
 		assert.deepEqual(result, {
 			id: 123,
@@ -173,7 +173,7 @@ describe("Row mapping", function () {
 			"users.userName": "Phileas Fogg"
 		};
 
-		const result = mapRowToClass<QueryOutput<typeof querySelect>>(outputExpressions, row);
+		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
 
 		assert.deepEqual(result, {
 			id: 123,
@@ -233,7 +233,7 @@ describe("Row mapping", function () {
 			"locations.users.id": 789
 		};
 
-		const result = mapRowToClass<QueryOutput<typeof querySelect>>(outputExpressions, row);
+		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
 
 		assert.deepEqual(result, {
 			id: 123,
@@ -604,7 +604,7 @@ describe("Row mapping", function () {
 			});
 		}
 
-		const result = mapRowsToClass<QueryOutput<typeof querySelect>>(outputExpressions, rows);
+		const result = mapRowsToClass<typeof querySelect>(outputExpressions, rows);
 
 		assert.deepEqual(result.length, 1);
 		assert.deepEqual(result[0].id, 123);
@@ -725,7 +725,7 @@ describe("Row mapping", function () {
 			countValue: 123
 		};
 
-		const result = mapRowToClass<QueryOutput<typeof querySelect>>(outputExpressions, row);
+		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
 
 		assert.strictEqual(result.countValue, 123);
 	});
@@ -745,7 +745,7 @@ describe("Row mapping", function () {
 		};
 
 		assert.throws(() => {
-			mapRowToClass<QueryOutput<typeof querySelect>>(outputExpressions, row);
+			mapRowToClass<typeof querySelect>(outputExpressions, row);
 		}, UnsupportedOperationError);
 	});
 
@@ -763,7 +763,7 @@ describe("Row mapping", function () {
 		};
 
 		assert.throws(() => {
-			mapRowToClass<QueryOutput<typeof querySelect>>(outputExpressions, row);
+			mapRowToClass<typeof querySelect>(outputExpressions, row);
 		}, UnsupportedOperationError);
 	});
 
@@ -789,7 +789,7 @@ describe("Row mapping", function () {
 		};
 
 		assert.throws(() => {
-			mapRowToClass<QueryOutput<typeof querySelect>>(outputExpressions, row);
+			mapRowToClass<typeof querySelect>(outputExpressions, row);
 		}, UnsupportedOperationError);
 	});
 
@@ -808,7 +808,7 @@ describe("Row mapping", function () {
 		};
 
 		assert.throws(() => {
-			mapRowToClass<QueryOutput<typeof querySelect>>(outputExpressions, row);
+			mapRowToClass<typeof querySelect>(outputExpressions, row);
 		}, UnsupportedOperationError);
 	});
 });

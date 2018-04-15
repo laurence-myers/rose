@@ -1,4 +1,3 @@
-import {Column} from "../src/query/metamodel";
 import {
 	QBuilderTemplateCategories,
 	QBuilderTemplates,
@@ -9,7 +8,17 @@ import {
 	QTags,
 	QUploads
 } from "./fixtures";
-import {and, col, Expression, Nested, or, ParamsWrapper, row, select, subSelect} from "../src/query/dsl";
+import {
+	and,
+	col,
+	or,
+	ParamsWrapper,
+	row,
+	select,
+	selectExpression,
+	selectNestedMany,
+	subSelect
+} from "../src/query/dsl";
 import {now, overlaps} from "../src/query/postgresql/functions/dateTime/functions";
 import * as assert from "assert";
 import {exists} from "../src/query/postgresql/functions/subquery/expressions";
@@ -33,17 +42,15 @@ describe(`Example queries`, function () {
 		 */
 		it(`find the next active payment for all locations under a given client`, function () {
 			const QRP = QRecurringPayments; // alias for brevity
-			class QueryClass {
-				@Column(QRP.id)
-				id! : number;
+			const querySelect = {
+				id: QRP.id,
 
-				@Column(QLocations.id)
-				locationId! : number;
-			}
+				locationId: QLocations.id,
+			};
 			const params = {
 				clientId: 123
 			};
-			const query = select(QueryClass)
+			const query = select(querySelect)
 				.distinctOn(col(QRP.locationId))
 				.join(QLocations)
 				.on(QLocations.id.eq(QRP.locationId))
@@ -122,12 +129,11 @@ describe(`Example queries`, function () {
 				.limit(1)
 				.toSubQuery();
 			// Make the returned values type safe.
-			class QueryClass {
-				@Expression(exists(subQuery))
-				exists! : boolean;
-			}
+			const querySelect = {
+				exists: selectExpression(exists(subQuery))
+			};
 
-			const query = select<QueryClass, QueryParams>(QueryClass);
+			const query = select<typeof querySelect, QueryParams>(querySelect);
 
 			const result = query.toSql({
 				startDate: new Date(Date.parse("2017-05-11")),
@@ -166,61 +172,45 @@ describe(`Example queries`, function () {
 			criteria : FindAllCriteria;
 		}
 
-		class Upload {
-			@Column(QUploads.id)
-			id! : number;
-		}
+		const Upload = {
+			id: QUploads.id,
+		};
 
-		class Tag {
-			@Column(QTags.id)
-			id! : number;
+		const Tag = {
+			id: QTags.id,
 
-			@Column(QTags.title)
-			title! : string;
-		}
+			title: QTags.title,
+		};
 
-		class BuilderTemplateCategory {
-			@Column(QBuilderTemplateCategories.id)
-			id! : number;
+		const BuilderTemplateCategory = {
+			id: QBuilderTemplateCategories.id,
 
-			@Column(QBuilderTemplateCategories.groupLabel)
-			groupLabel! : string;
+			groupLabel: QBuilderTemplateCategories.groupLabel,
 
-			@Column(QBuilderTemplateCategories.label)
-			label! : string;
+			label: QBuilderTemplateCategories.label,
 
-			@Column(QBuilderTemplateCategories.width)
-			width! : number;
+			width: QBuilderTemplateCategories.width,
 
-			@Column(QBuilderTemplateCategories.height)
-			height! : number;
+			height: QBuilderTemplateCategories.height,
 
-			@Column(QBuilderTemplateCategories.platformId)
-			platformId! : number;
-		}
+			platformId: QBuilderTemplateCategories.platformId,
+		};
 
-		class BuilderTemplate {
-			@Column(QBuilderTemplates.id)
-			id! : number;
+		const BuilderTemplate = {
+			id: QBuilderTemplates.id,
 
-			@Column(QBuilderTemplates.title)
-			title! : string;
+			title: QBuilderTemplates.title,
 
-			@Column(QBuilderTemplates.createdAt)
-			createdAt! : Date;
+			createdAt: QBuilderTemplates.createdAt,
 
-			@Column(QBuilderTemplates.clientId)
-			clientId! : number;
+			clientId: QBuilderTemplates.clientId,
 
-			@Nested()
-			compositeImage! : Upload;
+			compositeImage: selectNestedMany(Upload),
 
-			@Nested(Tag)
-			tags! : Tag[];
+			tags: selectNestedMany(Tag),
 
-			@Nested(BuilderTemplateCategory)
-			categories! : BuilderTemplateCategory[];
-		}
+			categories: selectNestedMany(BuilderTemplateCategory),
+		};
 
 		function prepareDynamicQuery(params : Params) {
 			// Let's assign some locals for brevity
@@ -241,7 +231,7 @@ describe(`Example queries`, function () {
 			}
 			const idSubQuery = idSubQueryBuilder.toSubQuery();
 
-			return select<BuilderTemplate, Params>(BuilderTemplate)
+			return select<typeof BuilderTemplate, Params>(BuilderTemplate)
 				.join(QCategoryMap)
 				.on(QCategoryMap.builderTemplateId.eq(QBuilderTemplates.id))
 				.join(QCategories)

@@ -2,6 +2,8 @@ import {SelectOutputExpression} from "../query/ast";
 import {RowMappingError, UnsupportedOperationError} from "../errors";
 import {assertNever, DefaultMap, isMap, last, logObject, SettingMap} from "../lang";
 import {MetroHash128} from "metrohash";
+import {MappedQuerySelector, QueryOutput} from "../query/typeMapping";
+import {QuerySelector} from "../query/querySelector";
 
 const HASH_SEED = Date.now();
 
@@ -80,13 +82,13 @@ function processOutputExpression(expr : SelectOutputExpression, row : any, outpu
 	}
 }
 
-export function mapRowToClass<TDataClass = never>(outputExpressions : SelectOutputExpression[], row : any) : TDataClass {
+export function mapRowToClass<T extends QuerySelector = never>(outputExpressions : SelectOutputExpression[], row : any) : QueryOutput<T> {
 	const output = {};
 
 	for (const expr of outputExpressions) {
 		processOutputExpression(expr, row, output);
 	}
-	return output as TDataClass;
+	return output as QueryOutput<T>;
 }
 
 function hashRow<TDataClass>(row : TDataClass, propertiesToHash : string[]) : string {
@@ -130,8 +132,8 @@ function convertMapsToArrays(hashMap : SettingMap<string, any>, nestedSchema : N
 	return output;
 }
 
-export function mapRowsToClass<TDataClass>(outputExpressions : SelectOutputExpression[], rows : NestedObject[]) : TDataClass[] {
-	const convertedRows = rows.map((row) => mapRowToClass(outputExpressions, row));
+export function mapRowsToClass<T extends QuerySelector>(outputExpressions : SelectOutputExpression[], rows : NestedObject[]) : MappedQuerySelector<T>[] {
+	const convertedRows = rows.map((row) => mapRowToClass<T>(outputExpressions, row));
 	const nestedSchema = extractNestedSchema(outputExpressions);
 	if (nestedSchema.nested.size > 0) {
 		const hashMap = new SettingMap<string, any>();

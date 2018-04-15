@@ -2,15 +2,17 @@ import {QueryResult} from "pg";
 import {GeneratedQuery} from "../query/dsl";
 import {mapRowsToClass} from "../rowMapping/rowMapping";
 import {SelectOutputExpression} from "../query/ast";
+import {QuerySelector} from "../query/querySelector";
+import {MappedQuerySelector} from "../query/typeMapping";
 
 export interface Queryable {
 	query(queryText : string, values : any[]) : Promise<QueryResult>;
 }
 
-export async function execute<TDataClass>(queryable : Queryable,
+export async function execute<T extends QuerySelector>(queryable : Queryable,
 										  query : GeneratedQuery,
-										  outputClass : { new() : TDataClass },
-										  selectOutputExpressions : SelectOutputExpression[]) {
+										  querySelector : T,
+										  selectOutputExpressions : SelectOutputExpression[]) : Promise<MappedQuerySelector<T>[]> {
 	const queryResult = await queryable.query(query.sql, query.parameters);
-	return mapRowsToClass(selectOutputExpressions, queryResult.rows);
+	return mapRowsToClass<T>(selectOutputExpressions, queryResult.rows);
 }

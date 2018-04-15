@@ -17,7 +17,7 @@ describe("Query DSL", function () {
 		const params = {
 			userId: 1
 		};
-		const actual = select<QueryParams>(querySelect).where(QUsers.id.eq((p : QueryParams) => p.userId)).toSql(params);
+		const actual = select<typeof querySelect, QueryParams>(querySelect).where(QUsers.id.eq((p : QueryParams) => p.userId)).toSql(params);
 		const expected = {
 			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE "t1"."id" = $1`,
 			parameters: [1]
@@ -43,7 +43,7 @@ describe("Query DSL", function () {
 					sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" ORDER BY "t1"."id" ASC`,
 					parameters: []
 				},
-				actual: select<QueryParams>(querySelect)
+				actual: select<typeof querySelect, QueryParams>(querySelect)
 					.orderBy(QUsers.id.asc())
 					.toSql(params)
 			},
@@ -52,7 +52,7 @@ describe("Query DSL", function () {
 					sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" ORDER BY "t1"."id" DESC`,
 					parameters: []
 				},
-				actual: select<QueryParams>(querySelect)
+				actual: select<typeof querySelect, QueryParams>(querySelect)
 					.orderBy(QUsers.id.desc())
 					.toSql(params)
 			}
@@ -71,7 +71,7 @@ describe("Query DSL", function () {
 
 		// TODO: don't require manually constructing an OrderByExpressionNode to "orderBy"
 		// TODO: expose the expression alias, and use it in the generated "ORDER BY" statement
-		const actual = select<any>(querySelect)
+		const actual = select<typeof querySelect, {}>(querySelect)
 			.orderBy({
 				type: 'orderByExpressionNode',
 				expression: nameExpr

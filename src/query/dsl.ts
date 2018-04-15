@@ -26,6 +26,8 @@ import {
 	SelectorNestedMany,
 	SelectorNestedOne
 } from "./querySelector";
+import {execute, Queryable} from "../execution/execution";
+import {MappedQuerySelector, QueryOutput} from "./typeMapping";
 
 export const enum SqlCommand {
 	Select,
@@ -210,8 +212,8 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	}
 }
 
-class QueryBuilder<TParams extends HasLimit> extends BaseQueryBuilder<TParams> {
-	constructor(private command : SqlCommand, private querySelector : QuerySelector) {
+class QueryBuilder<TQuerySelector extends QuerySelector, TParams extends HasLimit> extends BaseQueryBuilder<TParams> {
+	constructor(private command : SqlCommand, private querySelector : TQuerySelector) {
 		super();
 		this.select();
 	}
@@ -234,25 +236,26 @@ class QueryBuilder<TParams extends HasLimit> extends BaseQueryBuilder<TParams> {
 		return this;
 	}
 
-	prepare() : PreparedQuery<TParams> {
+	prepare() : PreparedQuery<TQuerySelector, TParams> {
+		const querySelector = this.querySelector;
 		this.rectifyTableReferences();
 		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
 		const data = walker.prepare();
-		return new PreparedQuery<TParams>(this.queryAst.outputExpressions, data.sql, data.parameterGetters);
+		return new PreparedQuery<typeof querySelector, TParams>(querySelector, this.queryAst.outputExpressions, data.sql, data.parameterGetters);
 	}
 
 	toSql(params : TParams) : GeneratedQuery {
 		return this.prepare().generate(params);
 	}
 
-	// execute(queryable : Queryable, params : TParams) : Promise<TQueryClass[]> {
-	// 	return this.prepare().execute(queryable, params);
-	// }
+	execute(queryable : Queryable, params : TParams) : Promise<MappedQuerySelector<TQuerySelector>[]> {
+		return this.prepare().execute(queryable, params);
+	}
 }
 
-class PreparedQuery<TParams> {
+class PreparedQuery<TQuerySelector extends QuerySelector, TParams> {
 	constructor(
-		// protected readonly queryClass : Constructor<TDataClass>,
+		protected readonly querySelector : TQuerySelector,
 		protected readonly selectOutputExpressions : SelectOutputExpression[],
 		protected readonly sql : string,
 		protected readonly paramGetters : Array<(params : TParams) => any>) {
@@ -267,9 +270,9 @@ class PreparedQuery<TParams> {
 		};
 	}
 
-	// execute(queryable : Queryable, params : TParams) : Promise<TDataClass[]> {
-	// 	return execute(queryable, this.generate(params), this.queryClass, this.selectOutputExpressions);
-	// }
+	execute(queryable : Queryable, params : TParams) : Promise<MappedQuerySelector<TQuerySelector>[]> {
+		return execute<TQuerySelector>(queryable, this.generate(params), this.querySelector, this.selectOutputExpressions);
+	}
 }
 
 // TODO: how to reference expressions defined outside of this sub-query?
@@ -312,8 +315,8 @@ class SubQueryBuilder<TParams extends HasLimit> extends BaseQueryBuilder<TParams
 	}
 }
 
-export function select<TParams>(querySelector : QuerySelector) : QueryBuilder<TParams> {
-	return new QueryBuilder<TParams>(SqlCommand.Select, querySelector);
+export function select<TQuerySelector extends QuerySelector, TParams>(querySelector : TQuerySelector) : QueryBuilder<TQuerySelector, TParams> {
+	return new QueryBuilder<TQuerySelector, TParams>(SqlCommand.Select, querySelector);
 }
 
 type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<any>;
