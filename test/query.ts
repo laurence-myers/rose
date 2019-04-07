@@ -499,12 +499,10 @@ describe("Query DSL", function () {
 
 		const builder1 = select(querySelect);
 		const builder2 = builder1.where(QUsers.id.eq((p) => p.userId));
-		console.log((builder2 as any).tableMap);
 		assert.notStrictEqual(builder1, builder2, "where() should create a new QueryBuilder");
 		assert.notStrictEqual((builder1 as any).queryAst, (builder2 as any).queryAst, "immutable methods should deep clone the queryAst property");
 		// assert.notStrictEqual((builder1 as any).tableMap, (builder2 as any).tableMap, "immutable methods should deep clone the tableMap property");
 		const builder3 = builder2.from(QUsers);
-		console.log((builder3 as any).tableMap);
 		assert.notStrictEqual(builder2, builder3, "from() should create a new QueryBuilder");
 		assert.ok((builder3 as any).tableMap.size > 0, "from() should populate the tableMap");
 		const builder4 = builder3.join(QUsers).cross();

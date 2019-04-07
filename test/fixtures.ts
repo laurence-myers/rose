@@ -1,7 +1,9 @@
 import {
-	BooleanColumnMetamodel,
-	ColumnMetamodel,
-	DateColumnMetamodel, NullableDateColumnMetamodel, NumericColumnMetamodel, QueryTable, StringColumnMetamodel,
+	DateColumnMetamodel,
+	NullableDateColumnMetamodel,
+	NumericColumnMetamodel,
+	QueryTable,
+	StringColumnMetamodel,
 	TableMetamodel
 } from "../src/query/metamodel";
 import {deepFreeze} from "../src/lang";
@@ -105,3 +107,13 @@ export class TBuilderTemplateTags extends QueryTable {
 }
 
 export const QBuilderTemplateTags = deepFreeze(new TBuilderTemplateTags());
+
+export class TOrders extends QueryTable {
+	constructor($tableAlias? : string) { super(new TableMetamodel("orders", $tableAlias)); }
+
+	region = new StringColumnMetamodel(this.$table, "region", Number);
+	product = new StringColumnMetamodel(this.$table, "product", String);
+	quantity = new NumericColumnMetamodel(this.$table, "quantity", Number);
+	amount = new NumericColumnMetamodel(this.$table, "amount", Number);
+}
+export const QOrders = new TOrders();

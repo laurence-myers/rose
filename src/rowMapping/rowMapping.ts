@@ -1,6 +1,6 @@
 import {SelectOutputExpression} from "../query/ast";
 import {RowMappingError, UnsupportedOperationError} from "../errors";
-import {assertNever, DefaultMap, isMap, last, logObject, SettingMap} from "../lang";
+import {assertNever, DefaultMap, isMap, last, SettingMap} from "../lang";
 import {MetroHash128} from "metrohash";
 import {MappedQuerySelector, QueryOutput} from "../query/typeMapping";
 import {QuerySelector} from "../query/querySelector";
@@ -165,6 +165,5 @@ function extractNestedSchema(outputExpressions : SelectOutputExpression[]) : Nes
 				break;
 		}
 	}
-	// logObject(output);
 	return output;
 }

@@ -8,3 +8,11 @@ export function count(valueExpression? : ParameterOrValueExpressionNode) : Funct
 		arguments: valueExpression ? [valueExpression] : [literal('*')]
 	};
 }
+
+export function sum(valueExpression : ParameterOrValueExpressionNode) : FunctionExpressionNode {
+	return {
+		type: 'functionExpressionNode',
+		name: 'sum',
+		arguments: [valueExpression]
+	};
+}

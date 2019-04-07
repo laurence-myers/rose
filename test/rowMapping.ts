@@ -439,7 +439,6 @@ describe("Row mapping", function () {
 		}
 
 		const result = mapRowsToClass(outputExpressions, rows);
-		// logObject(result);
 
 		assert.deepEqual(result, [
 			{

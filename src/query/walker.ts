@@ -1,12 +1,27 @@
 import {
-	SelectCommandNode, AstNode, ColumnReferenceNode, ParameterOrValueExpressionNode, FromItemNode,
-	BooleanExpression, ConstantNode, OrderByExpressionNode, FunctionExpressionNode, LimitOffsetNode,
-	AliasedSelectExpressionNode, JoinNode, BooleanBinaryOperationNode, BinaryOperationNode, UnaryOperationNode,
-	BooleanExpressionGroupNode, NotExpressionNode, SubSelectNode, NaturalSyntaxFunctionExpressionNode, LiteralNode,
-	ExpressionListNode, TableReferenceNode, AliasedExpressionNode, AnyAliasedExpressionNode
+	AnyAliasedExpressionNode,
+	AstNode,
+	BinaryOperationNode,
+	BooleanExpression,
+	BooleanExpressionGroupNode,
+	ColumnReferenceNode,
+	ConstantNode,
+	ExpressionListNode,
+	FunctionExpressionNode,
+	GroupByExpressionNode,
+	JoinNode,
+	LimitOffsetNode,
+	LiteralNode,
+	NaturalSyntaxFunctionExpressionNode,
+	NotExpressionNode,
+	OrderByExpressionNode,
+	SelectCommandNode,
+	SubSelectNode,
+	TableReferenceNode,
+	UnaryOperationNode,
+	WithNode
 } from "./ast";
-import {DefaultMap, assertNever, remove, difference, deepFreeze, keySet} from "../lang";
-import {GeneratedQuery} from "./dsl";
+import {assertNever, deepFreeze, DefaultMap, difference} from "../lang";
 import {UnsupportedOperationError} from "../errors";
 
 export abstract class BaseWalker {
@@ -31,6 +46,8 @@ export abstract class BaseWalker {
 
 	protected abstract walkFunctionExpressionNode(node : FunctionExpressionNode) : void;
 
+	protected abstract walkGroupByExpressionNode(node : GroupByExpressionNode) : void;
+
 	protected abstract walkJoinNode(node : JoinNode) : void;
 
 	protected abstract walkLimitOffsetNode(node : LimitOffsetNode) : void;
@@ -50,6 +67,8 @@ export abstract class BaseWalker {
 	protected abstract walkTableReferenceNode(node : TableReferenceNode) : void;
 
 	protected abstract walkUnaryOperationNode(node : UnaryOperationNode) : void;
+
+	protected abstract walkWithNode(node : WithNode) : void;
 
 	protected walk(node : AstNode) : void {
 		switch (node.type) {
@@ -73,6 +92,9 @@ export abstract class BaseWalker {
 				break;
 			case "functionExpressionNode":
 				this.walkFunctionExpressionNode(node);
+				break;
+			case "groupByExpressionNode":
+				this.walkGroupByExpressionNode(node);
 				break;
 			case "joinNode":
 				this.walkJoinNode(node);
@@ -103,6 +125,9 @@ export abstract class BaseWalker {
 				break;
 			case "unaryOperationNode":
 				this.walkUnaryOperationNode(node);
+				break;
+			case "withNode":
+				this.walkWithNode(node);
 				break;
 			default:
 				return assertNever(node);
@@ -142,6 +167,10 @@ export class SkippingWalker extends BaseWalker {
 		node.arguments.forEach(this.doItemWalk());
 	}
 
+	protected walkGroupByExpressionNode(node : GroupByExpressionNode) : void {
+		this.walk(node.expression);
+	}
+
 	protected walkLimitOffsetNode(node : LimitOffsetNode) : void {
 	}
 
@@ -177,6 +206,7 @@ export class SkippingWalker extends BaseWalker {
 		node.joins.forEach(this.doItemWalk());
 		node.conditions.forEach(this.doItemWalk());
 		node.ordering.forEach(this.doItemWalk());
+		node.grouping.forEach(this.doItemWalk());
 	}
 
 	protected walkSubSelectNode(node : SubSelectNode) : void {
@@ -189,11 +219,16 @@ export class SkippingWalker extends BaseWalker {
 	protected walkUnaryOperationNode(node : UnaryOperationNode) : void {
 		this.walk(node.expression);
 	}
+
+	protected walkWithNode(node : WithNode) : void {
+		node.selectNodes.forEach(this.doItemWalk());
+	}
 }
 
 export class RectifyingWalker extends SkippingWalker {
 	protected referencedTables : Set<string> = new Set<string>();
 	protected specifiedTables : Set<string> = new Set<string>();
+	protected columnReferences : Set<ColumnReferenceNode> = new Set<ColumnReferenceNode>();
 
 	constructor(
 		protected ast : SelectCommandNode,
@@ -204,6 +239,7 @@ export class RectifyingWalker extends SkippingWalker {
 
 	protected walkColumnReferenceNode(node : ColumnReferenceNode) : void {
 		this.referencedTables.add(node.tableName);
+		this.columnReferences.add(node);
 		super.walkColumnReferenceNode(node);
 	}
 
@@ -217,12 +253,15 @@ export class RectifyingWalker extends SkippingWalker {
 		super.walkTableReferenceNode(node);
 	}
 
+	protected walkWithNode(node : WithNode) : void {
+		// Do not process sub-nodes, they should be self-contained
+	}
+
 	rectify() : void {
 		this.walk(this.ast);
 		const unspecifiedTables = difference(this.referencedTables, this.specifiedTables);
 		unspecifiedTables.forEach((tableName) => {
 			const tableAlias = this.tableMap.get(tableName);
-
 			this.ast.fromItems.push({
 				type: "aliasedExpressionNode",
 				alias: tableAlias,
@@ -233,6 +272,13 @@ export class RectifyingWalker extends SkippingWalker {
 				}
 			});
 		});
+		// Update all column references to use the aliases.
+		for (const column of this.columnReferences.values()) {
+			if (!column.tableAlias) {
+				const tableAlias = this.tableMap.get(column.tableName);
+				column.tableAlias = tableAlias;
+			}
+		}
 	}
 }
 
@@ -320,6 +366,10 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += '(';
 		node.expressions.forEach(this.doListWalk());
 		this.sb += ')';
+	}
+
+	protected walkGroupByExpressionNode(node : GroupByExpressionNode) : void {
+		this.walk(node.expression);
 	}
 
 	protected walkJoinNode(node : JoinNode) : void {
@@ -416,6 +466,9 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkSelectCommandNode(node : SelectCommandNode) : void {
+		if (node.with) {
+			this.walk(node.with);
+		}
 		this.sb += "SELECT ";
 		switch (node.distinction) {
 			case "distinct":
@@ -448,6 +501,11 @@ export class SqlAstWalker extends BaseWalker {
 			this.sb += " WHERE ";
 			node.conditions.forEach(this.doItemWalk());
 		}
+		if (node.grouping.length > 0) {
+			this.sb += " GROUP BY (";
+			node.grouping.forEach(this.doListWalk());
+			this.sb += ")";
+		}
 		if (node.ordering.length > 0) {
 			this.sb += " ORDER BY ";
 			node.ordering.forEach(this.doListWalk());
@@ -479,6 +537,24 @@ export class SqlAstWalker extends BaseWalker {
 			this.walk(node.expression);
 			this.sb += ` `;
 			this.sb += node.operator;
+		}
+	}
+
+	protected walkWithNode(node : WithNode) : void {
+		if (node.selectNodes.length > 0) {
+			this.sb += `WITH `;
+			for (let i = 0; i < node.selectNodes.length; i++) {
+				const selectNode = node.selectNodes[i];
+				if (i > 0) {
+					this.sb += `, `;
+				}
+				// We can't use the normal alias expression walker, because CTEs specify the alias before the expression.
+				this.sb += `"`;
+				this.sb += selectNode.alias;
+				this.sb += `" as `;
+				this.walk(selectNode.expression);
+			}
+			this.sb += ` `;
 		}
 	}
 

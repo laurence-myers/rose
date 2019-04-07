@@ -176,10 +176,20 @@ export interface OrderByExpressionNode {
 	nulls? : 'first' | 'last';
 }
 
+export interface GroupByExpressionNode {
+	type : 'groupByExpressionNode';
+	expression : ParameterOrValueExpressionNode;
+}
+
 export interface LimitOffsetNode {
 	type : 'limitOffsetNode';
 	limit : ConstantNode<number>; // could also be "ALL", but let's not support that
 	offset : ConstantNode<number>;
+}
+
+export interface WithNode {
+	type : 'withNode';
+	selectNodes : AliasedExpressionNode<SubSelectNode>[];
 }
 
 /*
@@ -239,7 +249,9 @@ export interface SelectCommandNode {
 	joins : JoinNode[];
 	conditions : BooleanExpression[];
 	ordering : OrderByExpressionNode[];
+	grouping : GroupByExpressionNode[];
 	limit? : LimitOffsetNode;
+	with? : WithNode;
 }
 
 export interface SubSelectNode {
@@ -249,4 +261,4 @@ export interface SubSelectNode {
 
 export type AstNode = SelectCommandNode | ParameterOrValueExpressionNode | AliasedSelectExpressionNode | JoinNode | FromItemNode
 	| OrderByExpressionNode | FunctionExpressionNode | LimitOffsetNode | BooleanExpressionGroupNode | NotExpressionNode
-	| ExpressionListNode;
+	| ExpressionListNode | GroupByExpressionNode | WithNode;

@@ -124,7 +124,6 @@ export function Clone() : MethodDecorator {
 		if (isFunction(original)) {
 			descriptor.value = function(this : any, ...args : any[]) {
 				const newObj = clone(this);
-				console.log((this as any).tableMap, (newObj as any).tableMap);
 				return original.apply(newObj, args);
 			} as any;
 		}

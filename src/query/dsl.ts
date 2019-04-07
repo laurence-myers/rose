@@ -1,13 +1,15 @@
 import "reflect-metadata";
-import {ColumnMetamodel, QueryTable} from "./metamodel";
+import {ColumnMetamodel, QueryTable, TableMetamodel} from "./metamodel";
 import {Clone, DefaultMap} from "../lang";
 import {UnsupportedOperationError} from "../errors";
 import {
+	AliasedExpressionNode,
 	BooleanExpression,
 	BooleanExpressionGroupNode,
 	ColumnReferenceNode,
 	ConstantNode,
 	ExpressionListNode,
+	GroupByExpressionNode,
 	JoinNode,
 	LiteralNode,
 	NotExpressionNode,
@@ -15,19 +17,13 @@ import {
 	ParameterOrValueExpressionNode,
 	SelectCommandNode,
 	SelectOutputExpression,
-	SubSelectNode
+	SubSelectNode,
 } from "./ast";
 import {RectifyingWalker, SqlAstWalker} from "./walker";
 import {QuerySelectorProcessor} from "./metadata";
-// import {execute, Queryable} from "../execution/execution";
-import {
-	QuerySelector,
-	SelectorExpression,
-	SelectorNestedMany,
-	SelectorNestedOne
-} from "./querySelector";
+import {QuerySelector, SelectorExpression, SelectorNestedMany, SelectorNestedOne} from "./querySelector";
 import {execute, Queryable} from "../execution/execution";
-import {MappedQuerySelector, QueryOutput} from "./typeMapping";
+import {MappedQuerySelector} from "./typeMapping";
 
 export const enum SqlCommand {
 	Select,
@@ -130,7 +126,8 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 		fromItems: [],
 		joins: [],
 		conditions: [],
-		ordering: []
+		ordering: [],
+		grouping: []
 	};
 
 	/**
@@ -139,6 +136,15 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	protected rectifyTableReferences() {
 		const rectifier = new RectifyingWalker(this.queryAst, this.tableMap);
 		rectifier.rectify();
+	}
+
+	@Clone()
+	with(first : AliasedExpressionNode<SubSelectNode>, ...rest: AliasedExpressionNode<SubSelectNode>[]) : this {
+		this.queryAst.with = {
+			type: "withNode",
+			selectNodes: [first].concat(rest)
+		};
+		return this;
 	}
 
 	@Clone()
@@ -187,6 +193,15 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	}
 
 	@Clone()
+	groupBy(first : GroupByExpressionNode, ...rest : GroupByExpressionNode[]) : this {
+		this.queryAst.grouping.push(first);
+		if (rest && rest.length > 0) {
+			rest.forEach((node) => this.queryAst.grouping.push(node));
+		}
+		return this;
+	}
+
+	@Clone()
 	orderBy(first : OrderByExpressionNode, ...rest : OrderByExpressionNode[]) : this {
 		this.queryAst.ordering.push(first);
 		if (rest && rest.length > 0) {
@@ -231,7 +246,8 @@ class QueryBuilder<TQuerySelector extends QuerySelector, TParams extends HasLimi
 			fromItems: [],
 			joins: [],
 			conditions: [],
-			ordering: []
+			ordering: [],
+			grouping: []
 		};
 		return this;
 	}
@@ -300,7 +316,8 @@ class SubQueryBuilder<TParams extends HasLimit> extends BaseQueryBuilder<TParams
 			fromItems: [],
 			joins: [],
 			conditions: [],
-			ordering: []
+			ordering: [],
+			grouping: []
 		};
 		this.processSubSelectExpressions(subSelectExpressions);
 		return this;
@@ -408,4 +425,60 @@ export function selectNestedMany<T extends QuerySelector>(querySelector : T) : S
 			querySelector
 		}
 	};
+}
+
+export type CommonTableExpressionMetamodel<T extends QuerySelector> = {
+	[K in keyof T] : ColumnMetamodel<any>;
+};
+
+export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector, TParams> extends BaseQueryBuilder<TParams> {
+	constructor(
+		protected readonly alias : string,
+		protected readonly querySelector : TQuerySelector
+	) {
+		super();
+		this.queryAst.outputExpressions = this.processQuerySelector();
+	}
+
+	protected processQuerySelector() : Array<SelectOutputExpression> {
+		const processor = new QuerySelectorProcessor(this.querySelector);
+		return processor.process();
+	}
+
+	toMetamodel() : CommonTableExpressionMetamodel<TQuerySelector> {
+		this.rectifyTableReferences();
+		const output: { [key: string] : ColumnMetamodel<any> } = {};
+		const table = new TableMetamodel(this.alias, undefined);
+		for (const expr of this.queryAst.outputExpressions) {
+			switch (expr.type) {
+				case "aliasedExpressionNode":
+					output[expr.alias] = new ColumnMetamodel<any>(
+						table,
+						expr.alias,
+						() => {},
+					);
+					break;
+				default:
+					throw new UnsupportedOperationError("Only aliased expressions can be used in CTEs");
+			}
+		}
+		return output as CommonTableExpressionMetamodel<TQuerySelector>;
+	}
+
+	toNode() : AliasedExpressionNode<SubSelectNode> {
+		this.rectifyTableReferences();
+		return {
+			type: "aliasedExpressionNode",
+			alias: this.alias,
+			aliasPath: [this.alias],
+			expression: {
+				type: 'subSelectNode',
+				query: this.queryAst
+			}
+		};
+	}
+}
+
+export function selectCte<TQuerySelector extends QuerySelector>(alias : string, querySelector : TQuerySelector) {
+	return new CommonTableExpressionBuilder(alias, querySelector);
 }

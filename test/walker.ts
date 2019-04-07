@@ -1,7 +1,7 @@
 import {RectifyingWalker} from "../src/query/walker";
 import {AliasedFromExpressionNode, FromItemNode, SelectCommandNode, SubSelectNode} from "../src/query/ast";
 import {DefaultMap} from "../src/lang";
-import {equal, fail} from "assert";
+import {deepEqual, equal, fail} from "assert";
 
 function getFromItem(fromItem : FromItemNode) : AliasedFromExpressionNode | never {
 	if (fromItem.type == "aliasedExpressionNode") {
@@ -27,7 +27,8 @@ describe("AST Walkers", function () {
 				fromItems: [],
 				joins: [],
 				conditions: [],
-				ordering: []
+				ordering: [],
+				grouping: []
 			};
 			const tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
 			const walker = new RectifyingWalker(ast, tableMap);
@@ -62,7 +63,8 @@ describe("AST Walkers", function () {
 				],
 				joins: [],
 				conditions: [],
-				ordering: []
+				ordering: [],
+				grouping: []
 			};
 			const tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
 			const walker = new RectifyingWalker(ast, tableMap);
@@ -105,7 +107,8 @@ describe("AST Walkers", function () {
 							}
 						}
 					],
-					ordering: []
+					ordering: [],
+					grouping: []
 				}
 			};
 
@@ -133,7 +136,8 @@ describe("AST Walkers", function () {
 						right: subSelectNode
 					}
 				],
-				ordering: []
+				ordering: [],
+				grouping: []
 			};
 			const tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
 			const walker = new RectifyingWalker(ast, tableMap);
@@ -147,6 +151,145 @@ describe("AST Walkers", function () {
 			const nestedFromItem = getFromItem(subSelectNode.query.fromItems[0]);
 			equal(nestedFromItem.expression.tableName, "Locations");
 			equal(nestedFromItem.alias, "t1");
+		});
+
+		it("Rectifies unaliased FROM locations", function () {
+
+			const ast : SelectCommandNode = {
+				"type": "selectCommandNode",
+				"distinction": "all",
+				"outputExpressions": [
+					{
+						"type": "aliasedExpressionNode",
+						"alias": "region",
+						"aliasPath": [
+							"region"
+						],
+						"expression": {
+							"type": "columnReferenceNode",
+							"columnName": "region",
+							"tableName": "orders",
+							"tableAlias": undefined
+						}
+					},
+					{
+						"type": "aliasedExpressionNode",
+						"alias": "total_sales",
+						"aliasPath": [
+							"total_sales"
+						],
+						"expression": {
+							"type": "functionExpressionNode",
+							"name": "sum",
+							"arguments": [
+								{
+									"type": "columnReferenceNode",
+									"columnName": "amount",
+									"tableName": "orders",
+									"tableAlias": undefined
+								}
+							]
+						}
+					}
+				],
+				"fromItems": [
+					{
+						"type": "aliasedExpressionNode",
+						"alias": "t1",
+						"aliasPath": [
+							"t1"
+						],
+						"expression": {
+							"type": "tableReferenceNode",
+							"tableName": "orders"
+						}
+					}
+				],
+				"joins": [],
+				"conditions": [],
+				"ordering": [],
+				"grouping": [
+					{
+						"type": "groupByExpressionNode",
+						"expression": {
+							"type": "columnReferenceNode",
+							"columnName": "region",
+							"tableName": "orders",
+							"tableAlias": undefined
+						}
+					}
+				]
+			};
+			const tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
+			const walker = new RectifyingWalker(ast, tableMap);
+			walker.rectify();
+
+			const expected = {
+				"type": "selectCommandNode",
+				"distinction": "all",
+				"outputExpressions": [
+					{
+						"type": "aliasedExpressionNode",
+						"alias": "region",
+						"aliasPath": [
+							"region"
+						],
+						"expression": {
+							"type": "columnReferenceNode",
+							"columnName": "region",
+							"tableName": "orders",
+							"tableAlias": "t1"
+						}
+					},
+					{
+						"type": "aliasedExpressionNode",
+						"alias": "total_sales",
+						"aliasPath": [
+							"total_sales"
+						],
+						"expression": {
+							"type": "functionExpressionNode",
+							"name": "sum",
+							"arguments": [
+								{
+									"type": "columnReferenceNode",
+									"columnName": "amount",
+									"tableName": "orders",
+									"tableAlias": "t1"
+								}
+							]
+						}
+					}
+				],
+				"fromItems": [
+					{
+						"type": "aliasedExpressionNode",
+						"alias": "t1",
+						"aliasPath": [
+							"t1"
+						],
+						"expression": {
+							"type": "tableReferenceNode",
+							"tableName": "orders"
+						}
+					}
+				],
+				"joins": [],
+				"conditions": [],
+				"ordering": [],
+				"grouping": [
+					{
+						"type": "groupByExpressionNode",
+						"expression": {
+							"type": "columnReferenceNode",
+							"columnName": "region",
+							"tableName": "orders",
+							"tableAlias": "t1"
+						}
+					}
+				]
+			};
+			deepEqual(ast, expected);
 		});
 	});
 });

@@ -4,6 +4,7 @@ import {
 	QBuilderTemplateTags,
 	QBuilderTemplateToCategoryMap,
 	QLocations,
+	QOrders,
 	QRecurringPayments,
 	QTags,
 	QUploads
@@ -11,10 +12,12 @@ import {
 import {
 	and,
 	col,
+	literal,
 	or,
 	ParamsWrapper,
 	row,
 	select,
+	selectCte,
 	selectExpression,
 	selectNestedMany,
 	subSelect
@@ -22,6 +25,8 @@ import {
 import {now, overlaps} from "../src/query/postgresql/functions/dateTime/functions";
 import * as assert from "assert";
 import {exists} from "../src/query/postgresql/functions/subquery/expressions";
+import {sum} from "../src/query/postgresql/functions/aggregate/general";
+import {divide} from "../src/query/postgresql/functions/mathematical/operators";
 
 describe(`Example queries`, function () {
 	describe(`Recurring payments`, function () {
@@ -269,5 +274,78 @@ describe(`Example queries`, function () {
 			assert.equal(result.sql, `SELECT "t6"."id" as "id", "t6"."title" as "title", "t6"."createdAt" as "createdAt", "t6"."clientId" as "clientId", "t5"."id" as "compositeImage.id", "t4"."id" as "tags.id", "t4"."title" as "tags.title", "t2"."id" as "categories.id", "t2"."groupLabel" as "categories.groupLabel", "t2"."label" as "categories.label", "t2"."width" as "categories.width", "t2"."height" as "categories.height", "t2"."platformId" as "categories.platformId" FROM "BuilderTemplates" as "t6" INNER JOIN "BuilderTemplateToCategoryMap" as "t1" ON "t1"."builderTemplateId" = "t6"."id"INNER JOIN "BuilderTemplateCategories" as "t2" ON "t2"."id" = "t1"."builderTemplateCategoryId"INNER JOIN "BuilderTemplateTags" as "t3" ON "t3"."builderTemplateId" = "t6"."id"INNER JOIN "Tags" as "t4" ON "t4"."id" = "t3"."tagId"INNER JOIN "Uploads" as "t5" ON "t5"."id" = "t6"."compositeImageId" WHERE "t6"."id" IN (SELECT "t6"."id" FROM "BuilderTemplates" as "t6", "BuilderTemplateCategories" as "t2", "BuilderTemplateToCategoryMap" as "t1" WHERE ("t2"."platformId" = ANY($1) AND "t1"."builderTemplateId" = "t6"."id" AND "t1"."builderTemplateCategoryId" = "t2"."id") ORDER BY "t6"."createdAt" DESC LIMIT $2 OFFSET $3)`);
 			assert.deepEqual(result.parameters, [[123], 10, 0]);
 		});
+	});
+
+	describe(`Common Table Expressions (CTE)`, function () {
+		/**
+		 * WITH regional_sales AS (
+		 *			SELECT region, SUM(amount) AS total_sales
+		 *			FROM orders
+		 *			GROUP BY region
+		 *		 ), top_regions AS (
+		 *			SELECT region
+		 *			FROM regional_sales
+		 *			WHERE total_sales > (SELECT SUM(total_sales)/10 FROM regional_sales)
+		 *		 )
+		 *	SELECT region,
+		 *		   product,
+		 *		   SUM(quantity) AS product_units,
+		 *		   SUM(amount) AS product_sales
+		 *	FROM orders
+		 *	WHERE region IN (SELECT region FROM top_regions)
+		 *	GROUP BY region, product;
+		 */
+		it(`can query a CTE`, function () {
+			const regionalSales = selectCte(`regional_sales`, {
+				region: QOrders.region,
+				total_sales: selectExpression(sum(QOrders.amount.toColumnReferenceNode()))
+			})
+				.groupBy({ // TODO: better syntax for GroupBy. Support strings to reference aliased columns/expressions
+					type: "groupByExpressionNode",
+					expression: QOrders.region.toColumnReferenceNode()
+				});
+			const regionalSalesMetamodel = regionalSales.toMetamodel();
+			const topRegions = selectCte(`top_regions`, {
+				region: regionalSalesMetamodel.region
+			})
+				.where(regionalSalesMetamodel.total_sales.gt(
+					subSelect(divide(sum(regionalSalesMetamodel.total_sales.toColumnReferenceNode()), literal("10")))
+						.toSubQuery()
+				));
+
+			const query = select({
+				region: QOrders.region,
+				product: QOrders.product,
+				product_units: selectExpression(sum(QOrders.quantity.toColumnReferenceNode())),
+				product_sales: selectExpression(sum(QOrders.amount.toColumnReferenceNode()))
+			})
+				.with(regionalSales.toNode(), topRegions.toNode())
+				.where(QOrders.region.in(
+					subSelect(topRegions.toMetamodel().region)
+						.toSubQuery()
+				))
+				.groupBy({
+					type: "groupByExpressionNode",
+					expression: QOrders.region.toColumnReferenceNode()
+				}, {
+					type: "groupByExpressionNode",
+					expression: QOrders.product.toColumnReferenceNode()
+				});
+
+			const result = query.toSql({});
+			assert.equal(result.sql, 'WITH "regional_sales" as (SELECT "t1"."region" as "region", sum("t1"."amount") as "total_sales" FROM "orders" as "t1" GROUP BY ("t1"."region")), "top_regions" as (SELECT "t1"."region" as "region" FROM "regional_sales" as "t1" WHERE "t1"."total_sales" > (SELECT sum("t1"."total_sales") / 10 FROM "regional_sales" as "t1")) SELECT "t2"."region" as "region", "t2"."product" as "product", sum("t2"."quantity") as "product_units", sum("t2"."amount") as "product_sales" FROM "orders" as "t2" WHERE "t2"."region" IN (SELECT "t1"."region" FROM "top_regions" as "t1") GROUP BY ("t2"."region", "t2"."product")');
+		});
+
+		/**
+		 * WITH RECURSIVE t(n) AS (
+		 * VALUES (1)
+		 * UNION ALL
+		 * SELECT n+1 FROM t WHERE n < 100
+		 * )
+		 * SELECT sum(n) FROM t;
+		 */
+		xit(`can query a recursive CTE`, function () {
+
+		})
 	});
 });
