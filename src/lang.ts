@@ -74,7 +74,7 @@ export function getMetadata<T>(metadataKey : string, target : Object, targetKey?
 export function getType(target : Object, propertyKey : string | symbol) : Function {
 	const type = getMetadata<Function>("design:type", target, propertyKey);
 	if (type === undefined) {
-		throw new TypeError(`Could not find a type for property ${ propertyKey }`);
+		throw new TypeError(`Could not find a type for property ${ String(propertyKey) }`);
 	}
 	return type;
 }

@@ -133,7 +133,7 @@ function convertMapsToArrays(hashMap : SettingMap<string, any>, nestedSchema : N
 }
 
 export function mapRowsToClass<T extends QuerySelector>(outputExpressions : SelectOutputExpression[], rows : NestedObject[]) : MappedQuerySelector<T>[] {
-	const convertedRows = rows.map((row) => mapRowToClass<T>(outputExpressions, row));
+	const convertedRows = rows.map((row): MappedQuerySelector<T> => mapRowToClass<T>(outputExpressions, row) as MappedQuerySelector<T>);
 	const nestedSchema = extractNestedSchema(outputExpressions);
 	if (nestedSchema.nested.size > 0) {
 		const hashMap = new SettingMap<string, any>();

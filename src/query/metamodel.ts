@@ -30,7 +30,7 @@ export function Column<T>(metamodel : ColumnMetamodel<any>) : PropertyDecorator 
 			metadata = new Map<string, ColumnMetamodel<any>>();
 			Reflect.defineMetadata(SELECT_METADATA_KEY, metadata, target);
 		} else if (metadata.get(<string> propertyKey) !== undefined) {
-			throw new InvalidColumnDefinitionError(`Property "${ propertyKey }" already has column metadata defined.`);
+			throw new InvalidColumnDefinitionError(`Property "${ String(propertyKey) }" already has column metadata defined.`);
 		}
 		metadata.set(<string> propertyKey, metamodel);
 	}
