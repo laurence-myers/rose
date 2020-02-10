@@ -5,7 +5,7 @@ import {
 	ParameterOrValueExpressionNode
 } from "../../../ast";
 
-export function createUnaryOperatorNode(operator : string, position : "left" | "right", expression : ParameterOrValueExpressionNode) : UnaryOperationNode {
+export function createUnaryOperatorNode(operator: string, position: "left" | "right", expression: ParameterOrValueExpressionNode): UnaryOperationNode {
 	return {
 		type: 'unaryOperationNode',
 		expression,
@@ -14,7 +14,7 @@ export function createUnaryOperatorNode(operator : string, position : "left" | "
 	};
 }
 
-export function createBinaryOperatorNode(operator : string, left : ParameterOrValueExpressionNode | ExpressionListNode, right : ParameterOrValueExpressionNode | ExpressionListNode) : BinaryOperationNode {
+export function createBinaryOperatorNode(operator: string, left: ParameterOrValueExpressionNode | ExpressionListNode, right: ParameterOrValueExpressionNode | ExpressionListNode): BinaryOperationNode {
 	return {
 		type: 'binaryOperationNode',
 		left,
@@ -23,7 +23,7 @@ export function createBinaryOperatorNode(operator : string, left : ParameterOrVa
 	};
 }
 
-export function createFunctionNode(name : string, ...args : ParameterOrValueExpressionNode[]) : FunctionExpressionNode {
+export function createFunctionNode(name: string, ...args: ParameterOrValueExpressionNode[]): FunctionExpressionNode {
 	return {
 		type: 'functionExpressionNode',
 		name: name,
@@ -31,7 +31,7 @@ export function createFunctionNode(name : string, ...args : ParameterOrValueExpr
 	};
 }
 
-export function createNaturalSyntaxFunctionNode(name : string, keywords : NaturalSyntaxFunctionExpressionNodeArgument[]) : NaturalSyntaxFunctionExpressionNode {
+export function createNaturalSyntaxFunctionNode(name: string, keywords: NaturalSyntaxFunctionExpressionNodeArgument[]): NaturalSyntaxFunctionExpressionNode {
 	return {
 		type: 'naturalSyntaxFunctionExpressionNode',
 		name: name,

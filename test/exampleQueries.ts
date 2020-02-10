@@ -110,9 +110,9 @@ describe(`Example queries`, function () {
 
 			// Make our parameters type safe
 			interface QueryParams {
-				startDate : Date;
-				endDate : Date;
-				locationId : number;
+				startDate: Date;
+				endDate: Date;
+				locationId: number;
 			}
 			// Make our use of parameters within the sub-query type safe
 			const P = new ParamsWrapper<QueryParams>();
@@ -174,7 +174,7 @@ describe(`Example queries`, function () {
 		}
 
 		interface Params extends Page {
-			criteria : FindAllCriteria;
+			criteria: FindAllCriteria;
 		}
 
 		const Upload = {
@@ -217,7 +217,7 @@ describe(`Example queries`, function () {
 			categories: selectNestedMany(BuilderTemplateCategory),
 		};
 
-		function prepareDynamicQuery(params : Params) {
+		function prepareDynamicQuery(params: Params) {
 			// Let's assign some locals for brevity
 			const QCategories = QBuilderTemplateCategories;
 			const QCategoryMap = QBuilderTemplateToCategoryMap;

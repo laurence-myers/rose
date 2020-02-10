@@ -8,19 +8,19 @@ import {QuerySelector} from "../query/querySelector";
 const HASH_SEED = Date.now();
 
 interface Aliases {
-	input : string;
-	output : string;
+	input: string;
+	output: string;
 }
 
 interface NestedPathResult {
-	nestedObject : any;
-	key : string;
+	nestedObject: any;
+	key: string;
 }
 
-function processNestedPathSegment(arrayKey : string, output : any) {
-	let nestedObject : any;
+function processNestedPathSegment(arrayKey: string, output: any) {
+	let nestedObject: any;
 	if (!(<any> output)[arrayKey]) {
-		const arr : any[] = [];
+		const arr: any[] = [];
 		nestedObject = {};
 		(<any> output)[arrayKey] = arr;
 		arr.push(nestedObject);
@@ -30,9 +30,9 @@ function processNestedPathSegment(arrayKey : string, output : any) {
 	return nestedObject;
 }
 
-function processNestedPath(allSegments : string[], output : any) : NestedPathResult {
+function processNestedPath(allSegments: string[], output: any): NestedPathResult {
 	const segments = allSegments.slice(0, allSegments.length - 1);
-	let nestedObject = segments.reduce((nestedObject : any, segment : string) => {
+	let nestedObject = segments.reduce((nestedObject: any, segment: string) => {
 		return processNestedPathSegment(segment, nestedObject);
 	}, output);
 	return {
@@ -41,7 +41,7 @@ function processNestedPath(allSegments : string[], output : any) : NestedPathRes
 	};
 }
 
-function processOutputExpression(expr : SelectOutputExpression, row : any, output : any, aliases? : Aliases) : void {
+function processOutputExpression(expr: SelectOutputExpression, row: any, output: any, aliases? : Aliases): void {
 	switch (expr.type) {
 		case "aliasedExpressionNode":
 			if (expr.alias.indexOf('.') > -1) {
@@ -82,7 +82,7 @@ function processOutputExpression(expr : SelectOutputExpression, row : any, outpu
 	}
 }
 
-export function mapRowToClass<T extends QuerySelector = never>(outputExpressions : SelectOutputExpression[], row : any) : QueryOutput<T> {
+export function mapRowToClass<T extends QuerySelector = never>(outputExpressions: SelectOutputExpression[], row: any): QueryOutput<T> {
 	const output = {};
 
 	for (const expr of outputExpressions) {
@@ -91,7 +91,7 @@ export function mapRowToClass<T extends QuerySelector = never>(outputExpressions
 	return output as QueryOutput<T>;
 }
 
-function hashRow<TDataClass>(row : TDataClass, propertiesToHash : string[]) : string {
+function hashRow<TDataClass>(row: TDataClass, propertiesToHash: string[]): string {
 	const hash = new MetroHash128(HASH_SEED);
 	for (const key of propertiesToHash) {
 		hash.update(`${ key }=${ (<any> row)[key] };`);
@@ -105,7 +105,7 @@ type NestedObject = any;
  * Select statements can contain values from multiple tables, and are not limited to primary keys of those tables.
  * The only way to distinguish rows is to hash all the non-nested values.
  */
-function mergeNested(objects : NestedObject[], nestedSchema : NestedSchema, hashMap : SettingMap<string, any>) : void {
+function mergeNested(objects: NestedObject[], nestedSchema: NestedSchema, hashMap: SettingMap<string, any>): void {
 	for (const obj of objects) {
 		const hash = hashRow(obj, nestedSchema.values);
 		const objToUpdate = hashMap.getOrSet(hash, obj);
@@ -121,7 +121,7 @@ function mergeNested(objects : NestedObject[], nestedSchema : NestedSchema, hash
 	}
 }
 
-function convertMapsToArrays(hashMap : SettingMap<string, any>, nestedSchema : NestedSchema) : any[] {
+function convertMapsToArrays(hashMap: SettingMap<string, any>, nestedSchema: NestedSchema): any[] {
 	const output = [];
 	for (const obj of hashMap.values()) {
 		for (const [key, value] of nestedSchema.nested.entries()) {
@@ -132,7 +132,7 @@ function convertMapsToArrays(hashMap : SettingMap<string, any>, nestedSchema : N
 	return output;
 }
 
-export function mapRowsToClass<T extends QuerySelector>(outputExpressions : SelectOutputExpression[], rows : NestedObject[]) : MappedQuerySelector<T>[] {
+export function mapRowsToClass<T extends QuerySelector>(outputExpressions: SelectOutputExpression[], rows: NestedObject[]): MappedQuerySelector<T>[] {
 	const convertedRows = rows.map((row): MappedQuerySelector<T> => mapRowToClass<T>(outputExpressions, row) as MappedQuerySelector<T>);
 	const nestedSchema = extractNestedSchema(outputExpressions);
 	if (nestedSchema.nested.size > 0) {
@@ -145,11 +145,11 @@ export function mapRowsToClass<T extends QuerySelector>(outputExpressions : Sele
 }
 
 class NestedSchema {
-	values : string[] = [];
-	nested : DefaultMap<string, NestedSchema> = new DefaultMap<string, NestedSchema>(() => new NestedSchema());
+	values: string[] = [];
+	nested: DefaultMap<string, NestedSchema> = new DefaultMap<string, NestedSchema>(() => new NestedSchema());
 }
 
-function extractNestedSchema(outputExpressions : SelectOutputExpression[]) : NestedSchema {
+function extractNestedSchema(outputExpressions: SelectOutputExpression[]): NestedSchema {
 	const output = new NestedSchema();
 	for (const expr of outputExpressions) {
 		switch (expr.type) {

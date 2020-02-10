@@ -33,8 +33,8 @@ export const enum SqlCommand {
 }
 
 export interface GeneratedQuery {
-	sql : string;
-	parameters : any[];
+	sql: string;
+	parameters: any[];
 }
 
 export interface HasLimit {
@@ -43,32 +43,32 @@ export interface HasLimit {
 }
 
 class JoinBuilder<TResult> {
-	protected joinType : 'inner' | 'left' | 'right' | 'full' | 'cross' = 'inner';
+	protected joinType: 'inner' | 'left' | 'right' | 'full' | 'cross' = 'inner';
 	protected onNode? : BooleanExpression;
 	protected usingNodes? : ColumnReferenceNode[];
 
 	constructor(
-		protected tableMap : DefaultMap<string, string>,
-		protected qtable : QueryTable,
-		protected callback : (joinNode : JoinNode) => TResult) {
+		protected tableMap: DefaultMap<string, string>,
+		protected qtable: QueryTable,
+		protected callback: (joinNode: JoinNode) => TResult) {
 	}
 
-	inner() : this {
+	inner(): this {
 		this.joinType = 'inner';
 		return this;
 	}
 
-	left() : this {
+	left(): this {
 		this.joinType = 'left';
 		return this;
 	}
 
-	right() : this {
+	right(): this {
 		this.joinType = 'right';
 		return this;
 	}
 
-	full() : this {
+	full(): this {
 		this.joinType = 'full';
 		return this;
 	}
@@ -78,19 +78,19 @@ class JoinBuilder<TResult> {
 		return this.build();
 	}
 
-	on(expression : BooleanExpression) {
+	on(expression: BooleanExpression) {
 		this.onNode = expression;
 		return this.build();
 	}
 
-	using(...columns : ColumnMetamodel<any>[]) {
+	using(...columns: ColumnMetamodel<any>[]) {
 		if (columns && columns.length > 0) {
 			this.usingNodes = columns.map((column) => column.toColumnReferenceNode());
 		}
 		return this.build();
 	}
 
-	protected build() : TResult {
+	protected build(): TResult {
 		if (this.onNode && this.usingNodes) {
 			throw new UnsupportedOperationError(`Cannot join tables with both "on" and "using" criteria.`);
 		} else if (this.joinType == 'cross' && (this.onNode || this.usingNodes)) {
@@ -98,7 +98,7 @@ class JoinBuilder<TResult> {
 		}
 		const tableName = this.qtable.$table.name;
 		const alias = this.tableMap.get(tableName);
-		const joinNode : JoinNode = {
+		const joinNode: JoinNode = {
 			type: 'joinNode',
 			joinType: this.joinType,
 			fromItem: {
@@ -119,7 +119,7 @@ class JoinBuilder<TResult> {
 
 abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
-	protected queryAst : SelectCommandNode = {
+	protected queryAst: SelectCommandNode = {
 		type: 'selectCommandNode',
 		distinction: 'all',
 		outputExpressions: [],
@@ -139,7 +139,7 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	}
 
 	@Clone()
-	with(first : AliasedExpressionNode<SubSelectNode>, ...rest: AliasedExpressionNode<SubSelectNode>[]) : this {
+	with(first: AliasedExpressionNode<SubSelectNode>, ...rest: AliasedExpressionNode<SubSelectNode>[]): this {
 		this.queryAst.with = {
 			type: "withNode",
 			selectNodes: [first].concat(rest)
@@ -148,20 +148,20 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	}
 
 	@Clone()
-	distinct() : this {
+	distinct(): this {
 		this.queryAst.distinction = 'distinct';
 		return this;
 	}
 
 	@Clone()
-	distinctOn(expression : ParameterOrValueExpressionNode) : this {
+	distinctOn(expression: ParameterOrValueExpressionNode): this {
 		this.queryAst.distinction = 'on';
 		this.queryAst.distinctOn = expression;
 		return this;
 	}
 
 	@Clone()
-	from(first : QueryTable, ...rest: QueryTable[]) : this {
+	from(first: QueryTable, ...rest: QueryTable[]): this {
 		for (const qtable of [first].concat(rest)) {
 			const tableName = qtable.$table.name;
 			const alias = qtable.$table.alias || this.tableMap.get(tableName);
@@ -179,7 +179,7 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	}
 
 	@Clone()
-	join(queryTable : QueryTable) : JoinBuilder<this> {
+	join(queryTable: QueryTable): JoinBuilder<this> {
 		return new JoinBuilder(this.tableMap, queryTable, (joinNode) => {
 			this.queryAst.joins.push(joinNode);
 			return this;
@@ -187,13 +187,13 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	}
 
 	@Clone()
-	where(whereExpression : BooleanExpression) : this {
+	where(whereExpression: BooleanExpression): this {
 		this.queryAst.conditions.push(whereExpression);
 		return this;
 	}
 
 	@Clone()
-	groupBy(first : GroupByExpressionNode, ...rest : GroupByExpressionNode[]) : this {
+	groupBy(first: GroupByExpressionNode, ...rest: GroupByExpressionNode[]): this {
 		this.queryAst.grouping.push(first);
 		if (rest && rest.length > 0) {
 			rest.forEach((node) => this.queryAst.grouping.push(node));
@@ -202,7 +202,7 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	}
 
 	@Clone()
-	orderBy(first : OrderByExpressionNode, ...rest : OrderByExpressionNode[]) : this {
+	orderBy(first: OrderByExpressionNode, ...rest: OrderByExpressionNode[]): this {
 		this.queryAst.ordering.push(first);
 		if (rest && rest.length > 0) {
 			rest.forEach((node) => this.queryAst.ordering.push(node));
@@ -211,7 +211,7 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 	}
 
 	@Clone()
-	limit(limitNum? : number) : this {
+	limit(limitNum? : number): this {
 		this.queryAst.limit = {
 			type: 'limitOffsetNode',
 			limit: {
@@ -228,17 +228,17 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 }
 
 class QueryBuilder<TQuerySelector extends QuerySelector, TParams extends HasLimit> extends BaseQueryBuilder<TParams> {
-	constructor(private command : SqlCommand, private querySelector : TQuerySelector) {
+	constructor(private command: SqlCommand, private querySelector: TQuerySelector) {
 		super();
 		this.select();
 	}
 
-	protected processQuerySelector() : Array<SelectOutputExpression> {
+	protected processQuerySelector(): Array<SelectOutputExpression> {
 		const processor = new QuerySelectorProcessor(this.querySelector);
 		return processor.process();
 	}
 
-	protected select() : this {
+	protected select(): this {
 		this.queryAst = {
 			type: 'selectCommandNode',
 			distinction: 'all',
@@ -252,7 +252,7 @@ class QueryBuilder<TQuerySelector extends QuerySelector, TParams extends HasLimi
 		return this;
 	}
 
-	prepare() : PreparedQuery<TQuerySelector, TParams> {
+	prepare(): PreparedQuery<TQuerySelector, TParams> {
 		const querySelector = this.querySelector;
 		this.rectifyTableReferences();
 		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
@@ -260,25 +260,25 @@ class QueryBuilder<TQuerySelector extends QuerySelector, TParams extends HasLimi
 		return new PreparedQuery<typeof querySelector, TParams>(querySelector, this.queryAst.outputExpressions, data.sql, data.parameterGetters);
 	}
 
-	toSql(params : TParams) : GeneratedQuery {
+	toSql(params: TParams): GeneratedQuery {
 		return this.prepare().generate(params);
 	}
 
-	execute(queryable : Queryable, params : TParams) : Promise<MappedQuerySelector<TQuerySelector>[]> {
+	execute(queryable: Queryable, params: TParams): Promise<MappedQuerySelector<TQuerySelector>[]> {
 		return this.prepare().execute(queryable, params);
 	}
 }
 
 class PreparedQuery<TQuerySelector extends QuerySelector, TParams> {
 	constructor(
-		protected readonly querySelector : TQuerySelector,
-		protected readonly selectOutputExpressions : SelectOutputExpression[],
-		protected readonly sql : string,
-		protected readonly paramGetters : Array<(params : TParams) => any>) {
+		protected readonly querySelector: TQuerySelector,
+		protected readonly selectOutputExpressions: SelectOutputExpression[],
+		protected readonly sql: string,
+		protected readonly paramGetters: Array<(params: TParams) => any>) {
 
 	}
 
-	generate(params : TParams) : GeneratedQuery {
+	generate(params: TParams): GeneratedQuery {
 		const values = this.paramGetters.map((getter) => getter(params));
 		return {
 			sql: this.sql,
@@ -286,19 +286,19 @@ class PreparedQuery<TQuerySelector extends QuerySelector, TParams> {
 		};
 	}
 
-	execute(queryable : Queryable, params : TParams) : Promise<MappedQuerySelector<TQuerySelector>[]> {
+	execute(queryable: Queryable, params: TParams): Promise<MappedQuerySelector<TQuerySelector>[]> {
 		return execute<TQuerySelector>(queryable, this.generate(params), this.querySelector, this.selectOutputExpressions);
 	}
 }
 
 // TODO: how to reference expressions defined outside of this sub-query?
 class SubQueryBuilder<TParams extends HasLimit> extends BaseQueryBuilder<TParams> {
-	constructor(private command : SqlCommand, subSelectExpressions : SubSelectExpression[]) {
+	constructor(private command: SqlCommand, subSelectExpressions: SubSelectExpression[]) {
 		super();
 		this.select(subSelectExpressions);
 	}
 
-	protected processSubSelectExpressions(subSelectExpressions : SubSelectExpression[]) {
+	protected processSubSelectExpressions(subSelectExpressions: SubSelectExpression[]) {
 		for (let outputExpression of subSelectExpressions) {
 			if (outputExpression instanceof ColumnMetamodel) {
 				this.queryAst.outputExpressions.push(outputExpression.toColumnReferenceNode());
@@ -308,7 +308,7 @@ class SubQueryBuilder<TParams extends HasLimit> extends BaseQueryBuilder<TParams
 		}
 	}
 
-	protected select(subSelectExpressions : SubSelectExpression[]) : this {
+	protected select(subSelectExpressions: SubSelectExpression[]): this {
 		this.queryAst = {
 			type: 'selectCommandNode',
 			distinction: 'all',
@@ -323,7 +323,7 @@ class SubQueryBuilder<TParams extends HasLimit> extends BaseQueryBuilder<TParams
 		return this;
 	}
 
-	toSubQuery() : SubSelectNode {
+	toSubQuery(): SubSelectNode {
 		// TODO: merge the tableMaps so sub-queries can refer to outer tables.
 		return {
 			type: 'subSelectNode',
@@ -332,17 +332,17 @@ class SubQueryBuilder<TParams extends HasLimit> extends BaseQueryBuilder<TParams
 	}
 }
 
-export function select<TQuerySelector extends QuerySelector, TParams>(querySelector : TQuerySelector) : QueryBuilder<TQuerySelector, TParams> {
+export function select<TQuerySelector extends QuerySelector, TParams>(querySelector: TQuerySelector): QueryBuilder<TQuerySelector, TParams> {
 	return new QueryBuilder<TQuerySelector, TParams>(SqlCommand.Select, querySelector);
 }
 
 type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<any>;
 
-export function subSelect<TParams>(...outputExpressions : SubSelectExpression[]) {
+export function subSelect<TParams>(...outputExpressions: SubSelectExpression[]) {
 	return new SubQueryBuilder<TParams>(SqlCommand.Select, outputExpressions);
 }
 
-export function and(first : BooleanExpression, second : BooleanExpression, ...rest : BooleanExpression[]) : BooleanExpressionGroupNode {
+export function and(first: BooleanExpression, second: BooleanExpression, ...rest: BooleanExpression[]): BooleanExpressionGroupNode {
 	return {
 		type: 'booleanExpressionGroupNode',
 		operator: 'and',
@@ -350,7 +350,7 @@ export function and(first : BooleanExpression, second : BooleanExpression, ...re
 	};
 }
 
-export function or(first : BooleanExpression, second : BooleanExpression, ...rest : BooleanExpression[]) : BooleanExpressionGroupNode {
+export function or(first: BooleanExpression, second: BooleanExpression, ...rest: BooleanExpression[]): BooleanExpressionGroupNode {
 	return {
 		type: 'booleanExpressionGroupNode',
 		operator: 'or',
@@ -358,25 +358,25 @@ export function or(first : BooleanExpression, second : BooleanExpression, ...res
 	};
 }
 
-export function not(expr : BooleanExpression) : NotExpressionNode {
+export function not(expr: BooleanExpression): NotExpressionNode {
 	return {
 		type: 'notExpressionNode',
 		expression: expr
 	};
 }
 
-export function col(column : ColumnMetamodel<any>) : ColumnReferenceNode {
+export function col(column: ColumnMetamodel<any>): ColumnReferenceNode {
 	return column.toColumnReferenceNode();
 }
 
-export function constant(value : number | string) : ConstantNode<number | string> {
+export function constant(value: number | string): ConstantNode<number | string> {
 	return {
 		type: "constantNode",
 		getter: () => value
 	};
 }
 
-export function param<P, R>(getter : (params : P) => R) : ConstantNode<R> {
+export function param<P, R>(getter: (params: P) => R): ConstantNode<R> {
 	return {
 		type: "constantNode",
 		getter: getter
@@ -384,32 +384,32 @@ export function param<P, R>(getter : (params : P) => R) : ConstantNode<R> {
 }
 
 export class ParamsWrapper<P> {
-	get<R>(getter : (params : P) => R) : ConstantNode<R> {
+	get<R>(getter: (params: P) => R): ConstantNode<R> {
 		return param(getter);
 	}
 }
 
-export function literal(value : string) : LiteralNode {
+export function literal(value: string): LiteralNode {
 	return {
 		type: "literalNode",
 		value
 	};
 }
-export function row(first : ParameterOrValueExpressionNode, ...rest : ParameterOrValueExpressionNode[]) : ExpressionListNode {
+export function row(first: ParameterOrValueExpressionNode, ...rest: ParameterOrValueExpressionNode[]): ExpressionListNode {
 	return {
 		type: "expressionListNode",
 		expressions: [first].concat(rest)
 	};
 }
 
-export function selectExpression<T = never>(expression : ParameterOrValueExpressionNode) : SelectorExpression<T> {
+export function selectExpression<T = never>(expression: ParameterOrValueExpressionNode): SelectorExpression<T> {
 	return {
 		$selectorKind: 'expression',
 		expression
 	} as SelectorExpression<T>;
 }
 
-export function selectNestedOne<T extends QuerySelector>(querySelector : T) : SelectorNestedOne<T> {
+export function selectNestedOne<T extends QuerySelector>(querySelector: T): SelectorNestedOne<T> {
 	return {
 		$selectorKind: 'nestedOne',
 		nestedSelector: {
@@ -418,7 +418,7 @@ export function selectNestedOne<T extends QuerySelector>(querySelector : T) : Se
 	};
 }
 
-export function selectNestedMany<T extends QuerySelector>(querySelector : T) : SelectorNestedMany<T> {
+export function selectNestedMany<T extends QuerySelector>(querySelector: T): SelectorNestedMany<T> {
 	return {
 		$selectorKind: 'nestedMany',
 		nestedSelector: {
@@ -428,26 +428,26 @@ export function selectNestedMany<T extends QuerySelector>(querySelector : T) : S
 }
 
 export type CommonTableExpressionMetamodel<T extends QuerySelector> = {
-	[K in keyof T] : ColumnMetamodel<any>;
+	[K in keyof T]: ColumnMetamodel<any>;
 };
 
 export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector, TParams> extends BaseQueryBuilder<TParams> {
 	constructor(
-		protected readonly alias : string,
-		protected readonly querySelector : TQuerySelector
+		protected readonly alias: string,
+		protected readonly querySelector: TQuerySelector
 	) {
 		super();
 		this.queryAst.outputExpressions = this.processQuerySelector();
 	}
 
-	protected processQuerySelector() : Array<SelectOutputExpression> {
+	protected processQuerySelector(): Array<SelectOutputExpression> {
 		const processor = new QuerySelectorProcessor(this.querySelector);
 		return processor.process();
 	}
 
-	toMetamodel() : CommonTableExpressionMetamodel<TQuerySelector> {
+	toMetamodel(): CommonTableExpressionMetamodel<TQuerySelector> {
 		this.rectifyTableReferences();
-		const output: { [key: string] : ColumnMetamodel<any> } = {};
+		const output: { [key: string]: ColumnMetamodel<any> } = {};
 		const table = new TableMetamodel(this.alias, undefined);
 		for (const expr of this.queryAst.outputExpressions) {
 			switch (expr.type) {
@@ -465,7 +465,7 @@ export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector, 
 		return output as CommonTableExpressionMetamodel<TQuerySelector>;
 	}
 
-	toNode() : AliasedExpressionNode<SubSelectNode> {
+	toNode(): AliasedExpressionNode<SubSelectNode> {
 		this.rectifyTableReferences();
 		return {
 			type: "aliasedExpressionNode",
@@ -479,6 +479,6 @@ export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector, 
 	}
 }
 
-export function selectCte<TQuerySelector extends QuerySelector>(alias : string, querySelector : TQuerySelector) {
+export function selectCte<TQuerySelector extends QuerySelector>(alias: string, querySelector: TQuerySelector) {
 	return new CommonTableExpressionBuilder(alias, querySelector);
 }

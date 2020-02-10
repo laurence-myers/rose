@@ -1,6 +1,6 @@
 import {DefaultMap} from "../lang";
 
-export const POSTGRES_TO_TYPESCRIPT_TYPE_MAP : Map<string, string> = new DefaultMap<string, string>(() => "any", <[string, string][]>[
+export const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<string, string>(() => "any", <[string, string][]>[
 	["bigint", "string"], // 8 bytes, can't be represented as a FP number
 	["int8", "string"], // 8 bytes, can't be represented as a FP number
 	["bigserial", "string"], // 8 bytes, can't be represented as a FP number

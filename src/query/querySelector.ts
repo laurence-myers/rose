@@ -6,28 +6,28 @@ export type SelectorColumnTypes = (
 );
 
 export interface SelectorExpression<T> {
-	readonly $selectorKind : 'expression';
-	readonly expression : ParameterOrValueExpressionNode;
+	readonly $selectorKind: 'expression';
+	readonly expression: ParameterOrValueExpressionNode;
 }
 
 export interface NestedQueryOne {
-	readonly querySelector : QuerySelector;
+	readonly querySelector: QuerySelector;
 }
 
 export interface NestedQueryMany {
-	readonly querySelector : QuerySelector;
+	readonly querySelector: QuerySelector;
 }
 
 // export type NestedQuery = NestedQueryOne | NestedQueryMany;
 
 export interface SelectorNestedOne<T> {
-	readonly $selectorKind : 'nestedOne';
-	readonly nestedSelector : NestedQueryOne;
+	readonly $selectorKind: 'nestedOne';
+	readonly nestedSelector: NestedQueryOne;
 }
 
 export interface SelectorNestedMany<T> {
-	readonly $selectorKind : 'nestedMany';
-	readonly nestedSelector : NestedQueryMany;
+	readonly $selectorKind: 'nestedMany';
+	readonly nestedSelector: NestedQueryMany;
 }
 
 export type SelectorTypes = (
@@ -40,5 +40,5 @@ export type SelectorTypes = (
 export type SelectorKind = 'column' | 'expression' | 'nestedOne' | 'nestedMany';
 
 export interface QuerySelector {
-	[key: string] : SelectorTypes;
+	[key: string]: SelectorTypes;
 }

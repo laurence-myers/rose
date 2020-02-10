@@ -11,7 +11,7 @@ describe(`Type mapping`, function () {
 			name: QUsers.name
 		};
 
-		const result : QueryOutput<typeof querySelect> = {
+		const result: QueryOutput<typeof querySelect> = {
 			id: 1,
 			name: 'Henry',
 			//foo: ['bar']
@@ -23,7 +23,7 @@ describe(`Type mapping`, function () {
 			fullName: selectExpression<string>(concat(constant('Mr or Mrs'), QUsers.name.toColumnReferenceNode()))
 		};
 
-		const result : QueryOutput<typeof querySelect> = {
+		const result: QueryOutput<typeof querySelect> = {
 			fullName: 'Mr or Mrs Henry',
 			// foo: [123]
 		};
@@ -36,7 +36,7 @@ describe(`Type mapping`, function () {
 			})
 		};
 
-		const result : QueryOutput<typeof querySelect> = {
+		const result: QueryOutput<typeof querySelect> = {
 			users: [
 				{
 					// id: 123,
@@ -55,7 +55,7 @@ describe(`Type mapping`, function () {
 			})
 		};
 
-		const result : QueryOutput<typeof querySelect> = {
+		const result: QueryOutput<typeof querySelect> = {
 			user: {
 				// id: 123,
 				name: 'Henry',
@@ -70,7 +70,7 @@ describe(`Type mapping`, function () {
 			deletedAt: QUsers.deletedAt
 		};
 
-		const result : QueryOutput<typeof querySelect> = {
+		const result: QueryOutput<typeof querySelect> = {
 			deletedAt: null
 		};
 	});

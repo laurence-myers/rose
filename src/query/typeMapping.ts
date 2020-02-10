@@ -10,7 +10,7 @@ import {ColumnMetamodel} from "./metamodel";
 export type MappableTypes = QuerySelector | SelectorColumnTypes | SelectorExpression<any> | SelectorNestedOne<any> | SelectorNestedMany<any>;
 
 export type MappedQuerySelector<TQS extends MappableTypes> = {
-	[K in keyof TQS] : TQS[K] extends MappableTypes ? QueryOutput<TQS[K]> : never;
+	[K in keyof TQS]: TQS[K] extends MappableTypes ? QueryOutput<TQS[K]> : never;
 };
 
 export type QueryOutput<T extends MappableTypes> = (

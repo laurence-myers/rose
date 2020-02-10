@@ -20,43 +20,43 @@
  In addition to this list, there are a number of constructs that can be classified as an expression but do not follow any general syntax rules. These generally have the semantics of a function or operator and are explained in the appropriate location in Chapter 9. An example is the IS NULL clause.
  */
 export interface ConstantNode<T> {
-	type : 'constantNode';
-	getter : (params : any) => T;
+	type: 'constantNode';
+	getter: (params: any) => T;
 }
 
 export interface ColumnReferenceNode {
-	type : 'columnReferenceNode';
+	type: 'columnReferenceNode';
 	//schema? : string;
-	tableName : string;
+	tableName: string;
 	tableAlias? : string;
-	columnName : string;
+	columnName: string;
 }
 
 export interface TableReferenceNode {
-	type : 'tableReferenceNode';
-	tableName : string;
+	type: 'tableReferenceNode';
+	tableName: string;
 }
 
 export interface BinaryOperationNode {
-	type : 'binaryOperationNode';
-	left : ParameterOrValueExpressionNode | ExpressionListNode; // Should SubSelectNode just be part of ValueExpressionNode?
-	operator : string;
-	right : ParameterOrValueExpressionNode | ExpressionListNode;
+	type: 'binaryOperationNode';
+	left: ParameterOrValueExpressionNode | ExpressionListNode; // Should SubSelectNode just be part of ValueExpressionNode?
+	operator: string;
+	right: ParameterOrValueExpressionNode | ExpressionListNode;
 }
 
 export interface BooleanBinaryOperationNode extends BinaryOperationNode {
-	operator : '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN' | 'OVERLAPS';
+	operator: '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN' | 'OVERLAPS';
 }
 
 export interface UnaryOperationNode {
-	type : 'unaryOperationNode';
-	expression : ParameterOrValueExpressionNode;
-	operator : string;
-	position : 'left' | 'right';
+	type: 'unaryOperationNode';
+	expression: ParameterOrValueExpressionNode;
+	operator: string;
+	position: 'left' | 'right';
 }
 
 export interface BooleanUnaryOperationNode extends UnaryOperationNode {
-	operator : 'IS NULL'
+	operator: 'IS NULL'
 		| 'IS NOT NULL'
 		| 'IS TRUE'
 		| 'IS NOT TRUE'
@@ -67,14 +67,14 @@ export interface BooleanUnaryOperationNode extends UnaryOperationNode {
 }
 
 export interface BooleanExpressionGroupNode {
-	type : 'booleanExpressionGroupNode';
-	operator : 'and' | 'or';
-	expressions : BooleanExpression[];
+	type: 'booleanExpressionGroupNode';
+	operator: 'and' | 'or';
+	expressions: BooleanExpression[];
 }
 
 export interface NotExpressionNode {
-	type : 'notExpressionNode';
-	expression : BooleanExpression; // TODO: check if NOT coerces other expressions into booleans
+	type: 'notExpressionNode';
+	expression: BooleanExpression; // TODO: check if NOT coerces other expressions into booleans
 }
 
 export type BooleanExpression = BooleanBinaryOperationNode | BooleanUnaryOperationNode | BooleanExpressionGroupNode | NotExpressionNode;
@@ -83,25 +83,25 @@ export type BooleanExpression = BooleanBinaryOperationNode | BooleanUnaryOperati
  * Should generally NOT be used by consuming code, due security and syntax risks.
  */
 export interface LiteralNode {
-	type : 'literalNode';
-	value : string;
+	type: 'literalNode';
+	value: string;
 }
 
 export interface FunctionExpressionNode {
-	type : 'functionExpressionNode';
-	name : string;
-	arguments : (ParameterOrValueExpressionNode | LiteralNode)[];
+	type: 'functionExpressionNode';
+	name: string;
+	arguments: (ParameterOrValueExpressionNode | LiteralNode)[];
 }
 
 export interface NaturalSyntaxFunctionExpressionNodeArgument {
 	key? : string;
-	value : ParameterOrValueExpressionNode | LiteralNode;
+	value: ParameterOrValueExpressionNode | LiteralNode;
 }
 
 export interface NaturalSyntaxFunctionExpressionNode {
-	type : 'naturalSyntaxFunctionExpressionNode';
-	name : string;
-	arguments : NaturalSyntaxFunctionExpressionNodeArgument[];
+	type: 'naturalSyntaxFunctionExpressionNode';
+	name: string;
+	arguments: NaturalSyntaxFunctionExpressionNodeArgument[];
 }
 
 /**
@@ -137,23 +137,23 @@ export type ParameterOrValueExpressionNode =
 	| ValueExpressionNode;
 
 export interface ExpressionListNode {
-	type : 'expressionListNode';
-	expressions : ParameterOrValueExpressionNode[];
+	type: 'expressionListNode';
+	expressions: ParameterOrValueExpressionNode[];
 }
 
 export interface AliasedExpressionNode<TNode> {
-	type : 'aliasedExpressionNode';
-	alias : string;
-	aliasPath : string[];
-	expression : TNode;
+	type: 'aliasedExpressionNode';
+	alias: string;
+	aliasPath: string[];
+	expression: TNode;
 }
 
 export type AliasedSelectExpressionNode = AliasedExpressionNode<ParameterOrValueExpressionNode>;
 
 export interface JoinNode {
-	type : 'joinNode';
-	joinType : 'inner' | 'left' | 'right' | 'full' | 'cross';
-	fromItem : FromItemNode;
+	type: 'joinNode';
+	joinType: 'inner' | 'left' | 'right' | 'full' | 'cross';
+	fromItem: FromItemNode;
 	on? : BooleanExpression;
 	using? : ColumnReferenceNode[];
 	// TODO: support lateral
@@ -169,27 +169,27 @@ export type FromItemNode = AliasedFromExpressionNode | FromExpressionNode;
 export type AnyAliasedExpressionNode = AliasedFromExpressionNode | AliasedSelectExpressionNode;
 
 export interface OrderByExpressionNode {
-	type : 'orderByExpressionNode';
-	expression : ParameterOrValueExpressionNode; //?
+	type: 'orderByExpressionNode';
+	expression: ParameterOrValueExpressionNode; //?
 	order? : 'asc' | 'desc' | 'using';
 	operator? : string; //?
 	nulls? : 'first' | 'last';
 }
 
 export interface GroupByExpressionNode {
-	type : 'groupByExpressionNode';
-	expression : ParameterOrValueExpressionNode;
+	type: 'groupByExpressionNode';
+	expression: ParameterOrValueExpressionNode;
 }
 
 export interface LimitOffsetNode {
-	type : 'limitOffsetNode';
-	limit : ConstantNode<number>; // could also be "ALL", but let's not support that
-	offset : ConstantNode<number>;
+	type: 'limitOffsetNode';
+	limit: ConstantNode<number>; // could also be "ALL", but let's not support that
+	offset: ConstantNode<number>;
 }
 
 export interface WithNode {
-	type : 'withNode';
-	selectNodes : AliasedExpressionNode<SubSelectNode>[];
+	type: 'withNode';
+	selectNodes: AliasedExpressionNode<SubSelectNode>[];
 }
 
 /*
@@ -241,22 +241,22 @@ export interface WithNode {
 export type SelectOutputExpression = ParameterOrValueExpressionNode | AliasedSelectExpressionNode;
 
 export interface SelectCommandNode {
-	type : 'selectCommandNode';
-	distinction : 'distinct' | 'all' | 'on';
+	type: 'selectCommandNode';
+	distinction: 'distinct' | 'all' | 'on';
 	distinctOn? : ParameterOrValueExpressionNode;
-	outputExpressions : Array<SelectOutputExpression>; // should we also support *?
-	fromItems : FromItemNode[];
-	joins : JoinNode[];
-	conditions : BooleanExpression[];
-	ordering : OrderByExpressionNode[];
-	grouping : GroupByExpressionNode[];
+	outputExpressions: Array<SelectOutputExpression>; // should we also support *?
+	fromItems: FromItemNode[];
+	joins: JoinNode[];
+	conditions: BooleanExpression[];
+	ordering: OrderByExpressionNode[];
+	grouping: GroupByExpressionNode[];
 	limit? : LimitOffsetNode;
 	with? : WithNode;
 }
 
 export interface SubSelectNode {
-	type : 'subSelectNode';
-	query : SelectCommandNode;
+	type: 'subSelectNode';
+	query: SelectCommandNode;
 }
 
 export type AstNode = SelectCommandNode | ParameterOrValueExpressionNode | AliasedSelectExpressionNode | JoinNode | FromItemNode

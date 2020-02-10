@@ -18,17 +18,17 @@ async function parseArgs() {
 }
 
 interface FunctionArg {
-	name : string;
-	isOptional : boolean;
+	name: string;
+	isOptional: boolean;
 }
 
-function argsSignatureTemplate(args : FunctionArg[]) {
+function argsSignatureTemplate(args: FunctionArg[]) {
 	return args
 		.map((arg) => `${ arg.name }${ arg.isOptional ? '?' : '' } : ValueExpressionNode`)
 		.join(', ');
 }
 
-function argsPassthroughTemplate(args : FunctionArg[]) {
+function argsPassthroughTemplate(args: FunctionArg[]) {
 	if (args.length === 0) {
 		return '';
 	}
@@ -37,7 +37,7 @@ function argsPassthroughTemplate(args : FunctionArg[]) {
 		.join(', ');
 }
 
-function functionTemplate(functionName : string, description : string, args : FunctionArg[]) {
+function functionTemplate(functionName: string, description: string, args: FunctionArg[]) {
 	return `/**
  * ${ description }
  */
@@ -47,20 +47,20 @@ export function ${ functionName }(${ argsSignatureTemplate(args) }) : FunctionEx
 `;
 }
 
-function parseArg(arg : string, isOptional : boolean) {
+function parseArg(arg: string, isOptional: boolean) {
 	return {
 		name: arg.split(' ')[0],
 		isOptional
 	};
 }
 
-function parseFunctionArgs(args : string, isOptional : boolean) {
+function parseFunctionArgs(args: string, isOptional: boolean) {
 	if (!args) return [];
 	return args.split(', ')
 		.map((arg) => parseArg(arg, isOptional));
 }
 
-async function generateFromCsv(csvFile : string) : Promise<void> {
+async function generateFromCsv(csvFile: string): Promise<void> {
 	const contents = fs.readFileSync(csvFile, 'utf-8');
 	const rows = contents.split('\n');
 	const outputEntries = rows.map((row) => {
@@ -83,7 +83,7 @@ async function generateFromCsv(csvFile : string) : Promise<void> {
 	fs.writeFileSync(csvFile + '.ts', outputEntries.join('\n'));
 }
 
-async function main() : Promise<void> {
+async function main(): Promise<void> {
 	console.log("Starting...");
 	let exitCode = 0;
 	try {

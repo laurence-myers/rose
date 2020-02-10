@@ -3,7 +3,7 @@ import {AliasedFromExpressionNode, FromItemNode, SelectCommandNode, SubSelectNod
 import {DefaultMap} from "../src/lang";
 import {deepEqual, equal, fail} from "assert";
 
-function getFromItem(fromItem : FromItemNode) : AliasedFromExpressionNode | never {
+function getFromItem(fromItem: FromItemNode): AliasedFromExpressionNode | never {
 	if (fromItem.type == "aliasedExpressionNode") {
 		return fromItem;
 	} else {
@@ -14,7 +14,7 @@ function getFromItem(fromItem : FromItemNode) : AliasedFromExpressionNode | neve
 describe("AST Walkers", function () {
 	describe("Rectifying Walker", function () {
 		it("Rectifies a table referenced in a column reference node", function () {
-			const ast : SelectCommandNode = {
+			const ast: SelectCommandNode = {
 				type: 'selectCommandNode',
 				outputExpressions: [
 					{
@@ -40,7 +40,7 @@ describe("AST Walkers", function () {
 		});
 
 		it("Does not rectify a table referenced in a column reference node and in a from item node", function () {
-			const ast : SelectCommandNode = {
+			const ast: SelectCommandNode = {
 				type: 'selectCommandNode',
 				outputExpressions: [
 					{
@@ -78,7 +78,7 @@ describe("AST Walkers", function () {
 		});
 
 		it("Rectifies nested sub-queries individually, separate from the outer query", function () {
-			const subSelectNode : SubSelectNode = {
+			const subSelectNode: SubSelectNode = {
 				type: 'subSelectNode',
 				query: {
 					type: 'selectCommandNode',
@@ -103,7 +103,7 @@ describe("AST Walkers", function () {
 							operator: '=',
 							right: {
 								type: 'constantNode',
-								getter: (p : { locationId : number }) => p.locationId
+								getter: (p: { locationId: number }) => p.locationId
 							}
 						}
 					],
@@ -112,7 +112,7 @@ describe("AST Walkers", function () {
 				}
 			};
 
-			const ast : SelectCommandNode = {
+			const ast: SelectCommandNode = {
 				type: 'selectCommandNode',
 				outputExpressions: [
 					{
@@ -155,7 +155,7 @@ describe("AST Walkers", function () {
 
 		it("Rectifies unaliased FROM locations", function () {
 
-			const ast : SelectCommandNode = {
+			const ast: SelectCommandNode = {
 				"type": "selectCommandNode",
 				"distinction": "all",
 				"outputExpressions": [

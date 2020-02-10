@@ -8,7 +8,7 @@ import {TableMetadata, getTableMetadata} from "../codegen/dbmetadata";
 
 const DEFAULT_URL = "postgresql://postgres:password@localhost:5432/postgres";
 
-function generateInterfacesAndMetamodel(tablesMetadata : Map<string, TableMetadata>) : void {
+function generateInterfacesAndMetamodel(tablesMetadata: Map<string, TableMetadata>): void {
 	console.log(`Generating interfaces and metamodels for ${ tablesMetadata.size } tables...`);
 	for (const tableMetadata of tablesMetadata.values()) {
 		const content = [TableTemplate(tableMetadata), TableMetamodelTemplate(tableMetadata)].join('\n');
@@ -19,8 +19,8 @@ function generateInterfacesAndMetamodel(tablesMetadata : Map<string, TableMetada
 	}
 }
 
-function wrapError(fn : () => Promise<any>) : (err : Error) => Promise<any> {
-	return (err : Error) => {
+function wrapError(fn: () => Promise<any>): (err: Error) => Promise<any> {
+	return (err: Error) => {
 		return fn()
 			.then(() => {
 				throw err;
@@ -28,7 +28,7 @@ function wrapError(fn : () => Promise<any>) : (err : Error) => Promise<any> {
 	};
 }
 
-async function main() : Promise<any> {
+async function main(): Promise<any> {
 	const client = new Client(DEFAULT_URL);
 	const cleanup = () => {
 		return new Promise((resolve, reject) => {
@@ -43,7 +43,7 @@ async function main() : Promise<any> {
 	try {
 		client.connect();
 		console.log(`Querying the database...`);
-		const tablesMetadata : Map<string, TableMetadata> = await getTableMetadata(client);
+		const tablesMetadata: Map<string, TableMetadata> = await getTableMetadata(client);
 		generateInterfacesAndMetamodel(tablesMetadata);
 		console.log("Done!")
 	} catch (err) {

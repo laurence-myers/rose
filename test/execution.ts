@@ -5,11 +5,11 @@ import {Queryable} from "../src/execution/execution";
 import {QueryResult} from "pg";
 
 class MockQueryable implements Queryable {
-	constructor(protected readonly rows : any[]) {
+	constructor(protected readonly rows: any[]) {
 
 	}
 
-	query(queryText : string, values : any[]) : Promise<QueryResult> {
+	query(queryText: string, values: any[]): Promise<QueryResult> {
 		return Promise.resolve({
 			command: 'mockCommand',
 			rowCount: this.rows.length,
@@ -30,7 +30,7 @@ describe("Execution", function () {
 				id: 123
 			}
 		];
-		const mockDb : Queryable = new MockQueryable(rows);
+		const mockDb: Queryable = new MockQueryable(rows);
 		const expectedMappedRow = {
 			id: rows[0].id
 		};

@@ -12,12 +12,12 @@ describe("Query DSL", function () {
 		};
 
 		interface QueryParams {
-			userId : number;
+			userId: number;
 		}
 		const params = {
 			userId: 1
 		};
-		const actual = select<typeof querySelect, QueryParams>(querySelect).where(QUsers.id.eq((p : QueryParams) => p.userId)).toSql(params);
+		const actual = select<typeof querySelect, QueryParams>(querySelect).where(QUsers.id.eq((p: QueryParams) => p.userId)).toSql(params);
 		const expected = {
 			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE "t1"."id" = $1`,
 			parameters: [1]
@@ -32,7 +32,7 @@ describe("Query DSL", function () {
 		};
 
 		interface QueryParams {
-			userId : number;
+			userId: number;
 		}
 		const params = {
 			userId: 1

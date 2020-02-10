@@ -16,7 +16,7 @@ import {RowMappingError, UnsupportedOperationError} from "../src/errors";
 import {count} from "../src/query/postgresql/functions/aggregate/general";
 import {QueryOutput} from "../src/query/typeMapping";
 
-function alias(aliasPath : string[], node : ParameterOrValueExpressionNode) : AliasedSelectExpressionNode {
+function alias(aliasPath: string[], node: ParameterOrValueExpressionNode): AliasedSelectExpressionNode {
 	return {
 		type: "aliasedExpressionNode",
 		alias: aliasPath.join('.'),
@@ -27,7 +27,7 @@ function alias(aliasPath : string[], node : ParameterOrValueExpressionNode) : Al
 
 describe("Row mapping", function () {
 	it("Can map a single number column to a data class", function () {
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Users",
@@ -47,7 +47,7 @@ describe("Row mapping", function () {
 	});
 
 	it("Dies attempting to map a non-existing alias", function () {
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Users",
@@ -66,7 +66,7 @@ describe("Row mapping", function () {
 		const querySelect = {
 			userName: QUsers.name
 		};
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			alias(["userName"],
 				<ColumnReferenceNode> {
 					type: "columnReferenceNode",
@@ -95,7 +95,7 @@ describe("Row mapping", function () {
 			users: selectNestedMany(querySelectNested)
 		};
 
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
 					type: "columnReferenceNode",
 					tableName: "Locations",
@@ -142,7 +142,7 @@ describe("Row mapping", function () {
 			users: selectNestedMany(querySelectNested)
 		};
 
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Locations",
@@ -203,7 +203,7 @@ describe("Row mapping", function () {
 			locations: selectNestedMany(querySelectNested)
 		};
 
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Locations",
@@ -267,7 +267,7 @@ describe("Row mapping", function () {
 			locations: selectNestedMany(querySelectNested)
 		};
 
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Locations",
@@ -391,7 +391,7 @@ describe("Row mapping", function () {
 			locations: selectNestedMany(querySelectNested)
 		};
 
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Locations",
@@ -509,7 +509,7 @@ describe("Row mapping", function () {
 			users: selectNestedMany(querySelectNested)
 		};
 
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Locations",
@@ -577,7 +577,7 @@ describe("Row mapping", function () {
 			users: selectNestedMany(querySelectNested)
 		};
 
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Locations",
@@ -614,7 +614,7 @@ describe("Row mapping", function () {
 		const querySelect = {
 			id: QUsers.id,
 		};
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Users",
@@ -663,7 +663,7 @@ describe("Row mapping", function () {
 			users: selectNestedMany(querySelectNested)
 		};
 
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], <ColumnReferenceNode> {
 				type: "columnReferenceNode",
 				tableName: "Locations",
@@ -710,7 +710,7 @@ describe("Row mapping", function () {
 		const querySelect = {
 			countValue: selectExpression(count())
 		};
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			<AliasedSelectExpressionNode> {
 				type: "aliasedExpressionNode",
 				alias: "countValue",
@@ -733,7 +733,7 @@ describe("Row mapping", function () {
 		const querySelect = {
 			countValue: selectExpression(count())
 		};
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			<FunctionExpressionNode> {
 				type: "functionExpressionNode",
 				name: "count"
@@ -751,7 +751,7 @@ describe("Row mapping", function () {
 	it("Cannot map from constants", function () {
 		const querySelect = {
 		};
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			<ConstantNode<any>> {
 				type: "constantNode",
 				getter: () => {}
@@ -769,7 +769,7 @@ describe("Row mapping", function () {
 	it("Cannot map from binary operations", function () {
 		const querySelect = {
 		};
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			<BinaryOperationNode> {
 				type: "binaryOperationNode",
 				operator: "=",
@@ -795,7 +795,7 @@ describe("Row mapping", function () {
 	it("Cannot map from unary operations", function () {
 		const querySelect = {
 		};
-		const outputExpressions : SelectOutputExpression[] = [
+		const outputExpressions: SelectOutputExpression[] = [
 			<UnaryOperationNode> {
 				type: "unaryOperationNode",
 				operator: "!",

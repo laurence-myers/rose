@@ -5,19 +5,19 @@ import {ColumnMetamodel} from "./metamodel";
 import {NestedQueryMany, NestedQueryOne, QuerySelector, SelectorColumnTypes} from "./querySelector";
 
 export class QuerySelectorProcessor {
-	protected outputExpressions : Array<SelectOutputExpression> = [];
+	protected outputExpressions: Array<SelectOutputExpression> = [];
 
 	constructor(
-		protected querySelector : QuerySelector
+		protected querySelector: QuerySelector
 	) {
 
 	}
 
-	protected processColumnEntries(entries : Iterable<[string, SelectorColumnTypes]>, aliasPath : string[]) : void {
+	protected processColumnEntries(entries: Iterable<[string, SelectorColumnTypes]>, aliasPath: string[]): void {
 		for (const entry of entries) {
-			const columnMetamodel : ColumnMetamodel<any> = entry[1];
+			const columnMetamodel: ColumnMetamodel<any> = entry[1];
 			const fullPath = aliasPath.concat(entry[0]);
-			const columnAlias : string = fullPath.join('.');
+			const columnAlias: string = fullPath.join('.');
 
 			this.outputExpressions.push({
 				type: 'aliasedExpressionNode',
@@ -28,22 +28,22 @@ export class QuerySelectorProcessor {
 		}
 	}
 
-	protected processNestedEntries(entries : Iterable<[string, NestedQueryOne | NestedQueryMany]>, aliasPath : string[]) : void {
+	protected processNestedEntries(entries: Iterable<[string, NestedQueryOne | NestedQueryMany]>, aliasPath: string[]): void {
 		for (const entry of entries) {
-			const aliasPrefix : string = entry[0];
-			const nestedQuery : NestedQueryOne | NestedQueryMany = entry[1];
+			const aliasPrefix: string = entry[0];
+			const nestedQuery: NestedQueryOne | NestedQueryMany = entry[1];
 			this.processSelectQueryClass(nestedQuery.querySelector, aliasPath.concat(aliasPrefix));
 		}
 	}
 
-	protected processExpressionEntries(entries : Iterable<[string, ParameterOrValueExpressionNode]>, aliasPath : string[]) : void {
+	protected processExpressionEntries(entries: Iterable<[string, ParameterOrValueExpressionNode]>, aliasPath: string[]): void {
 		for (const entry of entries) {
 			const fullPath = aliasPath.concat(entry[0]);
-			const columnAlias : string = fullPath.join('.');
-			const expression : ParameterOrValueExpressionNode = entry[1];
+			const columnAlias: string = fullPath.join('.');
+			const expression: ParameterOrValueExpressionNode = entry[1];
 			// TODO: resolve table references within the expression?
 			// TODO: support the property name as the alias
-			const aliasedExpressionNode : AliasedSelectExpressionNode = {
+			const aliasedExpressionNode: AliasedSelectExpressionNode = {
 				type: 'aliasedExpressionNode',
 				alias: columnAlias,
 				aliasPath: fullPath,
@@ -53,7 +53,7 @@ export class QuerySelectorProcessor {
 		}
 	}
 
-	protected getAllEntries(querySelector : QuerySelector) {
+	protected getAllEntries(querySelector: QuerySelector) {
 		const columns = [];
 		const expressions = [];
 		const nesteds = [];
@@ -61,16 +61,16 @@ export class QuerySelectorProcessor {
 			const value = querySelector[key];
 			switch (value.$selectorKind) {
 				case "column":
-					const columnEntry : [string, SelectorColumnTypes] = [key, value];
+					const columnEntry: [string, SelectorColumnTypes] = [key, value];
 					columns.push(columnEntry);
 					break;
 				case "expression":
-					const expressionEntry : [string, ParameterOrValueExpressionNode] = [key, value.expression];
+					const expressionEntry: [string, ParameterOrValueExpressionNode] = [key, value.expression];
 					expressions.push(expressionEntry);
 					break;
 				case "nestedOne":
 				case "nestedMany":
-					const nestedEntry : [string, NestedQueryOne | NestedQueryMany] = [key, value.nestedSelector];
+					const nestedEntry: [string, NestedQueryOne | NestedQueryMany] = [key, value.nestedSelector];
 					nesteds.push(nestedEntry);
 					break;
 				default:
@@ -84,7 +84,7 @@ export class QuerySelectorProcessor {
 		};
 	}
 
-	protected processSelectQueryClass(querySelector : QuerySelector, aliasPath : string[]) : void {
+	protected processSelectQueryClass(querySelector: QuerySelector, aliasPath: string[]): void {
 		const allEntries = this.getAllEntries(querySelector);
 		const columnEntries = allEntries.columns;
 		if (columnEntries) {
@@ -103,7 +103,7 @@ export class QuerySelectorProcessor {
 		}
 	}
 
-	process() : Array<SelectOutputExpression> {
+	process(): Array<SelectOutputExpression> {
 		this.processSelectQueryClass(this.querySelector, []);
 		return this.outputExpressions;
 	}

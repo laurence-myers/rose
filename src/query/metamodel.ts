@@ -15,20 +15,20 @@ import {any} from "./postgresql/functions/array/functions";
 export class TableMetamodel {
 
 	constructor(
-		readonly name : string,
-		readonly alias : string | undefined // Not great having this here, since it conflates metamodel with stateful querying.
+		readonly name: string,
+		readonly alias: string | undefined // Not great having this here, since it conflates metamodel with stateful querying.
 	) {
 	}
 }
 
-export type ParamGetter<P, R> = (params : P) => R;
+export type ParamGetter<P, R> = (params: P) => R;
 
-function isParamGetter<R>(value : any) : value is ParamGetter<any, R> {
+function isParamGetter<R>(value: any): value is ParamGetter<any, R> {
 	return value && typeof value == 'function';
 }
 
 export interface ColumnMetamodelOptions<R> {
-	references : R;
+	references: R;
 }
 
 type BooleanUnaryOperators = 'IS NULL'
@@ -40,22 +40,22 @@ type BooleanUnaryOperators = 'IS NULL'
 	| 'IS UNKNOWN'
 	| 'IS NOT UNKNOWN';
 type BooleanBinaryOperators = '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN';
-type ValueType<T> = ((params : any) => T) | ColumnMetamodel<T> | ParameterOrValueExpressionNode;
+type ValueType<T> = ((params: any) => T) | ColumnMetamodel<T> | ParameterOrValueExpressionNode;
 
 export class ColumnMetamodel<T> {
-	public readonly $selectorKind : 'column' = 'column';
-	protected readonly $resultType! : T; // type-only value
+	public readonly $selectorKind: 'column' = 'column';
+	protected readonly $resultType!: T; // type-only value
 
 	constructor(
-		readonly table : TableMetamodel,
-		readonly name : string,
-		readonly type : Function,
+		readonly table: TableMetamodel,
+		readonly name: string,
+		readonly type: Function,
 		private options? : ColumnMetamodelOptions<any>
 	) {
 
 	}
 
-	asc() : OrderByExpressionNode {
+	asc(): OrderByExpressionNode {
 		return {
 			type: "orderByExpressionNode",
 			expression: this.toColumnReferenceNode(),
@@ -63,7 +63,7 @@ export class ColumnMetamodel<T> {
 		};
 	}
 
-	desc() : OrderByExpressionNode {
+	desc(): OrderByExpressionNode {
 		return {
 			type: "orderByExpressionNode",
 			expression: this.toColumnReferenceNode(),
@@ -71,7 +71,7 @@ export class ColumnMetamodel<T> {
 		};
 	}
 
-	protected coerceToNode<T>(value : ValueType<T>) : ParameterOrValueExpressionNode {
+	protected coerceToNode<T>(value: ValueType<T>): ParameterOrValueExpressionNode {
 		if (value instanceof ColumnMetamodel) {
 			return value.toColumnReferenceNode();
 		} else if (isParamGetter(value)) {
@@ -85,9 +85,9 @@ export class ColumnMetamodel<T> {
 	}
 
 	protected createBooleanBinaryOperationNode(
-		operator : BooleanBinaryOperators,
-		value : ValueType<T>) : BooleanBinaryOperationNode {
-		let right : ParameterOrValueExpressionNode = this.coerceToNode(value);
+		operator: BooleanBinaryOperators,
+		value: ValueType<T>): BooleanBinaryOperationNode {
+		let right: ParameterOrValueExpressionNode = this.coerceToNode(value);
 		return {
 			type: 'binaryOperationNode',
 			left: this.toColumnReferenceNode(),
@@ -96,35 +96,35 @@ export class ColumnMetamodel<T> {
 		};
 	}
 
-	eq(value : ValueType<T>) : BooleanBinaryOperationNode {
+	eq(value: ValueType<T>): BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('=', value);
 	}
 
-	neq(value : ValueType<T>) : BooleanBinaryOperationNode {
+	neq(value: ValueType<T>): BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('!=', value);
 	}
 
-	gt(value : ValueType<T>) : BooleanBinaryOperationNode {
+	gt(value: ValueType<T>): BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('>', value);
 	}
 
-	gte(value : ValueType<T>) : BooleanBinaryOperationNode {
+	gte(value: ValueType<T>): BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('>=', value);
 	}
 
-	lt(value : ValueType<T>) : BooleanBinaryOperationNode {
+	lt(value: ValueType<T>): BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('<', value);
 	}
 
-	lte(value : ValueType<T>) : BooleanBinaryOperationNode {
+	lte(value: ValueType<T>): BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('<=', value);
 	}
 
-	isDistinctFrom(value : ValueType<T>) : BooleanBinaryOperationNode {
+	isDistinctFrom(value: ValueType<T>): BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('IS DISTINCT FROM', value);
 	}
 
-	isNotDistinctFrom(value : ValueType<T>) : BooleanBinaryOperationNode {
+	isNotDistinctFrom(value: ValueType<T>): BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('IS NOT DISTINCT FROM', value);
 	}
 
@@ -133,15 +133,15 @@ export class ColumnMetamodel<T> {
 	 * entire row.
 	 * Instead, use "eqAny", which allows you to substitute an entire array value.
 	 */
-	in(value : ValueExpressionNode) : BooleanBinaryOperationNode {
+	in(value: ValueExpressionNode): BooleanBinaryOperationNode {
 		return this.createBooleanBinaryOperationNode('IN', value);
 	}
 
-	eqAny(value : ValueType<T | T[]>) : BooleanBinaryOperationNode {
+	eqAny(value: ValueType<T | T[]>): BooleanBinaryOperationNode {
 		return this.eq(any(this.coerceToNode(value)));
 	}
 
-	protected createBooleanUnaryOperationNode(operator : BooleanUnaryOperators) : BooleanUnaryOperationNode {
+	protected createBooleanUnaryOperationNode(operator: BooleanUnaryOperators): BooleanUnaryOperationNode {
 		return {
 			type: 'unaryOperationNode',
 			expression: this.toColumnReferenceNode(),
@@ -150,7 +150,7 @@ export class ColumnMetamodel<T> {
 		};
 	}
 
-	isNull() : BooleanUnaryOperationNode {
+	isNull(): BooleanUnaryOperationNode {
 		return this.createBooleanUnaryOperationNode('IS NULL');
 	}
 
@@ -182,7 +182,7 @@ export class ColumnMetamodel<T> {
 		return this.createBooleanUnaryOperationNode('IS NOT UNKNOWN');
 	}
 
-	toColumnReferenceNode() : ColumnReferenceNode {
+	toColumnReferenceNode(): ColumnReferenceNode {
 		return {
 			type: 'columnReferenceNode',
 			columnName: this.name,
@@ -226,13 +226,13 @@ export class NullableDateColumnMetamodel extends ColumnMetamodel<Date | null> {
 
 export abstract class QueryTable {
 	protected constructor(
-		readonly $table : TableMetamodel,
+		readonly $table: TableMetamodel,
 		readonly $tableAlias? : string
 	) {
 		// TODO: validate that $tableAlias does not match the pattern of automatically generated aliases, e.g. "t1".
 	}
 }
 
-export function getTableNameFromColumn(columnMetamodel : ColumnMetamodel<any>) : string {
+export function getTableNameFromColumn(columnMetamodel: ColumnMetamodel<any>): string {
 	return columnMetamodel.table.name;
 }
