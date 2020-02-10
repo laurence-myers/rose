@@ -4,7 +4,7 @@ export function iff(condition: boolean, body: () => string, elseBody? : () => st
 	if (condition) {
 		return body();
 	} else {
-		return '';
+		return elseBody ? elseBody() : '';
 	}
 }
 
@@ -12,6 +12,6 @@ export function exists(obj: any, body: () => string, elseBody? : () => string) {
 	return iff(!isNullOrUndefined(obj), body, elseBody);
 }
 
-export function mmap<T>(list: T[], cb: (entry: T) => string, seperator: string = '') {
-	return list.map(cb).join(seperator);
+export function mmap<T>(list: T[], cb: (entry: T) => string, separator: string = '') {
+	return list.map(cb).join(separator);
 }
