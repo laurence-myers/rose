@@ -13,10 +13,13 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "yarn": "1.x"
+  },
   "dependencies": {
     "inflection": "1.12.0",
     "lodash.clonedeep": "4.5.0",
-    "metrohash": "2.3.0",
+    "metrohash": "2.6.0",
     "pg": "6.1.0",
     "ramda": "0.22.1",
     "reflect-metadata": "0.1.8"
