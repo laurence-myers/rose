@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "compile": "tsc",
     "explore": "node build/src/cli/explore.js",
     "genFuncs": "node build/src/tools/pgDocsParsing.js",
+    "lint": "eslint . --ext .ts",
     "test": "mocha --require source-map-support/register",
-    "compile": "tsc",
     "watch": "tsc -w --pretty"
   },
   "keywords": [],
