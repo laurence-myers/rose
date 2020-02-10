@@ -1,31 +1,31 @@
-export class ArbaonError extends Error {
+export class RoseError extends Error {
 
 }
 
-export class NotImplementedError extends ArbaonError {
+export class NotImplementedError extends RoseError {
 
 }
 
-export class UnsupportedOperationError extends ArbaonError {
+export class UnsupportedOperationError extends RoseError {
 
 }
 
-export class InvalidTableDefinitionError extends ArbaonError {
+export class InvalidTableDefinitionError extends RoseError {
 
 }
 
-export class InvalidColumnDefinitionError extends ArbaonError {
+export class InvalidColumnDefinitionError extends RoseError {
 
 }
 
-export class InvalidQuerySelectorError extends ArbaonError {
+export class InvalidQuerySelectorError extends RoseError {
 
 }
 
-export class InvalidDecoratorError extends ArbaonError {
+export class InvalidDecoratorError extends RoseError {
 
 }
 
-export class RowMappingError extends ArbaonError {
+export class RowMappingError extends RoseError {
 
 }
