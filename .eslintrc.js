@@ -4,9 +4,16 @@ module.exports = {
     plugins: [
         '@typescript-eslint',
     ],
-    extends: [
-        'eslint:recommended',
-        'plugin:@typescript-eslint/eslint-recommended',
-        'plugin:@typescript-eslint/recommended',
-    ],
+    parserOptions:  {
+        ecmaVersion: 2018, // Allows for the parsing of modern ECMAScript features
+        sourceType: 'module', // Allows for the use of imports
+    },
+    // extends: [
+    //     'eslint:recommended',
+    //     'plugin:@typescript-eslint/eslint-recommended',
+    //     'plugin:@typescript-eslint/recommended',
+    // ],
+    rules: {
+        '@typescript-eslint/type-annotation-spacing': 1
+    }
 };
