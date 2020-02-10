@@ -29,3 +29,7 @@ export class InvalidDecoratorError extends RoseError {
 export class RowMappingError extends RoseError {
 
 }
+
+export class UnrecognisedColumnTypeError extends RoseError {
+
+}

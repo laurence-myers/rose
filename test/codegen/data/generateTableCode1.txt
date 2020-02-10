@@ -1,0 +1,24 @@
+// Generated file; do not manually edit, as your changes will be overwritten!
+import { ColumnMetamodel, QueryTable, TableMetamodel, deepFreeze } from "rose";
+
+export class TFooTable extends QueryTable {
+	constructor($tableAlias? : string) { super(new TableMetamodel("FooTable", $tableAlias)); }
+
+	column1 = new ColumnMetamodel<number>(this.$table, "column_1");
+	column2 = new ColumnMetamodel<number | null>(this.$table, "column_2");
+	column3 = new ColumnMetamodel<string>(this.$table, "column_3");
+	column4 = new ColumnMetamodel<string | null>(this.$table, "column_4");
+	column5 = new ColumnMetamodel<Date>(this.$table, "column_5");
+	column6 = new ColumnMetamodel<Date | null>(this.$table, "column_6");
+}
+
+export const QFooTable = deepFreeze(new TFooTable());
+
+export interface FooTableRow {
+	column_1: number;
+	column_2: number | null;
+	column_3: string;
+	column_4: string | null;
+	column_5: Date;
+	column_6: Date | null;
+}

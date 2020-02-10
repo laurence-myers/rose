@@ -1,17 +1,16 @@
 import {Client} from "pg";
 import {makeDirs} from "../lang";
-import {TableTemplate} from "../codegen/templates/table";
 import fs = require('fs');
 import path = require('path');
-import {TableMetamodelTemplate} from "../codegen/templates/tableMetamodel";
 import {TableMetadata, getTableMetadata} from "../codegen/dbmetadata";
+import {generateTableCode} from "../codegen/generators";
 
 const DEFAULT_URL = "postgresql://postgres:password@localhost:5432/postgres";
 
 function generateInterfacesAndMetamodel(tablesMetadata: Map<string, TableMetadata>): void {
 	console.log(`Generating interfaces and metamodels for ${ tablesMetadata.size } tables...`);
 	for (const tableMetadata of tablesMetadata.values()) {
-		const content = [TableTemplate(tableMetadata), TableMetamodelTemplate(tableMetadata)].join('\n');
+		const content = generateTableCode(tableMetadata);
 		const rootDir = 'out';
 		makeDirs(rootDir);
 		const outName = path.join(rootDir, `${ tableMetadata.name }.ts`);

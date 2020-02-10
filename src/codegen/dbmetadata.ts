@@ -40,7 +40,7 @@ export class ColumnMetadata {
 }
 
 export class TableMetadata {
-	public readonly columns = new Map<string, ColumnMetadata>();
+	public readonly columns: Array<ColumnMetadata> = [];
 
 	constructor(public readonly name: string) {
 	}
@@ -54,7 +54,7 @@ async function populateColumnTypes(client: Client, tablesMetadata: DefaultMap<st
 	rows.forEach((row) => {
 		const tableMetadata = tablesMetadata.get(row.table_name);
 		const column = new ColumnMetadata(row.column_name, row.udt_name, yesOrNoToBoolean(row.is_nullable));
-		tableMetadata.columns.set(row.column_name, column);
+		tableMetadata.columns.push(column);
 	});
 }
 

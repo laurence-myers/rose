@@ -455,7 +455,6 @@ export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector, 
 					output[expr.alias] = new ColumnMetamodel<any>(
 						table,
 						expr.alias,
-						() => {},
 					);
 					break;
 				default:
