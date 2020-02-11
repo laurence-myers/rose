@@ -532,7 +532,7 @@ describe("Query DSL", function () {
 	});
 
 	describe(`DELETE commands`, () => {
-		it(`supports deleting from a table with constant criteria`, async () => {
+		it(`supports deleting from a table with constant criteria`, function () {
 			// Set up
 			const query = deleteFrom(QUsers)
 				.where(QUsers.id.eq(constant(123)));
@@ -547,5 +547,13 @@ describe("Query DSL", function () {
 			};
 			assert.notStrictEqual(actual, expected);
 		});
+
+		xit(`supports "WITH" (CTEs)`, function () {});
+
+		xit(`supports "USING" (multiple FROMs, an alternative to sub-queries)`, function () {});
+
+		xit(`supports cursors`, function () {});
+
+		xit(`supports returning a selection`, function () {});
 	});
 });
