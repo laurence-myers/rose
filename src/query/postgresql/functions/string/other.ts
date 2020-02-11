@@ -1,5 +1,5 @@
-import {createFunctionNode} from "../common/helpers";
-import {FunctionExpressionNode, ParameterOrValueExpressionNode} from "../../../ast";
+import { createFunctionNode } from "../common/helpers";
+import { FunctionExpressionNode, ParameterOrValueExpressionNode } from "../../../ast";
 
 /**
  * ASCII code of the first character of the argument. For UTF8 returns the Unicode code point of the character. For other multibyte encodings, the argument must be an ASCII character.

@@ -2,8 +2,8 @@ import * as assert from "assert";
 import * as fs from 'fs';
 import * as path from 'path';
 import * as arp from 'app-root-path';
-import {ColumnMetadata, TableMetadata} from "../../src/codegen/dbmetadata";
-import {generateTableCode} from "../../src/codegen/generators";
+import { ColumnMetadata, TableMetadata } from "../../src/codegen/dbmetadata";
+import { generateTableCode } from "../../src/codegen/generators";
 
 describe(`Code generators`, () => {
 	describe(`generateTableCode()`, () => {

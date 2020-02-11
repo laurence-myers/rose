@@ -3,7 +3,7 @@ import {
 	QueryTable,
 	TableMetamodel
 } from "../src/query/metamodel";
-import {deepFreeze} from "../src/lang";
+import { deepFreeze } from "../src/lang";
 
 export class TUsers extends QueryTable {
 	constructor($tableAlias? : string) { super(new TableMetamodel("Users", $tableAlias)); }

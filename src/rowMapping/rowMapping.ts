@@ -1,9 +1,9 @@
-import {SelectOutputExpression} from "../query/ast";
-import {RowMappingError, UnsupportedOperationError} from "../errors";
-import {assertNever, DefaultMap, isMap, last, SettingMap} from "../lang";
-import {MetroHash128} from "metrohash";
-import {MappedQuerySelector, QueryOutput} from "../query/typeMapping";
-import {QuerySelector} from "../query/querySelector";
+import { SelectOutputExpression } from "../query/ast";
+import { RowMappingError, UnsupportedOperationError } from "../errors";
+import { assertNever, DefaultMap, isMap, last, SettingMap } from "../lang";
+import { MetroHash128 } from "metrohash";
+import { MappedQuerySelector, QueryOutput } from "../query/typeMapping";
+import { QuerySelector } from "../query/querySelector";
 
 const HASH_SEED = Date.now();
 

@@ -21,8 +21,8 @@ import {
 	UnaryOperationNode,
 	WithNode
 } from "./ast";
-import {assertNever, deepFreeze, DefaultMap, difference} from "../lang";
-import {UnsupportedOperationError} from "../errors";
+import { assertNever, deepFreeze, DefaultMap, difference } from "../lang";
+import { UnsupportedOperationError } from "../errors";
 
 export abstract class BaseWalker {
 

@@ -1,5 +1,5 @@
-import {createFunctionNode} from "../common/helpers";
-import {FunctionExpressionNode, ParameterOrValueExpressionNode} from "../../../ast";
+import { createFunctionNode } from "../common/helpers";
+import { FunctionExpressionNode, ParameterOrValueExpressionNode } from "../../../ast";
 
 export function acos(x: ParameterOrValueExpressionNode): FunctionExpressionNode {
 	return createFunctionNode('acos', x);

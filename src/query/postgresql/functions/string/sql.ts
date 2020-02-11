@@ -1,4 +1,4 @@
-import {createBinaryOperatorNode, createFunctionNode, createNaturalSyntaxFunctionNode} from "../common/helpers";
+import { createBinaryOperatorNode, createFunctionNode, createNaturalSyntaxFunctionNode } from "../common/helpers";
 import {
 	BinaryOperationNode,
 	FunctionExpressionNode,

@@ -1,9 +1,9 @@
-import {Client} from "pg";
-import {makeDirs} from "../lang";
+import { Client } from "pg";
+import { makeDirs } from "../lang";
 import fs = require('fs');
 import path = require('path');
-import {TableMetadata, getTableMetadata} from "../codegen/dbmetadata";
-import {generateTableCode} from "../codegen/generators";
+import { TableMetadata, getTableMetadata } from "../codegen/dbmetadata";
+import { generateTableCode } from "../codegen/generators";
 
 const DEFAULT_URL = "postgresql://postgres:password@localhost:5432/postgres";
 

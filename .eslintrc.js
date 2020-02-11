@@ -14,6 +14,10 @@ module.exports = {
     //     'plugin:@typescript-eslint/recommended',
     // ],
     rules: {
-        '@typescript-eslint/type-annotation-spacing': 1
+        '@typescript-eslint/type-annotation-spacing': 1,
+        'object-curly-spacing': [
+            1,
+            "always"
+        ]
     }
 };

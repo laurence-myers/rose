@@ -1,9 +1,9 @@
-import {and, col, not, or, select, selectExpression, selectNestedMany, subSelect} from "../src/query/dsl";
-import {QAgencies, QLocations, QUsers, TLocations} from "./fixtures";
+import { and, col, not, or, select, selectExpression, selectNestedMany, subSelect } from "../src/query/dsl";
+import { QAgencies, QLocations, QUsers, TLocations } from "./fixtures";
 import assert = require('assert');
-import {lower} from "../src/query/postgresql/functions/string/sql";
-import {count} from "../src/query/postgresql/functions/aggregate/general";
-import {deepFreeze} from "../src/lang";
+import { lower } from "../src/query/postgresql/functions/string/sql";
+import { count } from "../src/query/postgresql/functions/aggregate/general";
+import { deepFreeze } from "../src/lang";
 
 describe("Query DSL", function () {
 	it("supports selecting and where clause from one table, with an immediate value (param)", function () {

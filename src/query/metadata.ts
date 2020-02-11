@@ -1,8 +1,8 @@
-import {InvalidQuerySelectorError} from "../errors";
-import {AliasedSelectExpressionNode, ParameterOrValueExpressionNode, SelectOutputExpression} from "./ast";
-import {assertNever} from "../lang";
-import {ColumnMetamodel} from "./metamodel";
-import {NestedQueryMany, NestedQueryOne, QuerySelector, SelectorColumnTypes} from "./querySelector";
+import { InvalidQuerySelectorError } from "../errors";
+import { AliasedSelectExpressionNode, ParameterOrValueExpressionNode, SelectOutputExpression } from "./ast";
+import { assertNever } from "../lang";
+import { ColumnMetamodel } from "./metamodel";
+import { NestedQueryMany, NestedQueryOne, QuerySelector, SelectorColumnTypes } from "./querySelector";
 
 export class QuerySelectorProcessor {
 	protected outputExpressions: Array<SelectOutputExpression> = [];

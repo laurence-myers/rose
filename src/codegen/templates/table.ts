@@ -1,5 +1,5 @@
-import {TableMetadata} from "../dbmetadata";
-import {getColumnTypeScriptType} from "./common";
+import { TableMetadata } from "../dbmetadata";
+import { getColumnTypeScriptType } from "./common";
 
 export function TableTemplate(tableMetadata: TableMetadata): string {
 	let sb: string = '';

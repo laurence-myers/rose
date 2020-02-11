@@ -1,7 +1,7 @@
-import {RectifyingWalker} from "../src/query/walker";
-import {AliasedFromExpressionNode, FromItemNode, SelectCommandNode, SubSelectNode} from "../src/query/ast";
-import {DefaultMap} from "../src/lang";
-import {deepEqual, equal, fail} from "assert";
+import { RectifyingWalker } from "../src/query/walker";
+import { AliasedFromExpressionNode, FromItemNode, SelectCommandNode, SubSelectNode } from "../src/query/ast";
+import { DefaultMap } from "../src/lang";
+import { deepEqual, equal, fail } from "assert";
 
 function getFromItem(fromItem: FromItemNode): AliasedFromExpressionNode | never {
 	if (fromItem.type == "aliasedExpressionNode") {

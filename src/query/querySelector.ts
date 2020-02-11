@@ -1,5 +1,5 @@
-import {ColumnMetamodel} from "./metamodel";
-import {ParameterOrValueExpressionNode} from "./ast";
+import { ColumnMetamodel } from "./metamodel";
+import { ParameterOrValueExpressionNode } from "./ast";
 
 export type SelectorColumnTypes = (
 	ColumnMetamodel<any>

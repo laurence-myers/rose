@@ -22,11 +22,11 @@ import {
 	selectNestedMany,
 	subSelect
 } from "../src/query/dsl";
-import {now, overlaps} from "../src/query/postgresql/functions/dateTime/functions";
+import { now, overlaps } from "../src/query/postgresql/functions/dateTime/functions";
 import * as assert from "assert";
-import {exists} from "../src/query/postgresql/functions/subquery/expressions";
-import {sum} from "../src/query/postgresql/functions/aggregate/general";
-import {divide} from "../src/query/postgresql/functions/mathematical/operators";
+import { exists } from "../src/query/postgresql/functions/subquery/expressions";
+import { sum } from "../src/query/postgresql/functions/aggregate/general";
+import { divide } from "../src/query/postgresql/functions/mathematical/operators";
 
 describe(`Example queries`, function () {
 	describe(`Recurring payments`, function () {

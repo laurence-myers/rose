@@ -1,7 +1,7 @@
 import "reflect-metadata";
-import {ColumnMetamodel, QueryTable, TableMetamodel} from "./metamodel";
-import {Clone, DefaultMap} from "../lang";
-import {UnsupportedOperationError} from "../errors";
+import { ColumnMetamodel, QueryTable, TableMetamodel } from "./metamodel";
+import { Clone, DefaultMap } from "../lang";
+import { UnsupportedOperationError } from "../errors";
 import {
 	AliasedExpressionNode,
 	BooleanExpression,
@@ -19,11 +19,11 @@ import {
 	SelectOutputExpression,
 	SubSelectNode,
 } from "./ast";
-import {RectifyingWalker, SqlAstWalker} from "./walker";
-import {QuerySelectorProcessor} from "./metadata";
-import {QuerySelector, SelectorExpression, SelectorNestedMany, SelectorNestedOne} from "./querySelector";
-import {execute, Queryable} from "../execution/execution";
-import {MappedQuerySelector} from "./typeMapping";
+import { RectifyingWalker, SqlAstWalker } from "./walker";
+import { QuerySelectorProcessor } from "./metadata";
+import { QuerySelector, SelectorExpression, SelectorNestedMany, SelectorNestedOne } from "./querySelector";
+import { execute, Queryable } from "../execution/execution";
+import { MappedQuerySelector } from "./typeMapping";
 
 export const enum SqlCommand {
 	Select,

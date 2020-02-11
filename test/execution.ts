@@ -1,8 +1,8 @@
 import assert = require('assert');
-import {QUsers} from "./fixtures";
-import {select} from "../src/query/dsl";
-import {Queryable} from "../src/execution/execution";
-import {QueryResult} from "pg";
+import { QUsers } from "./fixtures";
+import { select } from "../src/query/dsl";
+import { Queryable } from "../src/execution/execution";
+import { QueryResult } from "pg";
 
 class MockQueryable implements Queryable {
 	constructor(protected readonly rows: any[]) {

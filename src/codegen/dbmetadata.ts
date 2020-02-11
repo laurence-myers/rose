@@ -1,5 +1,5 @@
-import {DefaultMap} from "../lang";
-import {Client, QueryResult} from "pg";
+import { DefaultMap } from "../lang";
+import { Client, QueryResult } from "pg";
 
 type sql_identifier = string;
 // type cardinal_number = number;

@@ -1,6 +1,6 @@
-import {ColumnMetadata} from "../dbmetadata";
-import {POSTGRES_TO_TYPESCRIPT_TYPE_MAP} from "../dbtypes";
-import {UnrecognisedColumnTypeError} from "../../errors";
+import { ColumnMetadata } from "../dbmetadata";
+import { POSTGRES_TO_TYPESCRIPT_TYPE_MAP } from "../dbtypes";
+import { UnrecognisedColumnTypeError } from "../../errors";
 
 export function getColumnTypeScriptType(column: ColumnMetadata): string {
 	let tsType = POSTGRES_TO_TYPESCRIPT_TYPE_MAP.get(column.type);

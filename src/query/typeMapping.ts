@@ -5,7 +5,7 @@ import {
 	SelectorNestedMany,
 	SelectorNestedOne
 } from "./querySelector";
-import {ColumnMetamodel} from "./metamodel";
+import { ColumnMetamodel } from "./metamodel";
 
 export type MappableTypes = QuerySelector | SelectorColumnTypes | SelectorExpression<any> | SelectorNestedOne<any> | SelectorNestedMany<any>;
 

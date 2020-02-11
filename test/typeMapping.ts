@@ -1,8 +1,8 @@
 import assert = require('assert');
-import {QUsers} from "./fixtures";
-import {QueryOutput} from "../src/query/typeMapping";
-import {concat} from "../src/query/postgresql/functions/string/sql";
-import {constant, selectExpression, selectNestedMany, selectNestedOne} from "../src/query/dsl";
+import { QUsers } from "./fixtures";
+import { QueryOutput } from "../src/query/typeMapping";
+import { concat } from "../src/query/postgresql/functions/string/sql";
+import { constant, selectExpression, selectNestedMany, selectNestedOne } from "../src/query/dsl";
 
 describe(`Type mapping`, function () {
 	it(`can derive column output types from a query selector object`, function () {

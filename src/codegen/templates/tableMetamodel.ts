@@ -1,7 +1,7 @@
 import inflection = require("inflection");
-import {ColumnMetadata, TableMetadata} from "../dbmetadata";
-import {mmap} from "../helpers";
-import {getColumnTypeScriptType} from "./common";
+import { ColumnMetadata, TableMetadata } from "../dbmetadata";
+import { mmap } from "../helpers";
+import { getColumnTypeScriptType } from "./common";
 
 function sanitizeTableName(tableName: string): string {
 	return inflection.camelize(tableName, false);

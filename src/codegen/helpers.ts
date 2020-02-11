@@ -1,4 +1,4 @@
-import {isNullOrUndefined} from "util";
+import { isNullOrUndefined } from "util";
 
 export function iff(condition: boolean, body: () => string, elseBody? : () => string) {
 	if (condition) {

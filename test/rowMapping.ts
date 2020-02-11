@@ -1,7 +1,7 @@
 import assert = require('assert');
-import {QAgencies, QLocations, QUsers} from "./fixtures";
-import {mapRowsToClass, mapRowToClass} from "../src/rowMapping/rowMapping";
-import {selectExpression, selectNestedMany} from "../src/query/dsl";
+import { QAgencies, QLocations, QUsers } from "./fixtures";
+import { mapRowsToClass, mapRowToClass } from "../src/rowMapping/rowMapping";
+import { selectExpression, selectNestedMany } from "../src/query/dsl";
 import {
 	AliasedSelectExpressionNode,
 	BinaryOperationNode,
@@ -12,9 +12,9 @@ import {
 	UnaryOperationNode,
 	ParameterOrValueExpressionNode
 } from "../src/query/ast";
-import {RowMappingError, UnsupportedOperationError} from "../src/errors";
-import {count} from "../src/query/postgresql/functions/aggregate/general";
-import {QueryOutput} from "../src/query/typeMapping";
+import { RowMappingError, UnsupportedOperationError } from "../src/errors";
+import { count } from "../src/query/postgresql/functions/aggregate/general";
+import { QueryOutput } from "../src/query/typeMapping";
 
 function alias(aliasPath: string[], node: ParameterOrValueExpressionNode): AliasedSelectExpressionNode {
 	return {
