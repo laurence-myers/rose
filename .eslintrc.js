@@ -16,6 +16,7 @@ module.exports = {
     // ],
     rules: {
         '@typescript-eslint/type-annotation-spacing': 1,
+        'no-multiple-empty-lines': 1,
         'no-multi-spaces': 1,
         'object-curly-spacing': [
             1,
