@@ -1,8 +1,10 @@
 import * as assert from "assert";
 import { QUsers } from "../fixtures";
-import { col, constant, select, selectExpression } from "../../src/query/dsl";
+import { select } from "../../src/query/dsl/commands";
 import { trim } from "../../src/query/postgresql/functions/string/sql";
 import { btrim, pg_client_encoding } from "../../src/query/postgresql/functions/string/other";
+import { selectExpression } from "../../src/query/dsl/select";
+import { col, constant } from "../../src/query/dsl/core";
 
 describe(`String functions`, function () {
 	describe(`btrim()`, function () {

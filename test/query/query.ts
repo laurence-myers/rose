@@ -1,19 +1,10 @@
-import {
-	and,
-	col,
-	constant,
-	deleteFrom,
-	not,
-	or,
-	select,
-	selectExpression,
-	selectNestedMany,
-	subSelect
-} from "../../src/query/dsl";
 import { QAgencies, QLocations, QUsers, TLocations } from "../fixtures";
 import { lower } from "../../src/query/postgresql/functions/string/sql";
 import { count } from "../../src/query/postgresql/functions/aggregate/general";
 import { deepFreeze } from "../../src/lang";
+import { deleteFrom, select } from "../../src/query/dsl/commands";
+import { selectExpression, selectNestedMany, subSelect } from "../../src/query/dsl/select";
+import { and, col, constant, not, or } from "../../src/query/dsl/core";
 import assert = require('assert');
 
 describe("Query DSL", function () {

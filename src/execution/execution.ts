@@ -1,9 +1,9 @@
 import { QueryResult } from "pg";
-import { GeneratedQuery } from "../query/dsl";
 import { mapRowsToClass } from "../rowMapping/rowMapping";
 import { SelectOutputExpression } from "../query/ast";
 import { QuerySelector } from "../query/querySelector";
 import { MappedQuerySelector } from "../query/typeMapping";
+import { GeneratedQuery } from "../query/preparedQuery";
 
 export interface Queryable {
 	query(queryText: string, values: any[]): Promise<QueryResult>;

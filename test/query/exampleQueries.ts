@@ -9,24 +9,14 @@ import {
 	QTags,
 	QUploads
 } from "../fixtures";
-import {
-	and,
-	col,
-	literal,
-	or,
-	ParamsWrapper,
-	row,
-	select,
-	selectCte,
-	selectExpression,
-	selectNestedMany,
-	subSelect
-} from "../../src/query/dsl";
+import { select } from "../../src/query/dsl/commands";
 import { now, overlaps } from "../../src/query/postgresql/functions/dateTime/functions";
 import * as assert from "assert";
 import { exists } from "../../src/query/postgresql/functions/subquery/expressions";
 import { sum } from "../../src/query/postgresql/functions/aggregate/general";
 import { divide } from "../../src/query/postgresql/functions/mathematical/operators";
+import { selectCte, selectExpression, selectNestedMany, subSelect } from "../../src/query/dsl/select";
+import { and, col, literal, or, ParamsWrapper, row } from "../../src/query/dsl/core";
 
 describe(`Example queries`, function () {
 	describe(`Recurring payments`, function () {

@@ -1,6 +1,6 @@
 import assert = require('assert');
 import { QUsers } from "../fixtures";
-import { select } from "../../src/query/dsl";
+import { select } from "../../src/query/dsl/commands";
 import { Queryable } from "../../src/execution/execution";
 import { QueryResult } from "pg";
 

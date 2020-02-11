@@ -1,5 +1,5 @@
 import { FunctionExpressionNode, ParameterOrValueExpressionNode } from "../../../ast";
-import { literal } from "../../../dsl";
+import { literal } from "../../../dsl/core";
 
 export function count(valueExpression? : ParameterOrValueExpressionNode): FunctionExpressionNode {
 	return {
