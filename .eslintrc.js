@@ -17,7 +17,11 @@ module.exports = {
         '@typescript-eslint/type-annotation-spacing': 1,
         'object-curly-spacing': [
             1,
-            "always"
+            'always'
+        ],
+        'template-curly-spacing': [
+            1,
+            'always'
         ]
     }
 };

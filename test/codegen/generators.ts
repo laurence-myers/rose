@@ -8,7 +8,7 @@ import { generateTableCode } from "../../src/codegen/generators";
 describe(`Code generators`, () => {
 	describe(`generateTableCode()`, () => {
 		function readExpectedCode(testNumber: number): string {
-			const filePath = arp.resolve(path.join('test', 'codegen', 'data', `generateTableCode${testNumber}.txt`));
+			const filePath = arp.resolve(path.join('test', 'codegen', 'data', `generateTableCode${ testNumber }.txt`));
 			return fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
 		}
 
@@ -16,7 +16,7 @@ describe(`Code generators`, () => {
 			// Set up
 			const tableMetadata = new TableMetadata(`FooTable`);
 			let count = 0;
-			const col = () => `column_${++count}`;
+			const col = () => `column_${ ++count }`;
 
 			tableMetadata.columns.push(
 				new ColumnMetadata(col(), `int`, false),

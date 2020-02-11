@@ -35,7 +35,7 @@ export class T${ sanitizeTableName(tableMetadata.name) } extends QueryTable {
 	constructor($tableAlias? : string) { super(new TableMetamodel("${ tableMetadata.name }", $tableAlias)); }
 
 ${ mmap(tableMetadata.columns, (col: ColumnMetadata) => 
-		`	${ sanitizeColumnName(col.name) } = new ${ getColumnMetamodelString(col) };`, '\n')}
+		`	${ sanitizeColumnName(col.name) } = new ${ getColumnMetamodelString(col) };`, '\n') }
 }
 
 export const Q${ sanitizeTableName(tableMetadata.name) } = deepFreeze(new T${ sanitizeTableName(tableMetadata.name) }());
