@@ -1,7 +1,7 @@
 import {
 	BinaryOperationNode, ExpressionListNode,
 	FunctionExpressionNode, NaturalSyntaxFunctionExpressionNode, NaturalSyntaxFunctionExpressionNodeArgument,
-	SubSelectNode, UnaryOperationNode,
+	 UnaryOperationNode,
 	ParameterOrValueExpressionNode
 } from "../../../ast";
 
