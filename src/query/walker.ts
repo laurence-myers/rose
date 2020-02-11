@@ -1,11 +1,13 @@
 import {
 	AnyAliasedExpressionNode,
+	AnyCommandNode,
 	AstNode,
 	BinaryOperationNode,
 	BooleanExpression,
 	BooleanExpressionGroupNode,
 	ColumnReferenceNode,
 	ConstantNode,
+	DeleteCommandNode,
 	ExpressionListNode,
 	FunctionExpressionNode,
 	GroupByExpressionNode,
@@ -41,6 +43,8 @@ export abstract class BaseWalker {
 	protected abstract walkColumnReferenceNode(node: ColumnReferenceNode): void;
 
 	protected abstract walkConstantNode(node: ConstantNode<any>): void;
+
+	protected abstract walkDeleteCommandNode(node: DeleteCommandNode): void;
 
 	protected abstract walkExpressionListNode(node: ExpressionListNode): void;
 
@@ -86,6 +90,9 @@ export abstract class BaseWalker {
 				break;
 			case "constantNode":
 				this.walkConstantNode(node);
+				break;
+			case "deleteCommandNode":
+				this.walkDeleteCommandNode(node);
 				break;
 			case "expressionListNode":
 				this.walkExpressionListNode(node);
@@ -154,6 +161,11 @@ export class SkippingWalker extends BaseWalker {
 	}
 
 	protected walkColumnReferenceNode(node: ColumnReferenceNode): void {
+	}
+
+	protected walkDeleteCommandNode(node: DeleteCommandNode): void {
+		this.walk(node.from);
+		node.conditions.forEach(this.doItemWalk());
 	}
 
 	protected walkConstantNode(node: ConstantNode<any>): void {
@@ -300,7 +312,7 @@ export class SqlAstWalker extends BaseWalker {
 	protected parameterGetters: Array<(p: Object) => any> = [];
 
 	constructor(
-		protected queryAst: SelectCommandNode,
+		protected queryAst: AnyCommandNode,
 		protected tableMap: DefaultMap<string, string>
 	) {
 		super();
@@ -360,6 +372,27 @@ export class SqlAstWalker extends BaseWalker {
 		this.parameterGetters.push(node.getter);
 		this.sb += `$`;
 		this.sb += this.parameterGetters.length.toString();
+	}
+
+	protected walkDeleteCommandNode(node: DeleteCommandNode): void {
+		// TODO: support WITH (RECURSIVE)
+
+		this.sb = "DELETE FROM ";
+
+		// TODO: support ONLY
+
+		this.walk(node.from);
+
+		// TODO: support USING
+
+		if (node.conditions.length > 0) {
+			this.sb += " WHERE ";
+			node.conditions.forEach(this.doItemWalk());
+		}
+
+		// TODO: support WHERE CURRENT OF
+
+		// TODO: support RETURNING * or (aliased) output expressions
 	}
 
 	protected walkExpressionListNode(node: ExpressionListNode): void {

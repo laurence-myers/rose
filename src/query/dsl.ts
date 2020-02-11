@@ -8,6 +8,7 @@ import {
 	BooleanExpressionGroupNode,
 	ColumnReferenceNode,
 	ConstantNode,
+	DeleteCommandNode,
 	ExpressionListNode,
 	GroupByExpressionNode,
 	JoinNode,
@@ -18,11 +19,12 @@ import {
 	SelectCommandNode,
 	SelectOutputExpression,
 	SubSelectNode,
+	TableReferenceNode,
 } from "./ast";
 import { RectifyingWalker, SqlAstWalker } from "./walker";
 import { QuerySelectorProcessor } from "./metadata";
 import { QuerySelector, SelectorExpression, SelectorNestedMany, SelectorNestedOne } from "./querySelector";
-import { execute, Queryable } from "../execution/execution";
+import { execute, executeNonReturning, Queryable } from "../execution/execution";
 import { MappedQuerySelector } from "./typeMapping";
 
 export const enum SqlCommand {
@@ -165,15 +167,7 @@ abstract class BaseQueryBuilder<TParams extends HasLimit> {
 		for (const qtable of [first].concat(rest)) {
 			const tableName = qtable.$table.name;
 			const alias = qtable.$table.alias || this.tableMap.get(tableName);
-			this.queryAst.fromItems.push({
-				type: 'aliasedExpressionNode',
-				alias,
-				aliasPath: [alias],
-				expression: {
-					type: 'tableReferenceNode',
-					tableName: tableName,
-				}
-			});
+			this.queryAst.fromItems.push(aliasTable(tableName, alias));
 		}
 		return this;
 	}
@@ -266,6 +260,26 @@ class QueryBuilder<TQuerySelector extends QuerySelector, TParams extends HasLimi
 
 	execute(queryable: Queryable, params: TParams): Promise<MappedQuerySelector<TQuerySelector>[]> {
 		return this.prepare().execute(queryable, params);
+	}
+}
+
+class PreparedQueryNonReturning<TParams> {
+	constructor(
+		protected readonly sql: string,
+		protected readonly paramGetters: Array<(params: TParams) => any>) {
+
+	}
+
+	generate(params: TParams): GeneratedQuery {
+		const values = this.paramGetters.map((getter) => getter(params));
+		return {
+			sql: this.sql,
+			parameters: values
+		};
+	}
+
+	execute(queryable: Queryable, params: TParams): Promise<void> {
+		return executeNonReturning(queryable, this.generate(params));
 	}
 }
 
@@ -480,4 +494,61 @@ export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector, 
 
 export function selectCte<TQuerySelector extends QuerySelector>(alias: string, querySelector: TQuerySelector) {
 	return new CommonTableExpressionBuilder(alias, querySelector);
+}
+
+function aliasTable(tableName: string, alias: string): AliasedExpressionNode<TableReferenceNode> {
+	return {
+		type: 'aliasedExpressionNode',
+		alias,
+		aliasPath: [alias],
+		expression: {
+			type: 'tableReferenceNode',
+			tableName: tableName,
+		}
+	};
+}
+
+export class DeleteQueryBuilder<TParams> {
+	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
+	protected queryAst: DeleteCommandNode;
+
+	constructor(
+		qtable: QueryTable
+	) {
+		this.queryAst = {
+			type: 'deleteCommandNode',
+			from: this.from(qtable),
+			conditions: [],
+		};
+	}
+
+	protected from(qtable: QueryTable): AliasedExpressionNode<TableReferenceNode> {
+		const tableName = qtable.$table.name;
+		const alias = qtable.$table.alias || this.tableMap.get(tableName);
+		return aliasTable(tableName, alias);
+	}
+
+	@Clone()
+	where(whereExpression: BooleanExpression): this {
+		this.queryAst.conditions.push(whereExpression);
+		return this;
+	}
+
+	prepare(): PreparedQueryNonReturning<TParams> {
+		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
+		const data = walker.prepare();
+		return new PreparedQueryNonReturning<TParams>(data.sql, data.parameterGetters);
+	}
+
+	toSql(params: TParams): GeneratedQuery {
+		return this.prepare().generate(params);
+	}
+
+	execute(queryable: Queryable, params: TParams): Promise<void> {
+		return this.prepare().execute(queryable, params);
+	}
+}
+
+export function deleteFrom<TParams>(table: QueryTable) {
+	return new DeleteQueryBuilder(table);
 }

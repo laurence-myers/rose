@@ -192,6 +192,8 @@ export interface WithNode {
 	selectNodes: AliasedExpressionNode<SubSelectNode>[];
 }
 
+export type SelectOutputExpression = ParameterOrValueExpressionNode | AliasedSelectExpressionNode;
+
 /*
  https://www.postgresql.org/docs/9.6/static/sql-select.html
  [ WITH [ RECURSIVE ] with_query [, ...] ]
@@ -237,9 +239,7 @@ export interface WithNode {
  with_query_name [ ( column_name [, ...] ) ] AS ( select | values | insert | update | delete )
 
  TABLE [ ONLY ] table_name [ * ]
- */
-export type SelectOutputExpression = ParameterOrValueExpressionNode | AliasedSelectExpressionNode;
-
+*/
 export interface SelectCommandNode {
 	type: 'selectCommandNode';
 	distinction: 'distinct' | 'all' | 'on';
@@ -259,6 +259,34 @@ export interface SubSelectNode {
 	query: SelectCommandNode;
 }
 
-export type AstNode = SelectCommandNode | ParameterOrValueExpressionNode | AliasedSelectExpressionNode | JoinNode | FromItemNode
-	| OrderByExpressionNode | FunctionExpressionNode | LimitOffsetNode | BooleanExpressionGroupNode | NotExpressionNode
-	| ExpressionListNode | GroupByExpressionNode | WithNode;
+/*
+ https://www.postgresql.org/docs/current/sql-delete.html
+ [ WITH [ RECURSIVE ] with_query [, ...] ]
+ DELETE FROM [ ONLY ] table_name [ * ] [ [ AS ] alias ]
+ [ USING using_list ]
+ [ WHERE condition | WHERE CURRENT OF cursor_name ]
+ [ RETURNING * | output_expression [ [ AS ] output_name ] [, ...] ]
+*/
+export interface DeleteCommandNode {
+	type: 'deleteCommandNode';
+	from: FromItemNode;
+	conditions: BooleanExpression[];
+}
+
+export type AnyCommandNode = SelectCommandNode | DeleteCommandNode;
+
+export type AstNode =
+	| SelectCommandNode
+	| DeleteCommandNode
+	| ParameterOrValueExpressionNode
+	| AliasedSelectExpressionNode
+	| JoinNode
+	| FromItemNode
+	| OrderByExpressionNode
+	| FunctionExpressionNode
+	| LimitOffsetNode
+	| BooleanExpressionGroupNode
+	| NotExpressionNode
+	| ExpressionListNode
+	| GroupByExpressionNode
+	| WithNode;
