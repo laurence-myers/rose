@@ -16,7 +16,7 @@ module.exports = {
     // ],
     rules: {
         '@typescript-eslint/type-annotation-spacing': 1,
-        'unused-imports/no-unused-imports-ts': 1,
+        'no-multi-spaces': 1,
         'object-curly-spacing': [
             1,
             'always'
@@ -24,6 +24,7 @@ module.exports = {
         'template-curly-spacing': [
             1,
             'always'
-        ]
+        ],
+        'unused-imports/no-unused-imports-ts': 1,
     }
 };

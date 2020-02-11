@@ -1,5 +1,5 @@
 import { createBinaryOperatorNode, createUnaryOperatorNode } from "../common/helpers";
-import { BinaryOperationNode,  UnaryOperationNode, ParameterOrValueExpressionNode } from "../../../ast";
+import { BinaryOperationNode, UnaryOperationNode, ParameterOrValueExpressionNode } from "../../../ast";
 
 export function add(left: ParameterOrValueExpressionNode, right: ParameterOrValueExpressionNode): BinaryOperationNode {
 	return createBinaryOperatorNode('+', left, right);
