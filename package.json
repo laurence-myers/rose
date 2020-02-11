@@ -8,7 +8,7 @@
     "explore": "node build/src/cli/explore.js",
     "genFuncs": "node build/src/tools/pgDocsParsing.js",
     "lint": "eslint . --ext .ts",
-    "test": "mocha --require source-map-support/register",
+    "test": "mocha",
     "watch": "tsc -w --pretty"
   },
   "keywords": [],
@@ -29,7 +29,7 @@
     "@types/app-root-path": "1.2.4",
     "@types/inflection": "1.5.28",
     "@types/lodash.clonedeep": "4.5.3",
-    "@types/mocha": "2.2.32",
+    "@types/mocha": "7.0.1",
     "@types/node": "6.0.46",
     "@types/pg": "6.1.34",
     "@types/ramda": "0.0.2",
@@ -38,9 +38,8 @@
     "@typescript-eslint/parser": "2.19.0",
     "app-root-path": "3.0.0",
     "eslint": "6.8.0",
-    "mocha": "3.1.2",
-    "source-map-support": "0.4.6",
-    "ts-node": "3.0.6",
+    "mocha": "7.0.1",
+    "ts-node": "8.6.2",
     "typescript": "3.4.2"
   }
 }
