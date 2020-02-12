@@ -36,10 +36,10 @@ export function col(column: ColumnMetamodel<any>): ColumnReferenceNode {
 	return column.toColumnReferenceNode();
 }
 
-export function constant(value: number | string): ConstantNode<number | string> {
+export function constant<T extends number | string>(value: T): ConstantNode<T> {
 	return {
 		type: "constantNode",
-		getter: () => value
+		getter: (): T => value
 	};
 }
 

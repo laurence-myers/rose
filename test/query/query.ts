@@ -1,10 +1,10 @@
-import { QAgencies, QLocations, QUsers, TLocations } from "../fixtures";
-import { lower } from "../../src/query/postgresql/functions/string/sql";
+import { QAgencies, QLocations, QUsers, TLocations, TUsers } from "../fixtures";
+import { lower, upper } from "../../src/query/postgresql/functions/string/sql";
 import { count } from "../../src/query/postgresql/functions/aggregate/general";
 import { deepFreeze } from "../../src/lang";
-import { deleteFrom, select } from "../../src/query/dsl/commands";
+import { deleteFrom, select, update } from "../../src/query/dsl/commands";
 import { selectExpression, selectNestedMany, subSelect } from "../../src/query/dsl/select";
-import { and, col, constant, not, or } from "../../src/query/dsl/core";
+import { and, col, constant, not, or, param, ParamsWrapper } from "../../src/query/dsl/core";
 import assert = require('assert');
 
 describe("Query DSL", function () {
@@ -546,5 +546,32 @@ describe("Query DSL", function () {
 		xit(`supports cursors`, function () {});
 
 		xit(`supports returning a selection`, function () {});
+	});
+
+	describe(`UPDATE commands`, () => {
+		it(`supports updating a table with simple values`, async () => {
+			// Set up
+			interface Params {
+				name: string;
+			}
+			const paramsWrapper = new ParamsWrapper<Params>();
+			const query = update<TUsers, Params>(QUsers)
+				.set({
+					name: constant(123)
+				})
+				.where(QUsers.id.eq(constant(123)));
+
+			// Execute
+			const actual = query.toSql({
+				name: 'fred'
+			});
+
+			// Verify
+			const expected = {
+				sql: `UPDATE "Users" as "t1" SET "name" = UPPER('fred') WHERE "t1"."id" = 123`,
+				parameters: ['fred']
+			};
+			assert.notStrictEqual(actual, expected);
+		});
 	});
 });

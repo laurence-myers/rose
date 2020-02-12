@@ -132,8 +132,8 @@ export type ValueExpressionNode =
 	| NaturalSyntaxFunctionExpressionNode
 	| SubSelectNode;
 
-export type ParameterOrValueExpressionNode =
-	ConstantNode<any>
+export type ParameterOrValueExpressionNode<TConstantValue = unknown> =
+	ConstantNode<TConstantValue>
 	| ValueExpressionNode;
 
 export interface ExpressionListNode {
@@ -273,11 +273,40 @@ export interface DeleteCommandNode {
 	conditions: BooleanExpression[];
 }
 
-export type AnyCommandNode = SelectCommandNode | DeleteCommandNode;
+export interface SetColumnReferenceNode {
+	type: 'setColumnReferenceNode';
+	columnName: string;
+}
+
+export interface SetItemNode {
+	type: 'setItemNode';
+	column: SetColumnReferenceNode;
+	expression: ParameterOrValueExpressionNode;
+}
+
+/*
+ [ WITH [ RECURSIVE ] with_query [, ...] ]
+ UPDATE [ ONLY ] table_name [ * ] [ [ AS ] alias ]
+     SET { column_name = { expression | DEFAULT } |
+           ( column_name [, ...] ) = [ ROW ] ( { expression | DEFAULT } [, ...] ) |
+           ( column_name [, ...] ) = ( sub-SELECT )
+         } [, ...]
+     [ FROM from_list ]
+     [ WHERE condition | WHERE CURRENT OF cursor_name ]
+     [ RETURNING * | output_expression [ [ AS ] output_name ] [, ...] ]
+*/
+export interface UpdateCommandNode {
+	type: 'updateCommandNode';
+	table: FromItemNode;
+	setItems: SetItemNode[];
+	fromItems: FromItemNode[];
+	conditions: BooleanExpression[];
+}
+
+export type AnyCommandNode = SelectCommandNode | DeleteCommandNode | UpdateCommandNode;
 
 export type AstNode =
-	| SelectCommandNode
-	| DeleteCommandNode
+	| AnyCommandNode
 	| ParameterOrValueExpressionNode
 	| AliasedSelectExpressionNode
 	| JoinNode
@@ -289,4 +318,6 @@ export type AstNode =
 	| NotExpressionNode
 	| ExpressionListNode
 	| GroupByExpressionNode
-	| WithNode;
+	| WithNode
+	| SetColumnReferenceNode
+	| SetItemNode;

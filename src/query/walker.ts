@@ -18,9 +18,12 @@ import {
 	NotExpressionNode,
 	OrderByExpressionNode,
 	SelectCommandNode,
+	SetColumnReferenceNode,
+	SetItemNode,
 	SubSelectNode,
 	TableReferenceNode,
 	UnaryOperationNode,
+	UpdateCommandNode,
 	WithNode
 } from "./ast";
 import { assertNever, deepFreeze, DefaultMap, difference } from "../lang";
@@ -66,11 +69,17 @@ export abstract class BaseWalker {
 
 	protected abstract walkSelectCommandNode(node: SelectCommandNode): void;
 
+	protected abstract walkSetColumnReferenceNode(node: SetColumnReferenceNode): void;
+
+	protected abstract walkSetItemNode(node: SetItemNode): void;
+
 	protected abstract walkSubSelectNode(node: SubSelectNode): void;
 
 	protected abstract walkTableReferenceNode(node: TableReferenceNode): void;
 
 	protected abstract walkUnaryOperationNode(node: UnaryOperationNode): void;
+
+	protected abstract walkUpdateCommandNode(node: UpdateCommandNode): void;
 
 	protected abstract walkWithNode(node: WithNode): void;
 
@@ -124,6 +133,12 @@ export abstract class BaseWalker {
 			case "selectCommandNode":
 				this.walkSelectCommandNode(node);
 				break;
+			case "setColumnReferenceNode":
+				this.walkSetColumnReferenceNode(node);
+				break;
+			case "setItemNode":
+				this.walkSetItemNode(node);
+				break;
 			case "subSelectNode":
 				this.walkSubSelectNode(node);
 				break;
@@ -132,6 +147,9 @@ export abstract class BaseWalker {
 				break;
 			case "unaryOperationNode":
 				this.walkUnaryOperationNode(node);
+				break;
+			case "updateCommandNode":
+				this.walkUpdateCommandNode(node);
 				break;
 			case "withNode":
 				this.walkWithNode(node);
@@ -221,6 +239,13 @@ export class SkippingWalker extends BaseWalker {
 		node.grouping.forEach(this.doItemWalk());
 	}
 
+	protected walkSetColumnReferenceNode(node: SetColumnReferenceNode): void {
+
+	}
+
+	protected walkSetItemNode(node: SetItemNode): void {
+	}
+
 	protected walkSubSelectNode(node: SubSelectNode): void {
 		this.walk(node.query);
 	}
@@ -230,6 +255,13 @@ export class SkippingWalker extends BaseWalker {
 
 	protected walkUnaryOperationNode(node: UnaryOperationNode): void {
 		this.walk(node.expression);
+	}
+
+	protected walkUpdateCommandNode(node: UpdateCommandNode): void {
+		this.walk(node.table);
+		node.setItems.forEach(this.doItemWalk());
+		node.fromItems.forEach(this.doItemWalk());
+		node.conditions.forEach(this.doItemWalk());
 	}
 
 	protected walkWithNode(node: WithNode): void {
@@ -549,6 +581,14 @@ export class SqlAstWalker extends BaseWalker {
 		}
 	}
 
+	protected walkSetColumnReferenceNode(node: SetColumnReferenceNode): void {
+
+	}
+
+	protected walkSetItemNode(node: SetItemNode): void {
+
+	}
+
 	protected walkSubSelectNode(node: SubSelectNode): void {
 		this.sb += `(`;
 		this.walk(node.query);
@@ -570,6 +610,19 @@ export class SqlAstWalker extends BaseWalker {
 			this.walk(node.expression);
 			this.sb += ` `;
 			this.sb += node.operator;
+		}
+	}
+
+	protected walkUpdateCommandNode(node: UpdateCommandNode): void {
+		this.sb += `UPDATE `;
+		this.walk(node.table);
+		this.sb += ` SET `;
+		node.setItems.forEach(this.doListWalk());
+		if (node.fromItems.length > 0) {
+			node.fromItems.forEach(this.doListWalk());
+		}
+		if (node.conditions.length > 0) {
+			node.conditions.forEach(this.doListWalk());
 		}
 	}
 

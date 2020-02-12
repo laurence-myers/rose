@@ -200,6 +200,14 @@ export abstract class QueryTable {
 	}
 }
 
+export type TableColumns<T extends QueryTable> = {
+	[K in Exclude<keyof T, '$table' | '$tableAlias'>]: T[K] extends ColumnMetamodel<infer U> ? U : never;
+}
+
+export type TableColumnsForUpdateCommand<T extends QueryTable> = {
+	[K in keyof TableColumns<T>]: ParameterOrValueExpressionNode;
+}
+
 export function getTableNameFromColumn(columnMetamodel: ColumnMetamodel<any>): string {
 	return columnMetamodel.table.name;
 }
