@@ -2,9 +2,9 @@ import { Clone, DefaultMap } from "../../lang";
 import { AliasedExpressionNode, BooleanExpression, DeleteCommandNode, TableReferenceNode } from "../ast";
 import { QueryTable } from "../metamodel";
 import { GeneratedQuery, PreparedQueryNonReturning } from "../preparedQuery";
-import { SqlAstWalker } from "../walker";
 import { Queryable } from "../../execution/execution";
 import { aliasTable } from "../dsl/core";
+import { SqlAstWalker } from "../walkers/sqlAstWalker";
 
 export class DeleteQueryBuilder<TParams> {
 	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);

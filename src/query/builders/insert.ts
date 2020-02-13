@@ -9,9 +9,9 @@ import {
 import { QueryTable, TableColumnsForUpdateCommand } from "../metamodel";
 import { aliasTable } from "../dsl";
 import { GeneratedQuery, PreparedQueryNonReturning } from "../preparedQuery";
-import { SqlAstWalker } from "../walker";
 import { Queryable } from "../../execution/execution";
 import { InvalidInsertError } from "../../errors";
+import { SqlAstWalker } from "../walkers/sqlAstWalker";
 
 export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends TableColumnsForUpdateCommand<TQTable>, TParams> {
 	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);

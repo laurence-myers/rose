@@ -15,11 +15,12 @@ import { QuerySelectorProcessor } from "../metadata";
 import { ColumnMetamodel, QueryTable, TableMetamodel } from "../metamodel";
 import { UnsupportedOperationError } from "../../errors";
 import { Clone, DefaultMap } from "../../lang";
-import { RectifyingWalker, SqlAstWalker } from "../walker";
 import { Queryable } from "../../execution/execution";
 import { MappedQuerySelector } from "../typeMapping";
 import { GeneratedQuery, PreparedQuery } from "../preparedQuery";
 import { aliasTable } from "../dsl/core";
+import { SqlAstWalker } from "../walkers/sqlAstWalker";
+import { RectifyingWalker } from "../walkers/rectifyingWalker";
 
 export type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<any>;
 
