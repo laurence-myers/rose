@@ -1,6 +1,3 @@
-import "reflect-metadata";
-
-
 import {
 	BooleanBinaryOperationNode,
 	BooleanUnaryOperationNode,
