@@ -27,7 +27,7 @@ import {
 	UpdateCommandNode,
 	WithNode
 } from "../ast";
-import { assertNever, deepFreeze, DefaultMap } from "../../lang";
+import { assertNever, DefaultMap } from "../../lang";
 import { UnsupportedOperationError } from "../../errors";
 import { BaseWalker } from "./baseWalker";
 

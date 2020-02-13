@@ -6,8 +6,8 @@ import {
 	TableReferenceNode,
 	UpdateCommandNode
 } from "../ast";
-import { QueryTable, TableColumns, TableColumnsForUpdateCommand } from "../metamodel";
-import { aliasTable, col } from "../dsl";
+import { QueryTable, TableColumnsForUpdateCommand } from "../metamodel";
+import { aliasTable } from "../dsl";
 import { GeneratedQuery, PreparedQueryNonReturning } from "../preparedQuery";
 import { Queryable } from "../../execution/execution";
 import { SqlAstWalker } from "../walkers/sqlAstWalker";
