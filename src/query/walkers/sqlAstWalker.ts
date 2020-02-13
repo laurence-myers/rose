@@ -36,18 +36,22 @@ interface PreparedQueryData {
 	parameterGetters: Array<(params: Object) => any>;
 }
 
-const JOIN_TEXT_MAP = deepFreeze(new Map([
-	['inner', 'INNER'],
-	['left', 'LEFT OUTER'],
-	['right', 'RIGHT OUTER'],
-	['full', 'FULL OUTER'],
-	['cross', 'CROSS']
-]));
+const JOIN_TEXT_MAP: {
+	[K in JoinNode['joinType']]: string;
+} = {
+	'inner': 'INNER',
+	'left': 'LEFT OUTER',
+	'right': 'RIGHT OUTER',
+	'full': 'FULL OUTER',
+	'cross': 'CROSS'
+};
 
-const BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP = deepFreeze(new Map([
-	['and', 'AND'],
-	['or', 'OR']
-]));
+const BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP: {
+	[K in BooleanExpressionGroupNode['operator']]: string;
+} = {
+	'and': 'AND',
+	'or': 'OR'
+};
 
 /**
  * Converts an AST to a SQL string.
@@ -80,10 +84,7 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkBooleanExpressionGroupNode(node: BooleanExpressionGroupNode): void {
-		const operator = BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP.get(node.operator);
-		if (!operator) {
-			throw new UnsupportedOperationError(`Unrecognised boolean expression group operator: "${ node.operator }"`);
-		}
+		const operator = BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP[node.operator];
 		this.sb += `(`;
 		node.expressions.forEach((node: BooleanExpression, index: number): void => {
 			if (index > 0) {
@@ -151,10 +152,7 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkJoinNode(node: JoinNode): void {
-		const joinText = JOIN_TEXT_MAP.get(node.joinType);
-		if (!joinText) {
-			throw new UnsupportedOperationError(`Unrecognised join type: ${ node.joinType }`);
-		}
+		const joinText = JOIN_TEXT_MAP[node.joinType];
 		if (node.joinType == 'cross' && (node.on || (node.using && node.using.length > 0))) {
 			throw new UnsupportedOperationError(`Cross joins cannot specify "on" or "using" conditions.`);
 		}
