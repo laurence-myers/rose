@@ -2,9 +2,10 @@ import { QAgencies, QLocations, QUsers, TLocations, TUsers } from "../fixtures";
 import { lower, upper } from "../../src/query/postgresql/functions/string/sql";
 import { count } from "../../src/query/postgresql/functions/aggregate/general";
 import { deepFreeze } from "../../src/lang";
-import { deleteFrom, select, update } from "../../src/query/dsl/commands";
+import { deleteFrom, insert, select, update } from "../../src/query/dsl/commands";
 import { selectExpression, selectNestedMany, subSelect } from "../../src/query/dsl/select";
-import { and, col, constant, not, or, param, ParamsWrapper } from "../../src/query/dsl/core";
+import { and, col, constant, not, or, ParamsWrapper } from "../../src/query/dsl/core";
+import { TableColumns, TableColumnsForUpdateCommand } from "../../src/query/metamodel";
 import assert = require('assert');
 
 describe("Query DSL", function () {
@@ -533,10 +534,12 @@ describe("Query DSL", function () {
 
 			// Verify
 			const expected = {
-				sql: `DELETE FROM "Users" as "t1" WHERE "t1"."id" = 123`,
-				parameters: []
+				sql: `DELETE FROM "Users" as "t1" WHERE "t1"."id" = $1`,
+				parameters: [
+					123
+				]
 			};
-			assert.notStrictEqual(actual, expected);
+			assert.deepEqual(actual, expected);
 		});
 
 		xit(`supports "WITH" (CTEs)`, function () {});
@@ -548,8 +551,8 @@ describe("Query DSL", function () {
 		xit(`supports returning a selection`, function () {});
 	});
 
-	describe(`UPDATE commands`, () => {
-		it(`supports updating a table with simple values`, async () => {
+	describe(`UPDATE commands`, function () {
+		it(`supports updating a table with simple values`, function () {
 			// Set up
 			interface Params {
 				name: string;
@@ -557,7 +560,7 @@ describe("Query DSL", function () {
 			const paramsWrapper = new ParamsWrapper<Params>();
 			const query = update<TUsers, Params>(QUsers)
 				.set({
-					name: constant(123)
+					name: upper(paramsWrapper.get((p) => p.name))
 				})
 				.where(QUsers.id.eq(constant(123)));
 
@@ -568,10 +571,48 @@ describe("Query DSL", function () {
 
 			// Verify
 			const expected = {
-				sql: `UPDATE "Users" as "t1" SET "name" = UPPER('fred') WHERE "t1"."id" = 123`,
-				parameters: ['fred']
+				sql: `UPDATE "Users" as "t1" SET "name" = upper($1) WHERE "t1"."id" = $2`,
+				parameters: ['fred', 123]
 			};
-			assert.notStrictEqual(actual, expected);
+			assert.deepEqual(actual, expected);
+		});
+	});
+
+	describe(`INSERT commands`, () => {
+		it(`supports inserting a single row`, function () {
+			// Set up
+			interface Params extends TableColumns<TUsers> {
+
+			}
+
+			interface InsertRow extends TableColumnsForUpdateCommand<TUsers> {
+
+			}
+			const paramsWrapper = new ParamsWrapper<Params>();
+			const query = insert<TUsers, InsertRow, Params>(QUsers)
+				.insert({
+					// NOTE: for this test, property names should not be in alphabetical order, to verify that
+					// `insert()` explicitly sorts them.
+					id: paramsWrapper.get((p) => p.id),
+					name: paramsWrapper.get((p) => p.name),
+					deletedAt: paramsWrapper.get((p) => p.deletedAt),
+					locationId: paramsWrapper.get((p) => p.locationId)
+				});
+
+			// Execute
+			const actual = query.toSql({
+				id: 123,
+				name: 'Fred',
+				deletedAt: null,
+				locationId: 456
+			});
+
+			// Verify
+			const expected = {
+				sql: `INSERT INTO "Users" as "t1" ("deletedAt", "id", "locationId", "name") VALUES ($1, $2, $3, $4)`,
+				parameters: [null, 123, 456, 'Fred'] // In order of column name (sorted alphabetically)
+			};
+			assert.deepEqual(actual, expected);
 		});
 	});
 });

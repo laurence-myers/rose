@@ -7,6 +7,7 @@ module.exports = {
     ],
     parserOptions:  {
         ecmaVersion: 2018, // Allows for the parsing of modern ECMAScript features
+        project: 'tsconfig.json',
         sourceType: 'module', // Allows for the use of imports
     },
     // extends: [
@@ -15,17 +16,18 @@ module.exports = {
     //     'plugin:@typescript-eslint/recommended',
     // ],
     rules: {
-        '@typescript-eslint/type-annotation-spacing': 1,
-        'no-multiple-empty-lines': 1,
-        'no-multi-spaces': 1,
+        '@typescript-eslint/type-annotation-spacing': 'warn',
+        '@typescript-eslint/no-for-in-array': 'error',
+        'no-multiple-empty-lines': 'warn',
+        'no-multi-spaces': 'warn',
         'object-curly-spacing': [
-            1,
+            'warn',
             'always'
         ],
         'template-curly-spacing': [
-            1,
+            'warn',
             'always'
         ],
-        'unused-imports/no-unused-imports-ts': 1,
+        'unused-imports/no-unused-imports-ts': 'warn',
     }
 };

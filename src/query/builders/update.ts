@@ -44,12 +44,12 @@ export class UpdateQueryBuilder<TQTable extends QueryTable, TParams> {
 
 	@Clone()
 	set(updates: AtLeastOne<TableColumnsForUpdateCommand<TQTable>>): this {
-		for (const column in Object.keys(updates)) {
+		for (const column of Object.keys(updates)) {
 			const expression: ParameterOrValueExpressionNode = (updates as any)[column];
 			this.queryAst.setItems.push({
 				type: 'setItemNode',
 				column: {
-					type: 'setColumnReferenceNode',
+					type: 'simpleColumnReferenceNode',
 					columnName: column,
 				},
 				expression,

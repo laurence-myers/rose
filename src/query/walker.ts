@@ -11,6 +11,7 @@ import {
 	ExpressionListNode,
 	FunctionExpressionNode,
 	GroupByExpressionNode,
+	InsertCommandNode,
 	JoinNode,
 	LimitOffsetNode,
 	LiteralNode,
@@ -18,8 +19,8 @@ import {
 	NotExpressionNode,
 	OrderByExpressionNode,
 	SelectCommandNode,
-	SetColumnReferenceNode,
 	SetItemNode,
+	SimpleColumnReferenceNode,
 	SubSelectNode,
 	TableReferenceNode,
 	UnaryOperationNode,
@@ -55,6 +56,8 @@ export abstract class BaseWalker {
 
 	protected abstract walkGroupByExpressionNode(node: GroupByExpressionNode): void;
 
+	protected abstract walkInsertCommandNode(node: InsertCommandNode): void;
+
 	protected abstract walkJoinNode(node: JoinNode): void;
 
 	protected abstract walkLimitOffsetNode(node: LimitOffsetNode): void;
@@ -69,7 +72,7 @@ export abstract class BaseWalker {
 
 	protected abstract walkSelectCommandNode(node: SelectCommandNode): void;
 
-	protected abstract walkSetColumnReferenceNode(node: SetColumnReferenceNode): void;
+	protected abstract walkSimpleColumnReferenceNode(node: SimpleColumnReferenceNode): void;
 
 	protected abstract walkSetItemNode(node: SetItemNode): void;
 
@@ -112,6 +115,9 @@ export abstract class BaseWalker {
 			case "groupByExpressionNode":
 				this.walkGroupByExpressionNode(node);
 				break;
+			case "insertCommandNode":
+				this.walkInsertCommandNode(node);
+				break;
 			case "joinNode":
 				this.walkJoinNode(node);
 				break;
@@ -133,11 +139,11 @@ export abstract class BaseWalker {
 			case "selectCommandNode":
 				this.walkSelectCommandNode(node);
 				break;
-			case "setColumnReferenceNode":
-				this.walkSetColumnReferenceNode(node);
-				break;
 			case "setItemNode":
 				this.walkSetItemNode(node);
+				break;
+			case "simpleColumnReferenceNode":
+				this.walkSimpleColumnReferenceNode(node);
 				break;
 			case "subSelectNode":
 				this.walkSubSelectNode(node);
@@ -201,6 +207,14 @@ export class SkippingWalker extends BaseWalker {
 		this.walk(node.expression);
 	}
 
+	protected walkInsertCommandNode(node: InsertCommandNode): void {
+		this.walk(node.table);
+		node.columns.forEach(this.doItemWalk());
+		for (const values of node.values) {
+			values.forEach(this.doItemWalk());
+		}
+	}
+
 	protected walkLimitOffsetNode(node: LimitOffsetNode): void {
 	}
 
@@ -239,11 +253,11 @@ export class SkippingWalker extends BaseWalker {
 		node.grouping.forEach(this.doItemWalk());
 	}
 
-	protected walkSetColumnReferenceNode(node: SetColumnReferenceNode): void {
-
+	protected walkSetItemNode(node: SetItemNode): void {
 	}
 
-	protected walkSetItemNode(node: SetItemNode): void {
+	protected walkSimpleColumnReferenceNode(node: SimpleColumnReferenceNode): void {
+
 	}
 
 	protected walkSubSelectNode(node: SubSelectNode): void {
@@ -471,6 +485,29 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += ')';
 	}
 
+	protected walkInsertCommandNode(node: InsertCommandNode): void {
+		this.sb += `INSERT INTO `;
+		this.walk(node.table);
+		if (node.columns.length > 0) {
+			this.sb += ' (';
+			if (node.columns.length > 0) {
+				node.columns.forEach(this.doListWalk());
+			}
+			this.sb += ')';
+		}
+		if (node.values.length > 0) {
+			this.sb += ` VALUES `;
+			node.values.forEach((values, index) => {
+				if (index > 0) {
+					this.sb += `, `;
+				}
+				this.sb += '(';
+				values.forEach(this.doListWalk());
+				this.sb += ')';
+			});
+		}
+	}
+
 	protected walkLimitOffsetNode(node: LimitOffsetNode): void {
 		this.sb += 'LIMIT ';
 		this.walk(node.limit);
@@ -581,12 +618,16 @@ export class SqlAstWalker extends BaseWalker {
 		}
 	}
 
-	protected walkSetColumnReferenceNode(node: SetColumnReferenceNode): void {
-
+	protected walkSetItemNode(node: SetItemNode): void {
+		this.walk(node.column);
+		this.sb += ` = `;
+		this.walk(node.expression);
 	}
 
-	protected walkSetItemNode(node: SetItemNode): void {
-
+	protected walkSimpleColumnReferenceNode(node: SimpleColumnReferenceNode): void {
+		this.sb += `"`;
+		this.sb += node.columnName;
+		this.sb += `"`;
 	}
 
 	protected walkSubSelectNode(node: SubSelectNode): void {
@@ -622,6 +663,7 @@ export class SqlAstWalker extends BaseWalker {
 			node.fromItems.forEach(this.doListWalk());
 		}
 		if (node.conditions.length > 0) {
+			this.sb += " WHERE ";
 			node.conditions.forEach(this.doListWalk());
 		}
 	}

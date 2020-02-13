@@ -273,14 +273,14 @@ export interface DeleteCommandNode {
 	conditions: BooleanExpression[];
 }
 
-export interface SetColumnReferenceNode {
-	type: 'setColumnReferenceNode';
+export interface SimpleColumnReferenceNode {
+	type: 'simpleColumnReferenceNode';
 	columnName: string;
 }
 
 export interface SetItemNode {
 	type: 'setItemNode';
-	column: SetColumnReferenceNode;
+	column: SimpleColumnReferenceNode;
 	expression: ParameterOrValueExpressionNode;
 }
 
@@ -303,7 +303,36 @@ export interface UpdateCommandNode {
 	conditions: BooleanExpression[];
 }
 
-export type AnyCommandNode = SelectCommandNode | DeleteCommandNode | UpdateCommandNode;
+/*
+[ WITH [ RECURSIVE ] with_query [, ...] ]
+INSERT INTO table_name [ AS alias ] [ ( column_name [, ...] ) ]
+    [ OVERRIDING { SYSTEM | USER} VALUE ]
+    { DEFAULT VALUES | VALUES ( { expression | DEFAULT } [, ...] ) [, ...] | query }
+    [ ON CONFLICT [ conflict_target ] conflict_action ]
+    [ RETURNING * | output_expression [ [ AS ] output_name ] [, ...] ]
+
+where conflict_target can be one of:
+
+    ( { index_column_name | ( index_expression ) } [ COLLATE collation ] [ opclass ] [, ...] ) [ WHERE index_predicate ]
+    ON CONSTRAINT constraint_name
+
+and conflict_action is one of:
+
+    DO NOTHING
+    DO UPDATE SET { column_name = { expression | DEFAULT } |
+                    ( column_name [, ...] ) = [ ROW ] ( { expression | DEFAULT } [, ...] ) |
+                    ( column_name [, ...] ) = ( sub-SELECT )
+                  } [, ...]
+              [ WHERE condition ]
+*/
+export interface InsertCommandNode {
+	type: 'insertCommandNode';
+	table: FromItemNode;
+	columns: SimpleColumnReferenceNode[];
+	values: ParameterOrValueExpressionNode[][];
+}
+
+export type AnyCommandNode = SelectCommandNode | DeleteCommandNode | UpdateCommandNode | InsertCommandNode;
 
 export type AstNode =
 	| AnyCommandNode
@@ -319,5 +348,5 @@ export type AstNode =
 	| ExpressionListNode
 	| GroupByExpressionNode
 	| WithNode
-	| SetColumnReferenceNode
+	| SimpleColumnReferenceNode
 	| SetItemNode;
