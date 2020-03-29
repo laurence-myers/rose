@@ -2,23 +2,50 @@
 import { ColumnMetamodel, QueryTable, TableMetamodel, deepFreeze } from "rose";
 
 export class TFooTable extends QueryTable {
-	constructor($tableAlias? : string) { super(new TableMetamodel("FooTable", $tableAlias)); }
+	constructor($tableAlias? : string) { super(new TableMetamodel("foo_table", $tableAlias)); }
 
 	column1 = new ColumnMetamodel<number>(this.$table, "column_1");
-	column2 = new ColumnMetamodel<number | null>(this.$table, "column_2");
-	column3 = new ColumnMetamodel<string>(this.$table, "column_3");
-	column4 = new ColumnMetamodel<string | null>(this.$table, "column_4");
-	column5 = new ColumnMetamodel<Date>(this.$table, "column_5");
-	column6 = new ColumnMetamodel<Date | null>(this.$table, "column_6");
+	column2 = new ColumnMetamodel<number>(this.$table, "column_2");
+	column3 = new ColumnMetamodel<number | null>(this.$table, "column_3");
+	column4 = new ColumnMetamodel<number | null>(this.$table, "column_4");
+	column5 = new ColumnMetamodel<string>(this.$table, "column_5");
+	column6 = new ColumnMetamodel<string>(this.$table, "column_6");
+	column7 = new ColumnMetamodel<string | null>(this.$table, "column_7");
+	column8 = new ColumnMetamodel<string | null>(this.$table, "column_8");
+	column9 = new ColumnMetamodel<Date>(this.$table, "column_9");
+	column10 = new ColumnMetamodel<Date>(this.$table, "column_10");
+	column11 = new ColumnMetamodel<Date | null>(this.$table, "column_11");
+	column12 = new ColumnMetamodel<Date | null>(this.$table, "column_12");
 }
 
 export const QFooTable = deepFreeze(new TFooTable());
 
 export interface FooTableRow {
 	column_1: number;
-	column_2: number | null;
-	column_3: string;
-	column_4: string | null;
-	column_5: Date;
-	column_6: Date | null;
+	column_2: number;
+	column_3: number | null;
+	column_4: number | null;
+	column_5: string;
+	column_6: string;
+	column_7: string | null;
+	column_8: string | null;
+	column_9: Date;
+	column_10: Date;
+	column_11: Date | null;
+	column_12: Date | null;
+}
+
+export interface FooTableInsertRow {
+	column_1: number;
+	column_2?: number;
+	column_3?: number | null;
+	column_4?: number | null;
+	column_5: string;
+	column_6?: string;
+	column_7?: string | null;
+	column_8?: string | null;
+	column_9: Date;
+	column_10?: Date;
+	column_11?: Date | null;
+	column_12?: Date | null;
 }

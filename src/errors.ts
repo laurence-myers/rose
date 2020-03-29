@@ -2,6 +2,10 @@ export class RoseError extends Error {
 
 }
 
+export class CodeGeneratorError extends RoseError {
+
+}
+
 export class UnsupportedOperationError extends RoseError {
 
 }

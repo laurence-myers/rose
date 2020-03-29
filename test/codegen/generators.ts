@@ -12,20 +12,25 @@ describe(`Code generators`, () => {
 			return fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
 		}
 
+		function* generateData(counter: () => string) {
+			for (const type of ['int', 'text', 'timestamptz']) {
+				for (const isNullable of [false, true]) {
+					for (const hasDefault of [false, true]) { // TODO: test "hasDefault" of "true"
+						yield new ColumnMetadata(counter(), type, isNullable, hasDefault);
+					}
+				}
+			}
+		}
+
 		it(`should support integer, string, and date column types, with nulls`, async () => {
 			// Set up
-			const tableMetadata = new TableMetadata(`FooTable`);
+			const tableMetadata = new TableMetadata(`public`, `foo_table`);
 			let count = 0;
 			const col = () => `column_${ ++count }`;
 
-			tableMetadata.columns.push(
-				new ColumnMetadata(col(), `int`, false),
-				new ColumnMetadata(col(), `int`, true),
-				new ColumnMetadata(col(), `text`, false),
-				new ColumnMetadata(col(), `text`, true),
-				new ColumnMetadata(col(), `timestamptz`, false),
-				new ColumnMetadata(col(), `timestamptz`, true),
-			);
+			for (const data of generateData(col)) {
+				tableMetadata.columns.push(data);
+			}
 
 			// Execute
 			const result = generateTableCode(tableMetadata);
