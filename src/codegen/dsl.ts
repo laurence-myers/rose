@@ -1,13 +1,21 @@
 import {
 	ArrowFunctionExpressionNode,
 	BodyNode,
+	ClassConstructorNode,
+	ClassConstructorParameterNode,
+	ClassNode,
+	ClassPropertyNode,
+	CommentNode,
 	FunctionCallNode,
 	FunctionExpressionNode,
 	GroupedExpressionNode,
 	IdentifierNode,
+	ImportNode,
 	InterfaceNode,
 	InterfacePropertyNode,
+	LiteralNode,
 	ModuleNode,
+	NamedImportNode,
 	NodeType,
 	ObjectNode,
 	ObjectPropertyNode,
@@ -38,6 +46,47 @@ export function body(statements: BodyNode['statements']): BodyNode {
 	return {
 		type: NodeType.Body,
 		statements
+	};
+}
+
+export function classConstr(parameters: ClassConstructorNode['parameters'], body: ClassConstructorNode['body']): ClassConstructorNode {
+	return {
+		type: NodeType.ClassConstructor,
+		parameters,
+		body
+	};
+}
+
+export function classConstrParam(name: ClassConstructorParameterNode['name'], options: Pick<ClassConstructorParameterNode, Exclude<keyof ClassConstructorParameterNode, 'type' | 'name'>> = {}): ClassConstructorParameterNode {
+	return {
+		type: NodeType.ClassConstructorParameterNode,
+		name,
+		...options
+	};
+}
+
+export function classDecl(name: ClassNode['name'], properties: ClassNode['properties'], options: Pick<ClassNode, 'constructor_' | 'exported' | 'extends' | 'implements'> = {}): ClassNode {
+	return {
+		type: NodeType.Class,
+		name,
+		properties,
+		...options
+	};
+}
+
+export function classProp(name: ClassPropertyNode['name'], options: Pick<ClassPropertyNode, Exclude<keyof ClassPropertyNode, 'type' | 'name'>>): ClassPropertyNode {
+	return {
+		type: NodeType.ClassProperty,
+		name,
+		...options
+	};
+}
+
+export function comment(text: CommentNode['text'], commentType: CommentNode['commentType'] = 'line'): CommentNode {
+	return {
+		type: NodeType.Comment,
+		commentType,
+		text
 	};
 }
 
@@ -89,11 +138,54 @@ export function ifaceProp(name: InterfacePropertyNode['name'], annotation: Inter
 	};
 }
 
-export function modl(imports: ModuleNode['imports'], body: ModuleNode['body']): ModuleNode {
+export function imp(namedItems: ImportNode['namedItems'], from: ImportNode['from']): ImportNode {
+	return {
+		type: NodeType.Import,
+		importType: 'named',
+		from,
+		namedItems,
+	};
+}
+
+export function impAll(from: ImportNode['from'], alias: ImportNode['alias']): ImportNode {
+	return {
+		type: NodeType.Import,
+		importType: 'all',
+		from,
+		alias
+	};
+}
+
+export function impDef(from: ImportNode['from'], alias: ImportNode['alias']): ImportNode {
+	return {
+		type: NodeType.Import,
+		importType: 'default',
+		from,
+		alias
+	};
+}
+
+export function lit(value: LiteralNode['value']): LiteralNode {
+	return {
+		type: NodeType.Literal,
+		value
+	};
+}
+
+export function modl(imports: ModuleNode['imports'], body: ModuleNode['body'], header?: ModuleNode['header']): ModuleNode {
 	return {
 		type: NodeType.Module,
 		imports,
-		body
+		body,
+		header
+	};
+}
+
+export function namedImport(name: NamedImportNode['name'], alias?: NamedImportNode['alias']): NamedImportNode {
+	return {
+		type: NodeType.NamedImport,
+		name,
+		alias
 	};
 }
 

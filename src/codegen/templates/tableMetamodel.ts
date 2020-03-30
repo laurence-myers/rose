@@ -1,34 +1,93 @@
 import { ColumnMetadata, TableMetadata } from "../dbmetadata";
-import { mmap } from "../helpers";
 import { getColumnTypeScriptType } from "./common";
+import {
+	anno,
+	body,
+	classConstr,
+	classConstrParam,
+	classDecl,
+	classProp,
+	comment,
+	funcCall,
+	id,
+	imp,
+	lit,
+	modl,
+	namedImport,
+	propLookup,
+	stmt,
+	varDecl
+} from "../dsl";
+import { CodegenAstWalker } from "../walker";
 
 function getColumnMetamodelName(column: ColumnMetadata): string {
 	return `ColumnMetamodel<${ getColumnTypeScriptType(column) }>`;
 }
 
-function getColumnMetamodelString(column: ColumnMetadata): string {
-	const escapedColumnName = column.name.replace(/"/g, '\"');
-	return `${ getColumnMetamodelName(column) }(this.$table, "${ escapedColumnName }")`;
+function escapeColumnName(column: ColumnMetadata): string {
+	return column.name.replace(/'/g, '\\\'');
 }
 
-export function TableMetamodelTemplate(table: TableMetadata) {
-	const allImports = [
-		'ColumnMetamodel',
-		'deepFreeze',
-		'QueryTable',
-		'TableMetamodel',
-	];
-	allImports.sort();
-	return `// Generated file; do not manually edit, as your changes will be overwritten!
-import { ${ allImports.join(', ') } } from "rose";
-
-export class T${ table.niceName } extends QueryTable {
-	constructor($tableAlias? : string) { super(new TableMetamodel("${ table.name }", $tableAlias)); }
-
-${ mmap(table.columns, (col: ColumnMetadata) => 
-		`	${ col.niceName } = new ${ getColumnMetamodelString(col) };`, '\n') }
-}
-
-export const Q${ table.niceName } = deepFreeze(new T${ table.niceName }());
-`;
+export function TableMetamodelTemplate(table: TableMetadata): string {
+	const rootNode = modl([
+			imp([
+				'ColumnMetamodel',
+				'deepFreeze',
+				'QueryTable',
+				'TableMetamodel',
+			].sort()
+				.map((name) => namedImport(name)), 'rose')
+		], body([
+			stmt(
+				classDecl(
+					'T' + table.niceName,
+					table.columns.map((col) => classProp(col.niceName, {
+						expression: funcCall(
+							id('new ' + getColumnMetamodelName(col)),
+							[
+								propLookup(
+									id('this'),
+									'$table'
+								),
+								lit(`'${ escapeColumnName(col) }'`)
+							]
+						)
+					})),
+					{
+						exported: true,
+						extends: [id('QueryTable')],
+						constructor_: classConstr([
+							classConstrParam('$tableAlias', {
+								annotation: anno('string'),
+								optional: true,
+							})
+						], body([
+							stmt(funcCall(
+								id('super'),
+								[funcCall(
+									id('new TableMetamodel'),
+									[lit(`'${ table.name }'`), id(`$tableAlias`)]
+								)]
+							))
+						]))
+					})
+			),
+			stmt(varDecl(
+				'const',
+				'Q' + table.niceName,
+				funcCall(
+					id('deepFreeze'),
+					[
+						funcCall(
+							id('new T' + table.niceName),
+							[]
+						)
+					]
+				),
+				true
+			))
+		]),
+		comment(`Generated file; do not manually edit, as your changes will be overwritten!`));
+	const walker = new CodegenAstWalker();
+	return walker.walk(rootNode);
 }

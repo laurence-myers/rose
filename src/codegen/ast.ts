@@ -3,7 +3,9 @@ export enum NodeType {
 	Body,
 	Class,
 	ClassConstructor,
+	ClassConstructorParameterNode,
 	ClassProperty,
+	Comment,
 	FunctionCall,
 	FunctionExpression,
 	GroupedExpression,
@@ -11,6 +13,7 @@ export enum NodeType {
 	Import,
 	Interface,
 	InterfaceProperty,
+	Literal,
 	Module,
 	NamedImport,
 	Object,
@@ -36,22 +39,45 @@ export interface BodyNode {
 
 export interface ClassConstructorNode {
 	type: NodeType.ClassConstructor;
+	parameters: ClassConstructorParameterNode[];
+	body: BodyNode;
+}
+
+export interface ClassConstructorParameterNode {
+	type: NodeType.ClassConstructorParameterNode;
+	name: string;
+	annotation?: TypeAnnotationNode;
+	optional?: boolean;
+	default_?: ExpressionNode;
+	visibility?: 'public' | 'protected' | 'private' | null;
+	readonly?: boolean;
 }
 
 export interface ClassPropertyNode {
 	type: NodeType.ClassProperty;
 	name: string;
 	annotation?: TypeAnnotationNode;
+	optional?: boolean;
 	expression?: ExpressionNode
+	visibility?: 'public' | 'protected' | 'private' | null;
+	readonly?: boolean;
 }
 
 export interface ClassNode {
 	type: NodeType.Class;
 	name: string;
-	extends?: string[];
-	implements?: string[];
+	exported?: boolean;
+	extends?: IdentifierNode[];
+	implements?: IdentifierNode[];
 	properties: ClassPropertyNode[];
-	constructor?: ClassConstructorNode;
+	//methods: ClassMethodNode[]; TODO
+	constructor_?: ClassConstructorNode;
+}
+
+export interface CommentNode {
+	type: NodeType.Comment;
+	commentType: 'line' | 'block';
+	text: string;
 }
 
 export type ExpressionNode = ArrowFunctionExpressionNode | FunctionCallNode | FunctionExpressionNode | ObjectNode | PropertyLookupNode | GroupedExpressionNode;
@@ -59,7 +85,7 @@ export type ExpressionNode = ArrowFunctionExpressionNode | FunctionCallNode | Fu
 export interface FunctionCallNode {
 	type: NodeType.FunctionCall;
 	identifier: FunctionExpressionNode | FunctionCallNode | GroupedExpressionNode | PropertyLookupNode | IdentifierNode;
-	arguments_: Array<ExpressionNode | IdentifierNode>;
+	arguments_: Array<ExpressionNode | IdentifierNode | LiteralNode>;
 }
 
 export interface FunctionExpressionNode {
@@ -83,7 +109,7 @@ export interface ImportNode {
 	type: NodeType.Import;
 	importType: 'all' | 'default' | 'named';
 	alias?: string;
-	namedItems?: IdentifierNode[];
+	namedItems?: NamedImportNode[];
 	from: string;
 }
 
@@ -100,8 +126,14 @@ export interface InterfaceNode {
 	properties: InterfacePropertyNode[];
 }
 
+export interface LiteralNode {
+	type: NodeType.Literal;
+	value: string;
+}
+
 export interface ModuleNode {
 	type: NodeType.Module;
+	header?: CommentNode;
 	imports: ImportNode[];
 	body: BodyNode;
 }
@@ -109,7 +141,7 @@ export interface ModuleNode {
 export interface NamedImportNode {
 	type: NodeType.NamedImport;
 	name: string;
-	alias: string;
+	alias?: string;
 }
 
 export interface ObjectNode {
@@ -144,7 +176,7 @@ export interface ReturnNode {
 
 export interface StatementNode {
 	type: NodeType.Statement;
-	statement: InterfaceNode | FunctionCallNode | FunctionExpressionNode | ReturnNode | VariableDeclarationNode;
+	statement: ClassNode | CommentNode | InterfaceNode | FunctionCallNode | FunctionExpressionNode | ReturnNode | VariableDeclarationNode;
 }
 
 export interface TypeAnnotationNode {
@@ -162,18 +194,21 @@ export interface VariableDeclarationNode {
 
 export type CodegenAstNode = (
 	| ArrowFunctionExpressionNode
-	// | ClassConstructorNode
-	// | ClassPropertyNode
-	// | ClassNode
 	| BodyNode
+	| ClassConstructorNode
+	| ClassConstructorParameterNode
+	| ClassNode
+	| ClassPropertyNode
+	| CommentNode
 	| ExpressionNode
 	| FunctionCallNode
 	| FunctionExpressionNode
 	| GroupedExpressionNode
 	| IdentifierNode
 	| ImportNode
-	| InterfacePropertyNode
 	| InterfaceNode
+	| InterfacePropertyNode
+	| LiteralNode
 	| ModuleNode
 	| NamedImportNode
 	| ObjectNode

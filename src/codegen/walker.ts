@@ -1,7 +1,12 @@
 import {
 	ArrowFunctionExpressionNode,
 	BodyNode,
+	ClassConstructorNode,
+	ClassConstructorParameterNode,
+	ClassNode,
+	ClassPropertyNode,
 	CodegenAstNode,
+	CommentNode,
 	FunctionCallNode,
 	FunctionExpressionNode,
 	GroupedExpressionNode,
@@ -9,6 +14,7 @@ import {
 	ImportNode,
 	InterfaceNode,
 	InterfacePropertyNode,
+	LiteralNode,
 	ModuleNode,
 	NamedImportNode,
 	NodeType,
@@ -23,9 +29,24 @@ import {
 } from "./ast";
 import { assertNever } from "../lang";
 import { isArray } from "util";
+import { CodeGeneratorError } from "../errors";
+
+enum Dent {
+	In,
+	Out,
+	None
+}
+
+enum NodeSeperator {
+	Space,
+	Comma,
+	Newline
+}
 
 export class CodegenAstWalker {
 	protected sb: string = '';
+	protected indentation: number = 0;
+	protected indentationString = '\t';
 
 	constructor() {
 	}
@@ -35,18 +56,41 @@ export class CodegenAstWalker {
 		return this.sb;
 	}
 
+	private newline(dentation?: Dent) {
+		this.sb += '\n';
+		switch (dentation) {
+			case Dent.In:
+				this.indentation++;
+				break;
+			case Dent.Out:
+				this.indentation--;
+				break;
+			case Dent.None:
+				return;
+			default:
+				break;
+		}
+		for (let i = 0; i < this.indentation; i++) {
+			this.sb += this.indentationString;
+		}
+	}
+
 	protected walkNode(node: CodegenAstNode) {
 		switch (node.type) {
 			case NodeType.ArrowFunctionExpression:
 				return this.walkArrowFunctionExpression(node);
 			case NodeType.Body:
 				return this.walkBody(node);
-			// case NodeType.Class:
-			// 	return this.walkClass(node);
-			// case NodeType.ClassConstructor:
-			// 	return this.walkClassConstructor(node);
-			// case NodeType.ClassProperty:
-			// 	return this.walkClassProperty(node);
+			case NodeType.Class:
+				return this.walkClass(node);
+			case NodeType.ClassConstructor:
+				return this.walkClassConstructor(node);
+			case NodeType.ClassConstructorParameterNode:
+				return this.walkClassConstructorParameterNode(node);
+			case NodeType.ClassProperty:
+				return this.walkClassProperty(node);
+			case NodeType.Comment:
+				return this.walkComment(node);
 			case NodeType.FunctionCall:
 				return this.walkFunctionCall(node);
 			case NodeType.FunctionExpression:
@@ -61,6 +105,8 @@ export class CodegenAstWalker {
 				return this.walkInterface(node);
 			case NodeType.InterfaceProperty:
 				return this.walkInterfaceProperty(node);
+			case NodeType.Literal:
+				return this.walkLiteral(node);
 			case NodeType.Module:
 				return this.walkModule(node);
 			case NodeType.NamedImport:
@@ -86,37 +132,140 @@ export class CodegenAstWalker {
 		}
 	}
 
-	protected walkNodes(nodes: CodegenAstNode[], seperator: string): void {
+	protected walkNodes(nodes: CodegenAstNode[], seperator: NodeSeperator): void {
 		for (let i = 0; i < nodes.length; i++) {
 			const node = nodes[i];
 			this.walkNode(node);
 			if (i < nodes.length - 1) {
-				this.sb += seperator;
+				switch (seperator) {
+					case NodeSeperator.Space:
+						this.sb += ' ';
+						break;
+					case NodeSeperator.Comma:
+						this.sb += ', ';
+						break;
+					case NodeSeperator.Newline:
+						this.newline();
+						break;
+					default:
+						throw assertNever(seperator);
+				}
 			}
 		}
 	}
 
 	private walkArrowFunctionExpression(node: ArrowFunctionExpressionNode) {
 		this.sb += '(';
-		this.walkNodes(node.parameters, ', ');
+		this.walkNodes(node.parameters, NodeSeperator.Comma);
 		this.sb += ') => ';
 		if (isArray(node.body)) {
-			this.sb += '{\n';
-			this.walkNodes(node.body as CodegenAstNode[], '\n');
-			this.sb += '\n}';
+			this.sb += '{';
+			this.newline(Dent.In);
+			this.walkNodes(node.body as CodegenAstNode[], NodeSeperator.Newline);
+			this.newline(Dent.Out);
+			this.sb += '}';
 		} else {
 			this.walkNode(node.body as CodegenAstNode);
 		}
 	}
 
 	private walkBody(node: BodyNode) {
-		this.walkNodes(node.statements, '\n');
+		this.walkNodes(node.statements, NodeSeperator.Newline);
+	}
+
+	private walkClass(node: ClassNode) {
+		if (node.exported) {
+			this.sb += 'export ';
+		}
+		this.sb += 'class ';
+		this.sb += node.name;
+		if (node.extends) {
+			this.sb += ' extends ';
+			this.walkNodes(node.extends, NodeSeperator.Comma);
+		}
+		if (node.implements) {
+			this.sb += ' implements ';
+			this.walkNodes(node.implements, NodeSeperator.Comma);
+		}
+		this.sb += ' {';
+		this.newline(Dent.In);
+		this.walkNodes(node.properties, NodeSeperator.Newline);
+		this.newline(Dent.None);
+		if (node.constructor_) {
+			this.newline();
+			this.walkNode(node.constructor_);
+		}
+		this.newline(Dent.Out);
+		this.sb += '}';
+		this.newline();
+	}
+
+	private walkClassConstructor(node: ClassConstructorNode) {
+		this.sb += 'constructor (';
+		this.walkNodes(node.parameters, NodeSeperator.Comma);
+		this.sb += ') {';
+		this.newline(Dent.In);
+		this.walkNode(node.body);
+		this.newline(Dent.Out);
+		this.sb += '}';
+		this.newline(Dent.None);
+	}
+
+	private processCommonClassProperty(node: ClassConstructorParameterNode | ClassPropertyNode) {
+		if (node.visibility) {
+			this.sb += node.visibility;
+			this.sb += ' ';
+		}
+		if (node.readonly) {
+			this.sb += 'readonly';
+			this.sb += ' ';
+		}
+		this.sb += node.name;
+		if (node.optional) {
+			this.sb += '?'
+		}
+		if (node.annotation) {
+			this.walkNode(node.annotation);
+		}
+	}
+
+	private walkClassConstructorParameterNode(node: ClassConstructorParameterNode) {
+		this.processCommonClassProperty(node);
+		if (node.default_) {
+			this.sb += ' = ';
+			this.walkNode(node.default_);
+		}
+	}
+
+	private walkClassProperty(node: ClassPropertyNode) {
+		this.processCommonClassProperty(node);
+		if (node.expression) {
+			this.sb += ' = ';
+			this.walkNode(node.expression);
+		}
+		this.sb += ';';
+	}
+
+	private walkComment(node: CommentNode) {
+		switch (node.commentType) {
+			case "block":
+				this.sb += '/* ';
+				this.sb += node.text;
+				this.sb += ' */';
+				break;
+			case "line":
+				this.sb += '// ';
+				this.sb += node.text;
+				break;
+			default:
+				throw assertNever(node.commentType);
+		}
 	}
 
 	private walkFunctionCall(node: FunctionCallNode) {
 		this.walkNode(node.identifier);
 		this.sb += '(';
-		this.walkNodes(node.arguments_, ', ');
+		this.walkNodes(node.arguments_, NodeSeperator.Comma);
 		this.sb += ')';
 	}
 
@@ -126,10 +275,12 @@ export class CodegenAstWalker {
 			this.sb += node.name;
 		}
 		this.sb += '(';
-		this.walkNodes(node.parameters, ', ');
-		this.sb += ') {\n';
-		this.walkNodes(node.body, '\n');
-		this.sb += '\n}';
+		this.walkNodes(node.parameters, NodeSeperator.Comma);
+		this.sb += ') {';
+		this.newline(Dent.In);
+		this.walkNodes(node.body, NodeSeperator.Newline);
+		this.newline(Dent.Out);
+		this.sb += '}';
 	}
 
 	protected walkGroupedExpression(node: GroupedExpressionNode) {
@@ -143,7 +294,32 @@ export class CodegenAstWalker {
 	}
 
 	private walkImport(node: ImportNode) {
-		throw new Error(`Not yet implemented`);
+		this.sb += 'import ';
+		switch (node.importType) {
+			case "all":
+			case "default":
+				if (!node.alias) {
+					throw new CodeGeneratorError(`"all" or "default" imports must have an alias`);
+				}
+				if (node.importType === 'all') { // silly, but TS complains of fallthrough if we rely on switch/case
+					this.sb += '* as ';
+				}
+				this.sb += node.alias;
+				break;
+			case "named":
+				if (!node.namedItems || node.namedItems.length === 0) {
+					throw new CodeGeneratorError(`"named" imports must have at least one named item`);
+				}
+				this.sb += '{ ';
+				this.walkNodes(node.namedItems, NodeSeperator.Comma);
+				this.sb += ' }';
+				break;
+			default:
+				throw assertNever(node.importType);
+		}
+		this.sb += ' from \'';
+		this.sb += node.from;
+		this.sb += '\';';
 	}
 
 	private walkInterface(node: InterfaceNode) {
@@ -152,31 +328,51 @@ export class CodegenAstWalker {
 		if (node.extends_ && node.extends_.length > 0) {
 			this.sb += node.extends_.join(', ');
 		}
-		this.sb += ' { ';
-		this.walkNodes(node.properties, ' ');
-		this.sb += ' }';
+		this.sb += ' {';
+		this.newline(Dent.In);
+		this.walkNodes(node.properties, NodeSeperator.Newline);
+		this.newline(Dent.Out);
+		this.sb += '}';
 	}
 
 	private walkInterfaceProperty(node: InterfacePropertyNode) {
 		this.sb += node.name;
-		this.sb += ': ';
 		this.walkNode(node.annotation);
 		this.sb += ';';
 	}
 
+	private walkLiteral(node: LiteralNode) {
+		this.sb += node.value;
+	}
+
 	private walkModule(node: ModuleNode) {
-		// this.walkNodes(node.imports);
+		if (node.header) {
+			this.walkNode(node.header);
+			this.newline();
+		}
+		this.walkNodes(node.imports, NodeSeperator.Newline);
+		if (node.imports.length > 0) {
+			this.newline();
+			this.newline();
+		}
 		this.walkNode(node.body);
+		this.newline();
 	}
 
 	private walkNamedImport(node: NamedImportNode) {
-		throw new Error(`Not yet implemented`);
+		this.sb += node.name;
+		if (node.alias) {
+			this.sb += ' as ';
+			this.sb += node.alias;
+		}
 	}
 
 	private walkObject(node: ObjectNode) {
-		this.sb += '{ ';
-		this.walkNodes(node.properties, ', ');
-		this.sb += ' }';
+		this.sb += '{';
+		this.newline(Dent.In);
+		this.walkNodes(node.properties, NodeSeperator.Newline);
+		this.newline(Dent.Out);
+		this.sb += '}';
 	}
 
 	private walkObjectProperty(node: ObjectPropertyNode) {
@@ -191,7 +387,6 @@ export class CodegenAstWalker {
 			this.sb += '?';
 		}
 		if (node.annotation) {
-			this.sb += ': ';
 			this.walkNode(node.annotation);
 		}
 		if (node.default_) {
@@ -217,6 +412,8 @@ export class CodegenAstWalker {
 	private walkStatement(node: StatementNode) {
 		this.walkNode(node.statement);
 		switch (node.statement.type) {
+			case NodeType.Class:
+			case NodeType.Comment:
 			case NodeType.FunctionExpression:
 			case NodeType.Interface: // TODO: omit semicolon for type declarations
 				break;
@@ -227,6 +424,7 @@ export class CodegenAstWalker {
 	}
 
 	private walkTypeAnnotation(node: TypeAnnotationNode) {
+		this.sb += ': ';
 		this.sb += node.annotation;
 	}
 

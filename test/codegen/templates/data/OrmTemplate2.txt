@@ -1,0 +1,14 @@
+const FooTableAllColumns = {
+	name: QFooTable.name
+	createdAt: QFooTable.createdAt
+};
+const FooTableDefaultQueries = {
+	getOne: (function () {
+		interface Params {
+			name: string;
+			createdAt: Date;
+		}
+		const P = new ParamsWrapper<Params>();
+		return select(FooTableAllColumns).where(and(QFooTable.name.eq(P.get((p) => p.name)), QFooTable.createdAt.eq(P.get((p) => p.createdAt))));
+	})()
+};
