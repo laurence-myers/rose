@@ -6,6 +6,7 @@ const FooTableDefaultQueries = {
 		interface Params {
 			id: number;
 		}
+
 		const P = new ParamsWrapper<Params>();
 		return select(FooTableAllColumns).where(QFooTable.id.eq(P.get((p) => p.id)));
 	})()

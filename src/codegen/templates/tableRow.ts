@@ -1,13 +1,18 @@
 import { TableMetadata } from "../dbmetadata";
-import { getColumnTypeScriptType, sanitizeTableName } from "./common";
+import { getColumnTypeScriptType } from "./common";
+import { anno, iface, ifaceProp } from "../dsl";
+import { astToString } from "../walker";
 
 export function TableRowTemplate(table: TableMetadata): string {
-	let sb: string = '';
-	sb += `export interface ${ table.niceName }Row {\n`;
-	for (let column of table.columns) {
-		const columnTsType = getColumnTypeScriptType(column);
-		sb += `\t${ column.name }: ${ columnTsType };\n`;
-	}
-	sb += `}\n`;
-	return sb;
+	return astToString(
+		iface(
+			table.niceName + 'Row',
+			table.columns.map((col) => ifaceProp(
+				col.name,
+				anno(getColumnTypeScriptType(col))
+			)),
+			[],
+			true
+		)
+	);
 }

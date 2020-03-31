@@ -43,16 +43,18 @@ enum NodeSeperator {
 	Newline
 }
 
-export class CodegenAstWalker {
+class CodegenAstWalker {
 	protected sb: string = '';
 	protected indentation: number = 0;
 	protected indentationString = '\t';
 
-	constructor() {
+	constructor(
+		protected readonly rootNode: CodegenAstNode
+	) {
 	}
 
-	walk(moduleNode: ModuleNode): string {
-		this.walkNode(moduleNode);
+	walk(): string {
+		this.walkNode(this.rootNode);
 		return this.sb;
 	}
 
@@ -323,6 +325,9 @@ export class CodegenAstWalker {
 	}
 
 	private walkInterface(node: InterfaceNode) {
+		if (node.exported) {
+			this.sb += 'export ';
+		}
 		this.sb += 'interface ';
 		this.sb += node.name;
 		if (node.extends_ && node.extends_.length > 0) {
@@ -333,10 +338,14 @@ export class CodegenAstWalker {
 		this.walkNodes(node.properties, NodeSeperator.Newline);
 		this.newline(Dent.Out);
 		this.sb += '}';
+		this.newline(Dent.None);
 	}
 
 	private walkInterfaceProperty(node: InterfacePropertyNode) {
 		this.sb += node.name;
+		if (node.optional) {
+			this.sb += '?';
+		}
 		this.walkNode(node.annotation);
 		this.sb += ';';
 	}
@@ -440,4 +449,9 @@ export class CodegenAstWalker {
 			this.walkNode(node.expression);
 		}
 	}
+}
+
+export function astToString(node: CodegenAstNode) {
+	const walker = new CodegenAstWalker(node);
+	return walker.walk();
 }

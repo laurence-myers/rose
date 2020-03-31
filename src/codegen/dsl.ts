@@ -121,20 +121,22 @@ export function id(name: InterfaceNode['name']): IdentifierNode {
 	};
 }
 
-export function iface(name: InterfaceNode['name'], properties: InterfaceNode['properties'], extends_?: InterfaceNode['extends_']): InterfaceNode {
+export function iface(name: InterfaceNode['name'], properties: InterfaceNode['properties'], extends_?: InterfaceNode['extends_'], exported?: InterfaceNode['exported']): InterfaceNode {
 	return {
 		type: NodeType.Interface,
 		name,
 		properties,
-		extends_
+		extends_,
+		exported
 	};
 }
 
-export function ifaceProp(name: InterfacePropertyNode['name'], annotation: InterfacePropertyNode['annotation']): InterfacePropertyNode {
+export function ifaceProp(name: InterfacePropertyNode['name'], annotation: InterfacePropertyNode['annotation'], optional?: InterfacePropertyNode['optional']): InterfacePropertyNode {
 	return {
 		type: NodeType.InterfaceProperty,
 		name,
-		annotation
+		annotation,
+		optional
 	};
 }
 

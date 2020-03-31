@@ -1,13 +1,19 @@
 import { TableMetadata } from "../dbmetadata";
 import { getColumnTypeScriptType } from "./common";
+import { astToString } from "../walker";
+import { anno, iface, ifaceProp } from "../dsl";
 
 export function TableInsertRowTemplate(table: TableMetadata): string {
-	let sb: string = '';
-	sb += `export interface ${ table.niceName }InsertRow {\n`;
-	for (let column of table.columns) {
-		const columnTsType = getColumnTypeScriptType(column);
-		sb += `\t${ column.name }${ column.isNullable || column.hasDefault ? '?' : '' }: ${ columnTsType };\n`;
-	}
-	sb += `}\n`;
-	return sb;
+	return astToString(
+		iface(
+			table.niceName + 'InsertRow',
+			table.columns.map((col) => ifaceProp(
+				col.name,
+				anno(getColumnTypeScriptType(col)),
+				col.isNullable || col.hasDefault
+			)),
+			[],
+			true
+		),
+	);
 }

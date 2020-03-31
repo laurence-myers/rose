@@ -18,7 +18,7 @@ import {
 	stmt,
 	varDecl
 } from "../dsl";
-import { CodegenAstWalker } from "../walker";
+import { astToString } from "../walker";
 
 function getColumnMetamodelName(column: ColumnMetadata): string {
 	return `ColumnMetamodel<${ getColumnTypeScriptType(column) }>`;
@@ -88,6 +88,5 @@ export function TableMetamodelTemplate(table: TableMetadata): string {
 			))
 		]),
 		comment(`Generated file; do not manually edit, as your changes will be overwritten!`));
-	const walker = new CodegenAstWalker();
-	return walker.walk(rootNode);
+	return astToString(rootNode);
 }

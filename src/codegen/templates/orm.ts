@@ -21,7 +21,7 @@ import {
 	varDecl
 } from "../dsl";
 import { InterfacePropertyNode, ObjectPropertyNode } from "../ast";
-import { CodegenAstWalker } from "../walker";
+import { astToString } from "../walker";
 
 function generateAllColumns(tableMetadata: TableMetadata) {
 	const niceTableName = sanitizeTableName(tableMetadata.name);
@@ -173,6 +173,5 @@ export function OrmTemplate(tableMetadata: TableMetadata) {
 		])
 	);
 
-	const walker = new CodegenAstWalker();
-	return walker.walk(moduleNode);
+	return astToString(moduleNode);
 }

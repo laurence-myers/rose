@@ -117,6 +117,7 @@ export interface InterfacePropertyNode {
 	type: NodeType.InterfaceProperty;
 	name: string;
 	annotation: TypeAnnotationNode;
+	optional?: boolean;
 }
 
 export interface InterfaceNode {
@@ -124,6 +125,7 @@ export interface InterfaceNode {
 	name: string;
 	extends_?: string[];
 	properties: InterfacePropertyNode[];
+	exported?: boolean;
 }
 
 export interface LiteralNode {
