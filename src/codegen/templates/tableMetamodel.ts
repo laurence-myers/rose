@@ -1,5 +1,5 @@
 import { ColumnMetadata, TableMetadata } from "../dbmetadata";
-import { getColumnTypeScriptType } from "./common";
+import { getColumnTypeScriptType, metamodelClassName, metamodelInstanceName } from "./common";
 import {
 	anno,
 	body,
@@ -40,7 +40,7 @@ export function TableMetamodelTemplate(table: TableMetadata): string {
 		], body([
 			stmt(
 				classDecl(
-					'T' + table.niceName,
+					metamodelClassName(table),
 					table.columns.map((col) => classProp(col.niceName, {
 						expression: funcCall(
 							id('new ' + getColumnMetamodelName(col)),
@@ -74,12 +74,12 @@ export function TableMetamodelTemplate(table: TableMetadata): string {
 			),
 			stmt(varDecl(
 				'const',
-				'Q' + table.niceName,
+				metamodelInstanceName(table),
 				funcCall(
 					id('deepFreeze'),
 					[
 						funcCall(
-							id('new T' + table.niceName),
+							id('new ' + metamodelClassName(table)),
 							[]
 						)
 					]

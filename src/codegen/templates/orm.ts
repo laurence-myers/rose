@@ -1,5 +1,5 @@
 import { ColumnMetadata, TableMetadata } from "../dbmetadata";
-import { getColumnTypeScriptType, sanitizeColumnName, sanitizeTableName } from "./common";
+import { allColumnsName, getColumnTypeScriptType, metamodelClassName, metamodelInstanceName, } from "./common";
 import { CodeGeneratorError } from "../../errors";
 import {
 	anno,
@@ -7,10 +7,12 @@ import {
 	body,
 	funcCall,
 	funcExpr,
-	gexpr,
 	id,
 	iface,
 	ifaceProp,
+	iife,
+	invokeMethod,
+	invokeMethodChain,
 	modl,
 	obj,
 	objProp,
@@ -24,46 +26,47 @@ import { InterfacePropertyNode, ObjectPropertyNode } from "../ast";
 import { astToString } from "../walker";
 
 function generateAllColumns(tableMetadata: TableMetadata) {
-	const niceTableName = sanitizeTableName(tableMetadata.name);
 	return varDecl(
 		'const',
-		niceTableName + 'AllColumns',
+		allColumnsName(tableMetadata),
 		obj(
 			tableMetadata.columns.map((column) => {
-				const niceColumnName = sanitizeColumnName(column.name);
-				return objProp(niceColumnName, propLookup(id('Q' + niceTableName), niceColumnName));
+				const niceColumnName = column.niceName;
+				return objProp(niceColumnName, propLookup(id(metamodelInstanceName(tableMetadata)), niceColumnName));
 			})
 		)
 	);
 }
 
-function primaryKeyToCriteria(niceTableName: string, property: InterfacePropertyNode) {
-	// Produces `QFooTable.id.eq(P.get((p) => p.id))`
-	return funcCall(
-		propLookup(
-			id('Q' + niceTableName),
-			property.name,
-			'eq'
-		),
+function getParameter(name: string) {
+	return invokeMethod(
+		id('P'),
+		'get',
 		[
-			funcCall(
-				propLookup(
-					id('P'),
-					'get'
-				),
-				[
-					arrowFunc(
-						[param('p')],
-						propLookup(id('p'), property.name)
-					)
-				]
+			arrowFunc(
+				[param('p')],
+				propLookup(id('p'), name)
 			)
 		]
 	);
 }
 
+function primaryKeyToCriteria(table: TableMetadata, property: InterfacePropertyNode) {
+	// Produces `QFooTable.id.eq(P.get((p) => p.id))`
+	return funcCall(
+		propLookup(
+			id(metamodelInstanceName(table)),
+			property.name,
+			'eq'
+		),
+		[
+			getParameter(property.name)
+		]
+	);
+}
+
 function primaryKeysToCriteria(table: TableMetadata, primaryKeys: InterfacePropertyNode[]) {
-	const criteria = primaryKeys.map((primaryKey) => primaryKeyToCriteria(table.niceName, primaryKey));
+	const criteria = primaryKeys.map((primaryKey) => primaryKeyToCriteria(table, primaryKey));
 	if (criteria.length > 1) {
 		return funcCall(
 			id('and'),
@@ -75,35 +78,41 @@ function primaryKeysToCriteria(table: TableMetadata, primaryKeys: InterfacePrope
 }
 
 function generateGetOne(table: TableMetadata): ObjectPropertyNode | undefined {
-	const primaryKeys = mapPrimaryKeys(table);
-	if (primaryKeys.length === 0) {
+	if (table.primaryKeys.length === 0) {
 		return undefined; // Can't look up a single row without a primary key.
 	}
+	const primaryKeys = mapPrimaryKeys(table);
 	const criteria = primaryKeysToCriteria(table, primaryKeys);
 	return objProp(
 		'getOne',
-		funcCall(
-			gexpr(funcExpr(
-				[],
-				[
-					stmt(iface('Params', primaryKeys)),
-					stmt(varDecl(
-						'const',
-						'P',
-						funcCall(id('new ParamsWrapper<Params>'), [])
-					)),
-					stmt(ret(
+		iife(
+			[
+				stmt(iface('Params', primaryKeys)),
+				stmt(varDecl(
+					'const',
+					'P',
+					funcCall(id('new ParamsWrapper<Params>'), [])
+				)),
+				stmt(ret(
+					invokeMethodChain(
 						funcCall(
-							propLookup(funcCall(
-								id('select'),
-								[id(table.niceName + 'AllColumns')]
-							), 'where'),
-							[criteria]
-						)
-					))
-				]
-			)),
-			[],
+							id(`select<${ allColumnsName(table) }, Params>`),
+							[id(allColumnsName(table))]
+						),
+						[
+							[
+								'where',
+								[criteria]
+							],
+							[
+								'prepare',
+								[]
+							]
+						],
+					)
+				))
+			],
+			'getOne'
 		)
 	);
 }
@@ -116,8 +125,51 @@ function generateInsertMany() {
 
 }
 
-function generateUpdateOne() {
+function generateUpdateOne(table: TableMetadata) {
+	if (table.primaryKeys.length === 0) {
+		return undefined; // Can't look up a single row without a primary key.
+	}
+	const primaryKeys = mapPrimaryKeys(table);
+	const criteria = primaryKeysToCriteria(table, primaryKeys);
 
+	return objProp(
+		'updateOne',
+		funcExpr(
+			[
+				param('updates', anno(`PartialTableColumns<${ metamodelClassName(table) }>`))
+			],
+			[
+				stmt(iface('Params', primaryKeys)),
+				stmt(varDecl(
+					'const',
+					'P',
+					funcCall(id('new ParamsWrapper<Params>'), [])
+				)),
+				stmt(ret(
+					invokeMethodChain(
+						funcCall(
+							id(`updateFromObject<${ metamodelClassName(table) }, Params>`),
+							[
+								id(metamodelInstanceName(table)),
+								id('updates')
+							]
+						),
+						[
+							[
+								'where',
+								[criteria]
+							],
+							[
+								'prepare',
+								[]
+							]
+						]
+					)
+				))
+			],
+			'updateOne'
+		)
+	);
 }
 
 function generateUpdateMany() {
@@ -153,13 +205,10 @@ function mapPrimaryKeys(tableMetadata: TableMetadata): InterfacePropertyNode[] {
 
 export function OrmTemplate(tableMetadata: TableMetadata) {
 	// TODO: support lookup by unique index
-	// const primaryKey = generatePrimaryKey(tableMetadata);
-	// const rowType = sanitizeTableName(tableMetadata.name) + `Row`;
-	const defaultQueriesProperties = [];
-	let property = generateGetOne(tableMetadata);
-	if (property) {
-		defaultQueriesProperties.push(property);
-	}
+	const defaultQueriesProperties = [
+		generateGetOne(tableMetadata),
+		generateUpdateOne(tableMetadata),
+	].filter((entry): entry is ObjectPropertyNode => entry !== undefined);
 
 	const moduleNode = modl(
 		[],

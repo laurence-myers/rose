@@ -18,6 +18,10 @@ export class InvalidInsertError extends RoseError {
 
 }
 
+export class InvalidUpdateError extends RoseError {
+
+}
+
 export class RowMappingError extends RoseError {
 
 }

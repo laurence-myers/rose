@@ -1,5 +1,5 @@
 import inflection = require("inflection");
-import { ColumnMetadata } from "../dbmetadata";
+import { ColumnMetadata, TableMetadata } from "../dbmetadata";
 import { POSTGRES_TO_TYPESCRIPT_TYPE_MAP } from "../dbtypes";
 import { UnrecognisedColumnTypeError } from "../../errors";
 
@@ -20,4 +20,24 @@ export function getColumnTypeScriptType(column: ColumnMetadata): string {
 		tsType += ' | null'
 	}
 	return tsType;
+}
+
+export function metamodelClassName(table: TableMetadata): string {
+	return 'T' + table.niceName;
+}
+
+export function metamodelInstanceName(table: TableMetadata): string {
+	return 'Q' + table.niceName;
+}
+
+export function rowIfaceName(table: TableMetadata): string {
+	return table.niceName + 'Row';
+}
+
+export function insertRowIfaceName(table: TableMetadata): string {
+	return table.niceName + 'InsertRow';
+}
+
+export function allColumnsName(table: TableMetadata): string {
+	return table.niceName + 'AllColumns';
 }

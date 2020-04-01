@@ -26,6 +26,7 @@ import {
 	TypeAnnotationNode,
 	VariableDeclarationNode
 } from "./ast";
+import { CodeGeneratorError } from "../errors";
 
 export function arrowFunc(parameters: ArrowFunctionExpressionNode['parameters'], body: ArrowFunctionExpressionNode['body']): ArrowFunctionExpressionNode {
 	return {
@@ -140,6 +141,22 @@ export function ifaceProp(name: InterfacePropertyNode['name'], annotation: Inter
 	};
 }
 
+/**
+ * Convenience function for expressions like `(function () { ... })()`
+ */
+export function iife(body: FunctionExpressionNode['body'], name?: FunctionExpressionNode['name']): FunctionCallNode {
+	return funcCall(
+		gexpr(
+			funcExpr(
+				[],
+				body,
+				name
+			)
+		),
+		[]
+	);
+}
+
 export function imp(namedItems: ImportNode['namedItems'], from: ImportNode['from']): ImportNode {
 	return {
 		type: NodeType.Import,
@@ -165,6 +182,44 @@ export function impDef(from: ImportNode['from'], alias: ImportNode['alias']): Im
 		from,
 		alias
 	};
+}
+
+/**
+ * Convenience function, for expressions like `foo.bar(baz)`
+ */
+export function invokeMethod(parent: PropertyLookupNode['parent'], child: PropertyLookupNode['child'], arguments_: FunctionCallNode['arguments_']): FunctionCallNode {
+	return funcCall(
+		propLookup(
+			parent,
+			child
+		),
+		arguments_
+	)
+}
+
+/**
+ * Convenience function, for expressions like `foo.bar().baz(quux)`
+ */
+export function invokeMethodChain(
+	root: PropertyLookupNode['parent'],
+	entries: [
+		PropertyLookupNode['child'],
+		FunctionCallNode['arguments_']
+	][]
+): FunctionCallNode {
+	if (entries.length === 0) {
+		throw new CodeGeneratorError(`invokeMethodChain() must have at least one entry`);
+	}
+	const first = invokeMethod(
+		root,
+		entries[0][0],
+		entries[0][1]
+	);
+	return entries.slice(1).reduce((parent, entry): FunctionCallNode => invokeMethod(
+		parent,
+		entry[0],
+		entry[1]
+	), first);
 }
 
 export function lit(value: LiteralNode['value']): LiteralNode {

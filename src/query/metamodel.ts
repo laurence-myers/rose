@@ -201,6 +201,8 @@ export type TableColumns<T extends QueryTable> = {
 	[K in Exclude<keyof T, '$table' | '$tableAlias'>]: T[K] extends ColumnMetamodel<infer U> ? U : never;
 }
 
+export type PartialTableColumns<T extends QueryTable> = Partial<TableColumns<T>>;
+
 export type TableColumnsForUpdateCommand<T extends QueryTable> = {
 	[K in keyof TableColumns<T>]: ParameterOrValueExpressionNode;
 }

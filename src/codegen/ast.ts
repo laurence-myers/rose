@@ -84,7 +84,7 @@ export type ExpressionNode = ArrowFunctionExpressionNode | FunctionCallNode | Fu
 
 export interface FunctionCallNode {
 	type: NodeType.FunctionCall;
-	identifier: FunctionExpressionNode | FunctionCallNode | GroupedExpressionNode | PropertyLookupNode | IdentifierNode;
+	identifier: ExpressionNode | IdentifierNode;
 	arguments_: Array<ExpressionNode | IdentifierNode | LiteralNode>;
 }
 

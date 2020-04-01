@@ -81,6 +81,10 @@ export function keySet<T>(map: Map<T, any>): Set<T> {
 	return new Set(map.keys());
 }
 
+export function safeKeys<T extends object>(object: T): Array<keyof T> {
+	return Object.keys(object) as Array<keyof T>;
+}
+
 export function logObject(obj: any): void {
 	console.log(util.inspect(obj, false, <any> null));
 }
@@ -120,3 +124,7 @@ export type Constructor<T> = { new(): T };
  * https://stackoverflow.com/a/48244432/953887
  */
 export type AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }> = Partial<T> & U[keyof U]
+
+export function hasAtLeastOneKey<T>(obj: T): obj is AtLeastOne<T> {
+	return Object.keys(obj).length > 0;
+}

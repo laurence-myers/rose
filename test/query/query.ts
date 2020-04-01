@@ -1,12 +1,13 @@
 import { QAgencies, QLocations, QUsers, TLocations, TUsers } from "../fixtures";
 import { lower, upper } from "../../src/query/postgresql/functions/string/sql";
 import { count } from "../../src/query/postgresql/functions/aggregate/general";
-import { deepFreeze } from "../../src/lang";
-import { deleteFrom, insert, select, update } from "../../src/query/dsl/commands";
+import { deepFreeze, safeKeys } from "../../src/lang";
+import { deleteFrom, insert, select, update, updateFromObject } from "../../src/query/dsl/commands";
 import { selectExpression, selectNestedMany, subSelect } from "../../src/query/dsl/select";
 import { and, col, constant, not, or, ParamsWrapper } from "../../src/query/dsl/core";
-import { TableColumns, TableColumnsForUpdateCommand } from "../../src/query/metamodel";
+import { PartialTableColumns, TableColumns, TableColumnsForUpdateCommand } from "../../src/query/metamodel";
 import assert = require('assert');
+import { ConstantNode } from "../../src/query/ast";
 
 describe("Query DSL", function () {
 	describe(`SELECT commands`, () => {
@@ -521,6 +522,12 @@ describe("Query DSL", function () {
 			const builder8 = builder7.orderBy(QUsers.id.asc());
 			assert.notStrictEqual(builder7, builder8, "orderBy() should create a new QueryBuilder");
 		});
+
+		xit(`supports "WITH" (CTEs)`, function () {});
+
+		xit(`supports "USING" (multiple FROMs, an alternative to sub-queries)`, function () {});
+
+		xit(`supports cursors`, function () {});
 	});
 
 	describe(`DELETE commands`, () => {
@@ -541,12 +548,6 @@ describe("Query DSL", function () {
 			};
 			assert.deepEqual(actual, expected);
 		});
-
-		xit(`supports "WITH" (CTEs)`, function () {});
-
-		xit(`supports "USING" (multiple FROMs, an alternative to sub-queries)`, function () {});
-
-		xit(`supports cursors`, function () {});
 
 		xit(`supports returning a selection`, function () {});
 	});
@@ -573,6 +574,37 @@ describe("Query DSL", function () {
 			const expected = {
 				sql: `UPDATE "Users" as "t1" SET "name" = upper($1) WHERE "t1"."id" = $2`,
 				parameters: ['fred', 123]
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`supports dynamically generating "set" criteria from an entity-like object`, function () {
+			// Set up
+			interface Params {
+				id: TableColumns<TUsers>['id'];
+			}
+
+			const now = new Date('2020-04-01T14:30:00Z');
+
+			const updates: PartialTableColumns<TUsers> = {
+				deletedAt: now,
+				name: 'fred'
+			};
+			const paramsWrapper = new ParamsWrapper<Params>();
+
+			const query = updateFromObject<TUsers, Params>(QUsers, updates)
+				.where(QUsers.id.eq(paramsWrapper.get((p) => p.id)));
+
+			// Execute
+			const actual = query.toSql({
+				id: 123,
+				...updates
+			});
+
+			// Verify
+			const expected = {
+				sql: `UPDATE "Users" as "t1" SET "deletedAt" = $1, "name" = $2 WHERE "t1"."id" = $3`,
+				parameters: [now, 'fred', 123]
 			};
 			assert.deepEqual(actual, expected);
 		});

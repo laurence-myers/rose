@@ -1,13 +1,21 @@
 const FooTableAllColumns = {
-	id: QFooTable.id
+	id: QFooTable.id,
 };
 const FooTableDefaultQueries = {
-	getOne: (function () {
+	getOne: (function getOne() {
 		interface Params {
 			id: number;
 		}
 
 		const P = new ParamsWrapper<Params>();
-		return select(FooTableAllColumns).where(QFooTable.id.eq(P.get((p) => p.id)));
-	})()
+		return select<FooTableAllColumns, Params>(FooTableAllColumns).where(QFooTable.id.eq(P.get((p) => p.id))).prepare();
+	})(),
+	updateOne: function updateOne(updates: PartialTableColumns<TFooTable>) {
+		interface Params {
+			id: number;
+		}
+
+		const P = new ParamsWrapper<Params>();
+		return updateFromObject<TFooTable, Params>(QFooTable, updates).where(QFooTable.id.eq(P.get((p) => p.id))).prepare();
+	},
 };

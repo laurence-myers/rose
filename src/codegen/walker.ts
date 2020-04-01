@@ -388,6 +388,7 @@ class CodegenAstWalker {
 		this.sb += node.name;
 		this.sb += ': ';
 		this.walkNode(node.expression);
+		this.sb += ',';
 	}
 
 	private walkParameter(node: ParameterNode) {
