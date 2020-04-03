@@ -135,7 +135,7 @@ export interface LiteralNode {
 
 export interface ModuleNode {
 	type: NodeType.Module;
-	header?: CommentNode;
+	header: CommentNode[];
 	imports: ImportNode[];
 	body: BodyNode;
 }

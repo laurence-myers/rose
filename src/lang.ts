@@ -128,3 +128,16 @@ export type AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }> = Partial<T> & U[ke
 export function hasAtLeastOneKey<T>(obj: T): obj is AtLeastOne<T> {
 	return Object.keys(obj).length > 0;
 }
+
+type NullablePropertyKeys<T> = {
+	[K in keyof T]: null extends T[K] ? K : never;
+}[keyof T];
+
+type NonNullablePropertyKeys<T> = {
+	[K in keyof T]: null extends T[K] ? never : K;
+}[keyof T];
+
+/**
+ * Allows substituting "undefined" for null properties, or omitting them completely.
+ */
+export type OptionalNulls<T> = Pick<T, NonNullablePropertyKeys<T>> & Partial<Pick<T, NullablePropertyKeys<T>>>;

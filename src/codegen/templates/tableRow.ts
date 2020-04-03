@@ -1,18 +1,16 @@
 import { TableMetadata } from "../dbmetadata";
 import { getColumnTypeScriptType, rowIfaceName } from "./common";
 import { anno, iface, ifaceProp } from "../dsl";
-import { astToString } from "../walker";
+import { InterfaceNode } from "../ast";
 
-export function TableRowTemplate(table: TableMetadata): string {
-	return astToString(
-		iface(
-			rowIfaceName(table),
-			table.columns.map((col) => ifaceProp(
-				col.name,
-				anno(getColumnTypeScriptType(col))
-			)),
-			[],
-			true
-		)
+export function TableRowTemplate(table: TableMetadata): InterfaceNode {
+	return iface(
+		rowIfaceName(table),
+		table.columns.map((col) => ifaceProp(
+			col.name,
+			anno(getColumnTypeScriptType(col))
+		)),
+		[],
+		true
 	);
 }

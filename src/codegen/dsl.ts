@@ -229,7 +229,7 @@ export function lit(value: LiteralNode['value']): LiteralNode {
 	};
 }
 
-export function modl(imports: ModuleNode['imports'], body: ModuleNode['body'], header?: ModuleNode['header']): ModuleNode {
+export function modl(imports: ModuleNode['imports'], body: ModuleNode['body'], header: ModuleNode['header'] = []): ModuleNode {
 	return {
 		type: NodeType.Module,
 		imports,

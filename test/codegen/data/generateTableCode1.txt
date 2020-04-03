@@ -1,27 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
-import { ColumnMetamodel, QueryTable, TableMetamodel, deepFreeze } from 'rose';
-
-export class TFooTable extends QueryTable {
-	column1 = new ColumnMetamodel<number>(this.$table, 'column_1');
-	column2 = new ColumnMetamodel<number>(this.$table, 'column_2');
-	column3 = new ColumnMetamodel<number | null>(this.$table, 'column_3');
-	column4 = new ColumnMetamodel<number | null>(this.$table, 'column_4');
-	column5 = new ColumnMetamodel<string>(this.$table, 'column_5');
-	column6 = new ColumnMetamodel<string>(this.$table, 'column_6');
-	column7 = new ColumnMetamodel<string | null>(this.$table, 'column_7');
-	column8 = new ColumnMetamodel<string | null>(this.$table, 'column_8');
-	column9 = new ColumnMetamodel<Date>(this.$table, 'column_9');
-	column10 = new ColumnMetamodel<Date>(this.$table, 'column_10');
-	column11 = new ColumnMetamodel<Date | null>(this.$table, 'column_11');
-	column12 = new ColumnMetamodel<Date | null>(this.$table, 'column_12');
-
-	constructor ($tableAlias?: string) {
-		super(new TableMetamodel('foo_table', $tableAlias));
-	}
-
-}
-
-export const QFooTable = deepFreeze(new TFooTable());
+/* eslint-disable */
+import * as rose from 'rose';
 
 export interface FooTableRow {
 	column_1: number;
@@ -52,3 +31,44 @@ export interface FooTableInsertRow {
 	column_11?: Date | null;
 	column_12?: Date | null;
 }
+
+export class TFooTable extends rose.QueryTable {
+	column1 = new rose.ColumnMetamodel<number>(this.$table, 'column_1');
+	column2 = new rose.ColumnMetamodel<number>(this.$table, 'column_2');
+	column3 = new rose.ColumnMetamodel<number | null>(this.$table, 'column_3');
+	column4 = new rose.ColumnMetamodel<number | null>(this.$table, 'column_4');
+	column5 = new rose.ColumnMetamodel<string>(this.$table, 'column_5');
+	column6 = new rose.ColumnMetamodel<string>(this.$table, 'column_6');
+	column7 = new rose.ColumnMetamodel<string | null>(this.$table, 'column_7');
+	column8 = new rose.ColumnMetamodel<string | null>(this.$table, 'column_8');
+	column9 = new rose.ColumnMetamodel<Date>(this.$table, 'column_9');
+	column10 = new rose.ColumnMetamodel<Date>(this.$table, 'column_10');
+	column11 = new rose.ColumnMetamodel<Date | null>(this.$table, 'column_11');
+	column12 = new rose.ColumnMetamodel<Date | null>(this.$table, 'column_12');
+
+	constructor ($tableAlias?: string) {
+		super(new rose.TableMetamodel('foo_table', $tableAlias));
+	}
+
+}
+
+export const QFooTable = rose.deepFreeze(new TFooTable());
+const FooTableAllColumns = {
+	column1: QFooTable.column1,
+	column2: QFooTable.column2,
+	column3: QFooTable.column3,
+	column4: QFooTable.column4,
+	column5: QFooTable.column5,
+	column6: QFooTable.column6,
+	column7: QFooTable.column7,
+	column8: QFooTable.column8,
+	column9: QFooTable.column9,
+	column10: QFooTable.column10,
+	column11: QFooTable.column11,
+	column12: QFooTable.column12,
+};
+const FooTableDefaultQueries = {
+	insertOne: function updateOne(row: FooTableInsertRow) {
+		return rose.insertFromObject<TFooTable, FooTableInsertRow, {}>(QFooTable, row).prepare();
+	},
+};

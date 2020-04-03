@@ -52,7 +52,7 @@ export class SkippingWalker extends BaseWalker {
 		node.conditions.forEach(this.doItemWalk());
 	}
 
-	protected walkConstantNode(node: ConstantNode<any>): void {
+	protected walkConstantNode(node: ConstantNode<unknown>): void {
 	}
 
 	protected walkExpressionListNode(node: ExpressionListNode): void {

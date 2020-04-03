@@ -5,13 +5,13 @@ import { MappedQuerySelector } from "./typeMapping";
 
 export interface GeneratedQuery {
 	sql: string;
-	parameters: any[];
+	parameters: unknown[];
 }
 
 export class PreparedQueryNonReturning<TParams> {
 	constructor(
 		protected readonly sql: string,
-		protected readonly paramGetters: Array<(params: TParams) => any>) {
+		protected readonly paramGetters: Array<(params: TParams) => unknown>) {
 
 	}
 
@@ -33,7 +33,7 @@ export class PreparedQuery<TQuerySelector extends QuerySelector, TParams> {
 		protected readonly querySelector: TQuerySelector,
 		protected readonly selectOutputExpressions: SelectOutputExpression[],
 		protected readonly sql: string,
-		protected readonly paramGetters: Array<(params: TParams) => any>) {
+		protected readonly paramGetters: Array<(params: TParams) => unknown>) {
 
 	}
 

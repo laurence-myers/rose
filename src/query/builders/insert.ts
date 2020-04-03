@@ -6,19 +6,19 @@ import {
 	SimpleColumnReferenceNode,
 	TableReferenceNode
 } from "../ast";
-import { QueryTable, TableColumnsForUpdateCommand } from "../metamodel";
+import { ColumnMetamodel, QueryTable, TableColumnsForInsertCommand } from "../metamodel";
 import { aliasTable } from "../dsl";
 import { GeneratedQuery, PreparedQueryNonReturning } from "../preparedQuery";
 import { Queryable } from "../../execution/execution";
 import { InvalidInsertError } from "../../errors";
 import { SqlAstWalker } from "../walkers/sqlAstWalker";
 
-export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends TableColumnsForUpdateCommand<TQTable>, TParams> {
-	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
-	protected queryAst: InsertCommandNode;
+export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends TableColumnsForInsertCommand<TQTable>, TParams> {
+	protected readonly tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
+	protected readonly queryAst: InsertCommandNode;
 
 	constructor(
-		qtable: TQTable
+		protected readonly qtable: TQTable
 	) {
 		this.queryAst = {
 			type: 'insertCommandNode',
@@ -34,9 +34,21 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 		return aliasTable(tableName, alias);
 	}
 
+	protected extractColumnNamesFromObject(keys: string[]): string[] {
+		return keys.map((key) => {
+			const prop = (this.qtable as any)[key];
+			if (prop instanceof ColumnMetamodel) {
+				return prop.name;
+			} else {
+				throw new InvalidInsertError(`Tried to insert property "${ key }", but couldn't find a matching column metamodel in table "${ this.qtable.$table.name }".`);
+			}
+		});
+	}
+
 	@Clone()
 	insert(row: TInsertRow): this {
-		const insertColumns = Object.keys(row).sort();
+		const objectKeys = Object.keys(row).sort();
+		const insertColumns = this.extractColumnNamesFromObject(objectKeys);
 		if (this.queryAst.columns.length > 0) {
 			const existingColumns = this.queryAst.columns;
 			if (
@@ -60,7 +72,7 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 			);
 		}
 		const values: ParameterOrValueExpressionNode[] = [];
-		for (const key of insertColumns) {
+		for (const key of objectKeys) {
 			values.push((row as any)[key]);
 		}
 		this.queryAst.values.push(values);

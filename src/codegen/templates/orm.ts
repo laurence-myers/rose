@@ -1,5 +1,11 @@
 import { ColumnMetadata, TableMetadata } from "../dbmetadata";
-import { allColumnsName, getColumnTypeScriptType, metamodelClassName, metamodelInstanceName, } from "./common";
+import {
+	allColumnsName,
+	getColumnTypeScriptType,
+	insertRowIfaceName,
+	metamodelClassName,
+	metamodelInstanceName,
+} from "./common";
 import { CodeGeneratorError } from "../../errors";
 import {
 	anno,
@@ -11,6 +17,7 @@ import {
 	iface,
 	ifaceProp,
 	iife,
+	impAll,
 	invokeMethod,
 	invokeMethodChain,
 	modl,
@@ -22,8 +29,7 @@ import {
 	stmt,
 	varDecl
 } from "../dsl";
-import { InterfacePropertyNode, ObjectPropertyNode } from "../ast";
-import { astToString } from "../walker";
+import { ImportNode, InterfacePropertyNode, ModuleNode, ObjectPropertyNode } from "../ast";
 
 function generateAllColumns(tableMetadata: TableMetadata) {
 	return varDecl(
@@ -69,7 +75,7 @@ function primaryKeysToCriteria(table: TableMetadata, primaryKeys: InterfacePrope
 	const criteria = primaryKeys.map((primaryKey) => primaryKeyToCriteria(table, primaryKey));
 	if (criteria.length > 1) {
 		return funcCall(
-			id('and'),
+			id('rose.and'),
 			criteria
 		);
 	} else {
@@ -91,12 +97,12 @@ function generateGetOne(table: TableMetadata): ObjectPropertyNode | undefined {
 				stmt(varDecl(
 					'const',
 					'P',
-					funcCall(id('new ParamsWrapper<Params>'), [])
+					funcCall(id('new rose.ParamsWrapper<Params>'), [])
 				)),
 				stmt(ret(
 					invokeMethodChain(
 						funcCall(
-							id(`select<${ allColumnsName(table) }, Params>`),
+							id(`rose.select<${ allColumnsName(table) }, Params>`),
 							[id(allColumnsName(table))]
 						),
 						[
@@ -117,12 +123,35 @@ function generateGetOne(table: TableMetadata): ObjectPropertyNode | undefined {
 	);
 }
 
-function generateInsertOne() {
-
-}
-
-function generateInsertMany() {
-
+function generateInsertOne(table: TableMetadata) {
+	return objProp(
+		'insertOne',
+		funcExpr(
+			[
+				param('row', anno(insertRowIfaceName(table)))
+			],
+			[
+				stmt(ret(
+					invokeMethodChain(
+						funcCall(
+							id(`rose.insertFromObject<${ metamodelClassName(table) }, ${ insertRowIfaceName(table) }, {}>`),
+							[
+								id(metamodelInstanceName(table)),
+								id('row')
+							]
+						),
+						[
+							[
+								'prepare',
+								[]
+							]
+						]
+					)
+				))
+			],
+			'updateOne'
+		)
+	);
 }
 
 function generateUpdateOne(table: TableMetadata) {
@@ -136,19 +165,19 @@ function generateUpdateOne(table: TableMetadata) {
 		'updateOne',
 		funcExpr(
 			[
-				param('updates', anno(`PartialTableColumns<${ metamodelClassName(table) }>`))
+				param('updates', anno(`rose.PartialTableColumns<${ metamodelClassName(table) }>`))
 			],
 			[
 				stmt(iface('Params', primaryKeys)),
 				stmt(varDecl(
 					'const',
 					'P',
-					funcCall(id('new ParamsWrapper<Params>'), [])
+					funcCall(id('new rose.ParamsWrapper<Params>'), [])
 				)),
 				stmt(ret(
 					invokeMethodChain(
 						funcCall(
-							id(`updateFromObject<${ metamodelClassName(table) }, Params>`),
+							id(`rose.updateFromObject<${ metamodelClassName(table) }, Params>`),
 							[
 								id(metamodelInstanceName(table)),
 								id('updates')
@@ -172,16 +201,44 @@ function generateUpdateOne(table: TableMetadata) {
 	);
 }
 
-function generateUpdateMany() {
-
-}
-
-function generateDeleteOne() {
-
-}
-
-function generateDeleteMany() {
-
+function generateDeleteOne(table: TableMetadata) {
+	if (table.primaryKeys.length === 0) {
+		return undefined; // Can't look up a single row without a primary key.
+	}
+	const primaryKeys = mapPrimaryKeys(table);
+	const criteria = primaryKeysToCriteria(table, primaryKeys);
+	return objProp(
+		'deleteOne',
+		iife(
+			[
+				stmt(iface('Params', primaryKeys)),
+				stmt(varDecl(
+					'const',
+					'P',
+					funcCall(id('new rose.ParamsWrapper<Params>'), [])
+				)),
+				stmt(ret(
+					invokeMethodChain(
+						funcCall(
+							id(`rose.deleteFrom<Params>`),
+							[id(metamodelInstanceName(table))]
+						),
+						[
+							[
+								'where',
+								[criteria]
+							],
+							[
+								'prepare',
+								[]
+							]
+						],
+					)
+				))
+			],
+			'deleteOne'
+		)
+	);
 }
 
 function findColumnMetadataByName(tableMetadata: TableMetadata, columnName: string): ColumnMetadata {
@@ -203,15 +260,21 @@ function mapPrimaryKeys(tableMetadata: TableMetadata): InterfacePropertyNode[] {
 	});
 }
 
-export function OrmTemplate(tableMetadata: TableMetadata) {
+export function OrmTemplate(tableMetadata: TableMetadata): ModuleNode {
+	const imports: ImportNode[] = [
+		impAll('rose', 'rose')
+	];
+
 	// TODO: support lookup by unique index
 	const defaultQueriesProperties = [
 		generateGetOne(tableMetadata),
+		generateInsertOne(tableMetadata),
 		generateUpdateOne(tableMetadata),
+		generateDeleteOne(tableMetadata),
 	].filter((entry): entry is ObjectPropertyNode => entry !== undefined);
 
-	const moduleNode = modl(
-		[],
+	return modl(
+		imports,
 		body([
 			stmt(generateAllColumns(tableMetadata)),
 			stmt(varDecl(
@@ -221,6 +284,4 @@ export function OrmTemplate(tableMetadata: TableMetadata) {
 			))
 		])
 	);
-
-	return astToString(moduleNode);
 }

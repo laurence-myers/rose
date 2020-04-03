@@ -32,7 +32,7 @@ export function and(first: BooleanExpression, second: BooleanExpression, ...rest
 	};
 }
 
-export function col(column: ColumnMetamodel<any>): ColumnReferenceNode {
+export function col(column: ColumnMetamodel<unknown>): ColumnReferenceNode {
 	return column.toColumnReferenceNode();
 }
 

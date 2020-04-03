@@ -311,12 +311,12 @@ export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector, 
 
 	toMetamodel(): CommonTableExpressionMetamodel<TQuerySelector> {
 		this.rectifyTableReferences();
-		const output: { [key: string]: ColumnMetamodel<any> } = {};
+		const output: { [key: string]: ColumnMetamodel<unknown> } = {};
 		const table = new TableMetamodel(this.alias, undefined);
 		for (const expr of this.queryAst.outputExpressions) {
 			switch (expr.type) {
 				case "aliasedExpressionNode":
-					output[expr.alias] = new ColumnMetamodel<any>(
+					output[expr.alias] = new ColumnMetamodel<unknown>(
 						table,
 						expr.alias,
 					);

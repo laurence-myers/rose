@@ -26,8 +26,8 @@ export const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultM
 	["int", "number"],
 	["int4", "number"],
 	["interval", "any"], // ?
-	["json", "Object"], // would be nice to make this more explicit
-	["jsonb", "Object"], // would be nice to make this more explicit
+	["json", "object"], // would be nice to make this more explicit
+	["jsonb", "object"], // would be nice to make this more explicit
 	["line", "any"], // ?
 	["lseg", "any"], // ?
 	["macaddr", "string"],

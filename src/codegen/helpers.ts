@@ -8,7 +8,7 @@ export function iff(condition: boolean, body: () => string, elseBody? : () => st
 	}
 }
 
-export function exists(obj: any, body: () => string, elseBody? : () => string) {
+export function exists<T>(obj: T | null | undefined, body: () => string, elseBody? : () => string) {
 	return iff(!isNullOrUndefined(obj), body, elseBody);
 }
 

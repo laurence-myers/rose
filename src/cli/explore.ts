@@ -5,52 +5,125 @@ import path = require('path');
 import { TableMetadata, getTableMetadata } from "../codegen/dbmetadata";
 import { generateTableCode } from "../codegen/generators";
 
-const DEFAULT_URL = "postgresql://postgres:password@localhost:5432/postgres";
+enum ExitCode {
+	Okay,
+	UnhandledError,
+	ErrorInCleanup,
+	InvalidArguments
+}
 
-function generateInterfacesAndMetamodel(tablesMetadata: Map<string, TableMetadata>): void {
-	console.log(`Generating interfaces and metamodels for ${ tablesMetadata.size } tables...`);
+function generateInterfacesAndMetamodel(tablesMetadata: Map<string, TableMetadata>, options: CliOptions): void {
 	for (const tableMetadata of tablesMetadata.values()) {
 		const content = generateTableCode(tableMetadata);
-		const rootDir = 'out';
+		const rootDir = options.outDir;
 		makeDirs(rootDir);
-		const outName = path.join(rootDir, `${ tableMetadata.name }.ts`);
+		const outName = path.join(rootDir, `${ tableMetadata.niceName }.ts`);
 		fs.writeFileSync(outName, content);
 	}
 }
 
-function wrapError(fn: () => Promise<any>): (err: Error) => Promise<any> {
-	return (err: Error) => {
-		return fn()
-			.then(() => {
-				throw err;
-			});
+const cliOptionsConfig = [
+	{
+		long: 'url',
+		short: 'u',
+		description: 'The database URL',
+		required: true,
+	},
+	{
+		long: 'out',
+		short: 'o',
+		description: 'The output directory',
+		required: true,
+	},
+	// {
+	// 	long: 'help',
+	// 	short: 'h',
+	// 	description: 'Print the help for this tool',
+	// 	required: false
+	// }
+] as const;
+
+interface CliOptions {
+	url: string;
+	outDir: string;
+}
+
+function parseArgs(args: string[]): CliOptions | Error {
+	let rawOptions: {
+		[K in typeof cliOptionsConfig[number]['long']]?: string;
+	} = {};
+
+	for (let i = 0; i < args.length; i++) {
+		const arg = args[i];
+		for (const option of cliOptionsConfig) {
+			if (arg === option.long || arg === option.short) {
+				rawOptions[option.long] = args[++i];
+			}
+		}
+	}
+
+	for (const option of cliOptionsConfig) {
+		if (option.required && !rawOptions[option.long]) {
+			return new Error(`Please provide the required option "${ option.long }"`);
+		}
+	}
+
+	return {
+		url: rawOptions.url!,
+		outDir: rawOptions.out!
 	};
 }
 
-async function main(): Promise<any> {
-	const client = new Client(DEFAULT_URL);
+function getHelpString() {
+	return `TODO`;
+}
+
+function isCliOptions(value: CliOptions | Error): value is CliOptions {
+	return !(value instanceof Error);
+}
+
+async function main(): Promise<void> {
+	let exitCode: ExitCode = ExitCode.Okay;
+	let client: Client | undefined;
 	const cleanup = () => {
 		return new Promise((resolve, reject) => {
 			try {
-				client.end();
+				if (client) {
+					client.end();
+				}
 				return resolve();
 			} catch (err) {
+				if (exitCode === ExitCode.Okay) {
+					exitCode = ExitCode.ErrorInCleanup;
+				}
 				return reject(err);
 			}
 		});
 	};
 	try {
-		client.connect();
-		console.log(`Querying the database...`);
-		const tablesMetadata: Map<string, TableMetadata> = await getTableMetadata(client);
-		generateInterfacesAndMetamodel(tablesMetadata);
-		console.log("Done!")
+		const args = parseArgs(process.argv.slice(2));
+		if (isCliOptions(args)) {
+			client = new Client(args.url);
+			client.connect();
+			console.log(`Querying the database...`);
+			const tablesMetadata: Map<string, TableMetadata> = await getTableMetadata(client);
+			console.log(`Generating interfaces and metamodels for ${ tablesMetadata.size } tables...`);
+			generateInterfacesAndMetamodel(tablesMetadata, args);
+			console.log("Done!");
+			exitCode = ExitCode.Okay;
+		} else {
+			console.error(`Invalid arguments: ${ args.message }`);
+			console.log(getHelpString());
+			exitCode = ExitCode.InvalidArguments;
+		}
 	} catch (err) {
 		console.error("Error encountered");
 		console.error(err);
+		exitCode = ExitCode.UnhandledError;
 	} finally {
 		await cleanup();
 	}
+	process.exitCode = exitCode;
 }
 
 if (require.main === module) {

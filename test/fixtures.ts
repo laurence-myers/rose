@@ -15,6 +15,13 @@ export class TUsers extends QueryTable {
 }
 export const QUsers = deepFreeze(new TUsers());
 
+export interface UsersInsertRow {
+	id?: number;
+	locationId: number;
+	name: string;
+	deletedAt?: Date | null;
+}
+
 export class TLocations extends QueryTable {
 	constructor($tableAlias? : string) { super(new TableMetamodel("Locations", $tableAlias)); }
 

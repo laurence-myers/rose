@@ -7,36 +7,28 @@ import {
 	classConstrParam,
 	classDecl,
 	classProp,
-	comment,
 	funcCall,
 	id,
-	imp,
+	impAll,
 	lit,
 	modl,
-	namedImport,
 	propLookup,
 	stmt,
 	varDecl
 } from "../dsl";
-import { astToString } from "../walker";
+import { ModuleNode } from "../ast";
 
 function getColumnMetamodelName(column: ColumnMetadata): string {
-	return `ColumnMetamodel<${ getColumnTypeScriptType(column) }>`;
+	return `rose.ColumnMetamodel<${ getColumnTypeScriptType(column) }>`;
 }
 
 function escapeColumnName(column: ColumnMetadata): string {
 	return column.name.replace(/'/g, '\\\'');
 }
 
-export function TableMetamodelTemplate(table: TableMetadata): string {
-	const rootNode = modl([
-			imp([
-				'ColumnMetamodel',
-				'deepFreeze',
-				'QueryTable',
-				'TableMetamodel',
-			].sort()
-				.map((name) => namedImport(name)), 'rose')
+export function TableMetamodelTemplate(table: TableMetadata): ModuleNode {
+	return modl([
+			impAll('rose', 'rose')
 		], body([
 			stmt(
 				classDecl(
@@ -55,7 +47,7 @@ export function TableMetamodelTemplate(table: TableMetadata): string {
 					})),
 					{
 						exported: true,
-						extends: [id('QueryTable')],
+						extends: [id('rose.QueryTable')],
 						constructor_: classConstr([
 							classConstrParam('$tableAlias', {
 								annotation: anno('string'),
@@ -65,7 +57,7 @@ export function TableMetamodelTemplate(table: TableMetadata): string {
 							stmt(funcCall(
 								id('super'),
 								[funcCall(
-									id('new TableMetamodel'),
+									id('new rose.TableMetamodel'),
 									[lit(`'${ table.name }'`), id(`$tableAlias`)]
 								)]
 							))
@@ -76,7 +68,7 @@ export function TableMetamodelTemplate(table: TableMetadata): string {
 				'const',
 				metamodelInstanceName(table),
 				funcCall(
-					id('deepFreeze'),
+					id('rose.deepFreeze'),
 					[
 						funcCall(
 							id('new ' + metamodelClassName(table)),
@@ -86,7 +78,5 @@ export function TableMetamodelTemplate(table: TableMetadata): string {
 				),
 				true
 			))
-		]),
-		comment(`Generated file; do not manually edit, as your changes will be overwritten!`));
-	return astToString(rootNode);
+		]));
 }

@@ -1,3 +1,5 @@
+import * as rose from 'rose';
+
 const FooTableAllColumns = {
 	id: QFooTable.id,
 };
@@ -7,15 +9,26 @@ const FooTableDefaultQueries = {
 			id: number;
 		}
 
-		const P = new ParamsWrapper<Params>();
-		return select<FooTableAllColumns, Params>(FooTableAllColumns).where(QFooTable.id.eq(P.get((p) => p.id))).prepare();
+		const P = new rose.ParamsWrapper<Params>();
+		return rose.select<FooTableAllColumns, Params>(FooTableAllColumns).where(QFooTable.id.eq(P.get((p) => p.id))).prepare();
 	})(),
-	updateOne: function updateOne(updates: PartialTableColumns<TFooTable>) {
+	insertOne: function updateOne(row: FooTableInsertRow) {
+		return rose.insertFromObject<TFooTable, FooTableInsertRow, {}>(QFooTable, row).prepare();
+	},
+	updateOne: function updateOne(updates: rose.PartialTableColumns<TFooTable>) {
 		interface Params {
 			id: number;
 		}
 
-		const P = new ParamsWrapper<Params>();
-		return updateFromObject<TFooTable, Params>(QFooTable, updates).where(QFooTable.id.eq(P.get((p) => p.id))).prepare();
+		const P = new rose.ParamsWrapper<Params>();
+		return rose.updateFromObject<TFooTable, Params>(QFooTable, updates).where(QFooTable.id.eq(P.get((p) => p.id))).prepare();
 	},
+	deleteOne: (function deleteOne() {
+		interface Params {
+			id: number;
+		}
+
+		const P = new rose.ParamsWrapper<Params>();
+		return rose.deleteFrom<Params>(QFooTable).where(QFooTable.id.eq(P.get((p) => p.id))).prepare();
+	})(),
 };

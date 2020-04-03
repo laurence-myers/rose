@@ -355,8 +355,8 @@ class CodegenAstWalker {
 	}
 
 	private walkModule(node: ModuleNode) {
-		if (node.header) {
-			this.walkNode(node.header);
+		if (node.header.length > 0) {
+			this.walkNodes(node.header, NodeSeperator.Newline);
 			this.newline();
 		}
 		this.walkNodes(node.imports, NodeSeperator.Newline);

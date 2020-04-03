@@ -1,3 +1,5 @@
+import * as rose from 'rose';
+
 const FooTableAllColumns = {
 	name: QFooTable.name,
 	createdAt: QFooTable.createdAt,
@@ -9,16 +11,28 @@ const FooTableDefaultQueries = {
 			createdAt: Date;
 		}
 
-		const P = new ParamsWrapper<Params>();
-		return select<FooTableAllColumns, Params>(FooTableAllColumns).where(and(QFooTable.name.eq(P.get((p) => p.name)), QFooTable.createdAt.eq(P.get((p) => p.createdAt)))).prepare();
+		const P = new rose.ParamsWrapper<Params>();
+		return rose.select<FooTableAllColumns, Params>(FooTableAllColumns).where(rose.and(QFooTable.name.eq(P.get((p) => p.name)), QFooTable.createdAt.eq(P.get((p) => p.createdAt)))).prepare();
 	})(),
-	updateOne: function updateOne(updates: PartialTableColumns<TFooTable>) {
+	insertOne: function updateOne(row: FooTableInsertRow) {
+		return rose.insertFromObject<TFooTable, FooTableInsertRow, {}>(QFooTable, row).prepare();
+	},
+	updateOne: function updateOne(updates: rose.PartialTableColumns<TFooTable>) {
 		interface Params {
 			name: string;
 			createdAt: Date;
 		}
 
-		const P = new ParamsWrapper<Params>();
-		return updateFromObject<TFooTable, Params>(QFooTable, updates).where(and(QFooTable.name.eq(P.get((p) => p.name)), QFooTable.createdAt.eq(P.get((p) => p.createdAt)))).prepare();
+		const P = new rose.ParamsWrapper<Params>();
+		return rose.updateFromObject<TFooTable, Params>(QFooTable, updates).where(rose.and(QFooTable.name.eq(P.get((p) => p.name)), QFooTable.createdAt.eq(P.get((p) => p.createdAt)))).prepare();
 	},
+	deleteOne: (function deleteOne() {
+		interface Params {
+			name: string;
+			createdAt: Date;
+		}
+
+		const P = new rose.ParamsWrapper<Params>();
+		return rose.deleteFrom<Params>(QFooTable).where(rose.and(QFooTable.name.eq(P.get((p) => p.name)), QFooTable.createdAt.eq(P.get((p) => p.createdAt)))).prepare();
+	})(),
 };

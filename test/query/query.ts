@@ -1,13 +1,20 @@
-import { QAgencies, QLocations, QUsers, TLocations, TUsers } from "../fixtures";
+import { QAgencies, QLocations, QUsers, TLocations, TUsers, UsersInsertRow } from "../fixtures";
 import { lower, upper } from "../../src/query/postgresql/functions/string/sql";
 import { count } from "../../src/query/postgresql/functions/aggregate/general";
-import { deepFreeze, safeKeys } from "../../src/lang";
-import { deleteFrom, insert, select, update, updateFromObject } from "../../src/query/dsl/commands";
+import { deepFreeze, OptionalNulls } from "../../src/lang";
+import { deleteFrom, insert, insertFromObject, select, update, updateFromObject } from "../../src/query/dsl/commands";
 import { selectExpression, selectNestedMany, subSelect } from "../../src/query/dsl/select";
 import { and, col, constant, not, or, ParamsWrapper } from "../../src/query/dsl/core";
-import { PartialTableColumns, TableColumns, TableColumnsForUpdateCommand } from "../../src/query/metamodel";
+import {
+	ColumnMetamodel,
+	PartialTableColumns,
+	QueryTable,
+	TableColumns,
+	TableColumnsForInsertCommand,
+	TableColumnsForUpdateCommand,
+	TableMetamodel
+} from "../../src/query/metamodel";
 import assert = require('assert');
-import { ConstantNode } from "../../src/query/ast";
 
 describe("Query DSL", function () {
 	describe(`SELECT commands`, () => {
@@ -643,6 +650,114 @@ describe("Query DSL", function () {
 			const expected = {
 				sql: `INSERT INTO "Users" as "t1" ("deletedAt", "id", "locationId", "name") VALUES ($1, $2, $3, $4)`,
 				parameters: [null, 123, 456, 'Fred'] // In order of column name (sorted alphabetically)
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`supports inserting a single row where casing differs between the object and the columns`, function () {
+			// Set up
+			class TUsers extends QueryTable {
+				constructor($tableAlias? : string) { super(new TableMetamodel("Users", $tableAlias)); }
+
+				id = new ColumnMetamodel<number>(this.$table, "id");
+				locationId = new ColumnMetamodel<number>(this.$table, "location_id");
+				name = new ColumnMetamodel<string>(this.$table, "name");
+				deletedAt = new ColumnMetamodel<Date | null>(this.$table, "deleted_at");
+			}
+			const QUsers = deepFreeze(new TUsers());
+
+			interface Params extends TableColumns<TUsers> {
+
+			}
+
+			interface InsertRow extends TableColumnsForUpdateCommand<TUsers> {
+
+			}
+			const paramsWrapper = new ParamsWrapper<Params>();
+			const query = insert<TUsers, InsertRow, Params>(QUsers)
+				.insert({
+					id: paramsWrapper.get((p) => p.id),
+					name: paramsWrapper.get((p) => p.name),
+					deletedAt: paramsWrapper.get((p) => p.deletedAt),
+					locationId: paramsWrapper.get((p) => p.locationId)
+				});
+
+			// Execute
+			const actual = query.toSql({
+				id: 123,
+				name: 'Fred',
+				deletedAt: null,
+				locationId: 456
+			});
+
+			// Verify
+			const expected = {
+				sql: `INSERT INTO "Users" as "t1" ("deleted_at", "id", "location_id", "name") VALUES ($1, $2, $3, $4)`,
+				parameters: [null, 123, 456, 'Fred'] // In order of column name (sorted alphabetically)
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`can omit nullable fields`, function () {
+			// Set up
+
+			interface Params extends OptionalNulls<TableColumns<TUsers>> {
+
+			}
+
+			interface InsertRow extends TableColumnsForInsertCommand<TUsers> {
+			}
+
+			const paramsWrapper = new ParamsWrapper<Params>();
+			const insertRow: InsertRow = {
+				id: paramsWrapper.get((p) => p.id),
+				name: paramsWrapper.get((p) => p.name),
+				locationId: paramsWrapper.get((p) => p.locationId),
+			};
+
+			const query = insert<TUsers, InsertRow, Params>(QUsers)
+				.insert(insertRow);
+
+			// Execute
+			const actual = query.toSql({
+				id: 123,
+				name: 'Fred',
+				locationId: 456
+			});
+
+			// Verify
+			const expected = {
+				sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES ($1, $2, $3)`,
+				parameters: [123, 456, 'Fred'] // In order of column name (sorted alphabetically)
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`supports dynamically generating inserted values from an entity-like object`, function () {
+			// Set up
+
+			interface Params {
+
+			}
+
+			interface InsertRow extends UsersInsertRow {
+			}
+
+			const insertRow: InsertRow = {
+				id: 123,
+				name: 'Fred',
+				locationId: 456,
+			};
+
+			const query = insertFromObject<TUsers, InsertRow, Params>(QUsers, insertRow);
+
+			// Execute
+			const actual = query.toSql({});
+
+			// Verify
+			const expected = {
+				sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES ($1, $2, $3)`,
+				parameters: [123, 456, 'Fred'] // In order of column name (sorted alphabetically)
 			};
 			assert.deepEqual(actual, expected);
 		});

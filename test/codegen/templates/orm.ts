@@ -4,6 +4,7 @@ import * as assert from "assert";
 import * as arp from "app-root-path";
 import * as path from "path";
 import * as fs from "fs";
+import { astToString } from "../../../src/codegen/walker";
 
 describe(`OrmTemplate`, () => {
 	function readExpectedCode(testNumber: number): string {
@@ -20,7 +21,7 @@ describe(`OrmTemplate`, () => {
 		tableMetadata.primaryKeys.push('id');
 
 		// Execute
-		const result = OrmTemplate(tableMetadata);
+		const result: string = astToString(OrmTemplate(tableMetadata));
 
 		// Verify
 		assert.deepEqual(result, readExpectedCode(1));
@@ -37,7 +38,7 @@ describe(`OrmTemplate`, () => {
 		tableMetadata.primaryKeys.push('created_at');
 
 		// Execute
-		const result = OrmTemplate(tableMetadata);
+		const result: string = astToString(OrmTemplate(tableMetadata));
 
 		// Verify
 		assert.deepEqual(result, readExpectedCode(2));

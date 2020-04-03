@@ -8,6 +8,7 @@ import {
 	ValueExpressionNode
 } from "./ast";
 import { any } from "./postgresql/functions/array/functions";
+import { OptionalNulls } from "../lang";
 
 export class TableMetamodel {
 
@@ -203,10 +204,12 @@ export type TableColumns<T extends QueryTable> = {
 
 export type PartialTableColumns<T extends QueryTable> = Partial<TableColumns<T>>;
 
-export type TableColumnsForUpdateCommand<T extends QueryTable> = {
-	[K in keyof TableColumns<T>]: ParameterOrValueExpressionNode;
-}
+export type AstMap<T> = {
+	[K in keyof T]: ParameterOrValueExpressionNode;
+};
 
-export function getTableNameFromColumn(columnMetamodel: ColumnMetamodel<any>): string {
-	return columnMetamodel.table.name;
-}
+export type TableColumnsForUpdateCommand<T extends QueryTable> = AstMap<TableColumns<T>>;
+
+export type TableColumnsForInsertCommand<T extends QueryTable> = AstMap<OptionalNulls<TableColumns<T>>>;
+
+export type TableColumnsForInsertCommandFromRow<T> = AstMap<OptionalNulls<T>>;
