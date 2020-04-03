@@ -52,14 +52,7 @@ export function deepFreeze<T>(obj: T): Readonly<T> {
 }
 
 export function makeDirs(fullPath: string): void {
-	const split = fullPath.split(path.sep);
-	let pathToMake = '';
-	for (let pathPart of split) {
-		pathToMake += pathPart;
-		if (!fs.existsSync(pathToMake)) {
-			fs.mkdirSync(pathToMake);
-		}
-	}
+	fs.mkdirSync(fullPath, { recursive: true });
 }
 
 export function assertNever(arg: never): never {

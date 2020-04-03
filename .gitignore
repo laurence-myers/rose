@@ -6,5 +6,6 @@ test/**.js
 npm-debug.log
 *.js.map
 build/
+package/
 *.log
 *.csv

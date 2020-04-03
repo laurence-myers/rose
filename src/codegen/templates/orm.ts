@@ -102,7 +102,7 @@ function generateGetOne(table: TableMetadata): ObjectPropertyNode | undefined {
 				stmt(ret(
 					invokeMethodChain(
 						funcCall(
-							id(`rose.select<${ allColumnsName(table) }, Params>`),
+							id(`rose.select<typeof ${ allColumnsName(table) }, Params>`),
 							[id(allColumnsName(table))]
 						),
 						[
@@ -280,7 +280,8 @@ export function OrmTemplate(tableMetadata: TableMetadata): ModuleNode {
 			stmt(varDecl(
 				'const',
 				tableMetadata.niceName + 'DefaultQueries',
-				obj(defaultQueriesProperties)
+				obj(defaultQueriesProperties),
+				true
 			))
 		])
 	);

@@ -55,13 +55,13 @@ export class TableMetadata {
 	}
 }
 
-const columnMetadataQuery = `SELECT "udt_name", "table_name", "column_name", "column_default", "is_nullable" FROM "information_schema"."columns" WHERE "table_schema" = $1`;
+const columnMetadataQuery = `SELECT "udt_name", "table_name", "column_name", "column_default", "is_nullable" FROM "information_schema"."columns" WHERE "table_schema" = $1 ORDER BY "table_name", "column_name"`;
 
 const constraintQuery = `SELECT kcu.table_schema,
            kcu.table_name,
            tc.constraint_name,
            kcu.ordinal_position as position,
-           kcu.column_name as key_column
+           kcu.column_name as column_name
     FROM information_schema.table_constraints tc
 	JOIN information_schema.key_column_usage kcu
 	  ON (kcu.constraint_name = tc.constraint_name

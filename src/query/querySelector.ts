@@ -42,3 +42,7 @@ export type SelectorKind = 'column' | 'expression' | 'nestedOne' | 'nestedMany';
 export interface QuerySelector {
 	[key: string]: SelectorTypes;
 }
+
+export type AsQuerySelector<T> = {
+	[K in keyof T]: SelectorTypes;
+}

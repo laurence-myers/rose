@@ -15,6 +15,7 @@ import {
 	TableMetamodel
 } from "../../src/query/metamodel";
 import assert = require('assert');
+import { AsQuerySelector } from "../../src/query";
 
 describe("Query DSL", function () {
 	describe(`SELECT commands`, () => {
@@ -37,6 +38,28 @@ describe("Query DSL", function () {
 			assert.deepEqual(actual, expected);
 		});
 
+		it("supports selecting from a named interface", function () {
+			interface QuerySelect {
+				id: string;
+			}
+
+			const querySelect = {
+				id: QUsers.id
+			};
+
+			interface QueryParams {
+				userId: number;
+			}
+			const params = {
+				userId: 1
+			};
+			const actual = select<AsQuerySelector<QuerySelect>, QueryParams>(querySelect).where(QUsers.id.eq((p: QueryParams) => p.userId)).toSql(params);
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE "t1"."id" = $1`,
+				parameters: [1]
+			};
+			assert.deepEqual(actual, expected);
+		});
 
 		it("supports ordering", function () {
 			const querySelect = {
