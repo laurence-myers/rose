@@ -1,0 +1,18 @@
+{
+  "name": "rose-example",
+  "version": "1.0.0",
+  "description": "Example project using rose",
+  "main": "index.js",
+  "author": "Laurence Dougal Myers <laurencedougalmyers@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "introspect": "rimraf ./generated/ && rose --url postgresql://postgres:password@localhost:5432/postgres --out generated\\db"
+  },
+  "devDependencies": {
+    "typescript": "3.8.3"
+  },
+  "dependencies": {
+    "rimraf": "3.0.2",
+    "rose": "../rose/package"
+  }
+}
