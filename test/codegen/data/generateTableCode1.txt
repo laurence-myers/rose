@@ -3,33 +3,33 @@
 import * as rose from 'rose';
 
 export interface FooTableRow {
-	column_1: number;
-	column_2: number;
-	column_3: number | null;
-	column_4: number | null;
-	column_5: string;
-	column_6: string;
-	column_7: string | null;
-	column_8: string | null;
-	column_9: Date;
-	column_10: Date;
-	column_11: Date | null;
-	column_12: Date | null;
+	column1: number;
+	column2: number;
+	column3: number | null;
+	column4: number | null;
+	column5: string;
+	column6: string;
+	column7: string | null;
+	column8: string | null;
+	column9: Date;
+	column10: Date;
+	column11: Date | null;
+	column12: Date | null;
 }
 
 export interface FooTableInsertRow {
-	column_1: number;
-	column_2?: number;
-	column_3?: number | null;
-	column_4?: number | null;
-	column_5: string;
-	column_6?: string;
-	column_7?: string | null;
-	column_8?: string | null;
-	column_9: Date;
-	column_10?: Date;
-	column_11?: Date | null;
-	column_12?: Date | null;
+	column1: number;
+	column2?: number;
+	column3?: number | null;
+	column4?: number | null;
+	column5: string;
+	column6?: string;
+	column7?: string | null;
+	column8?: string | null;
+	column9: Date;
+	column10?: Date;
+	column11?: Date | null;
+	column12?: Date | null;
 }
 
 export class TFooTable extends rose.QueryTable {
@@ -53,7 +53,7 @@ export class TFooTable extends rose.QueryTable {
 }
 
 export const QFooTable = rose.deepFreeze(new TFooTable());
-const FooTableAllColumns = {
+export const FooTableAllColumns = {
 	column1: QFooTable.column1,
 	column2: QFooTable.column2,
 	column3: QFooTable.column3,
@@ -67,7 +67,7 @@ const FooTableAllColumns = {
 	column11: QFooTable.column11,
 	column12: QFooTable.column12,
 };
-const FooTableDefaultQueries = {
+export const FooTableDefaultQueries = {
 	insertOne: function updateOne(row: FooTableInsertRow) {
 		return rose.insertFromObject<TFooTable, FooTableInsertRow, {}>(QFooTable, row).prepare();
 	},

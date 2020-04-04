@@ -1,16 +1,16 @@
 import * as rose from 'rose';
 
-const FooTableAllColumns = {
+export const FooTableAllColumns = {
 	id: QFooTable.id,
 };
-const FooTableDefaultQueries = {
+export const FooTableDefaultQueries = {
 	getOne: (function getOne() {
 		interface Params {
 			id: number;
 		}
 
 		const P = new rose.ParamsWrapper<Params>();
-		return rose.select<FooTableAllColumns, Params>(FooTableAllColumns).where(QFooTable.id.eq(P.get((p) => p.id))).prepare();
+		return rose.select<typeof FooTableAllColumns, Params>(FooTableAllColumns).where(QFooTable.id.eq(P.get((p) => p.id))).prepare();
 	})(),
 	insertOne: function updateOne(row: FooTableInsertRow) {
 		return rose.insertFromObject<TFooTable, FooTableInsertRow, {}>(QFooTable, row).prepare();

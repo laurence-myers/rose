@@ -7,7 +7,7 @@ export function TableRowTemplate(table: TableMetadata): InterfaceNode {
 	return iface(
 		rowIfaceName(table),
 		table.columns.map((col) => ifaceProp(
-			col.name,
+			col.niceName,
 			anno(getColumnTypeScriptType(col))
 		)),
 		[],

@@ -40,7 +40,8 @@ function generateAllColumns(tableMetadata: TableMetadata) {
 				const niceColumnName = column.niceName;
 				return objProp(niceColumnName, propLookup(id(metamodelInstanceName(tableMetadata)), niceColumnName));
 			})
-		)
+		),
+		true
 	);
 }
 

@@ -55,7 +55,7 @@ export const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultM
 	["timestamp with time zone", "Date"],
 	["timestamptz", "Date"],
 	["tsquery", "any"], // ?
-	["tsvector", "any"], // ?
+	["tsvector", "string"], // e.g. "'bird':1 'bore':4 'california':18 'dog':16 'face':14 'must':13 'perdit':2 'pioneer':11 'stori':5 'woman':8"
 	["snapshot", "any"], // ?
 	["uuid", "string"], // ?
 	["xml", "string"], // ?

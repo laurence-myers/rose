@@ -1,6 +1,7 @@
 import { DefaultMap } from "../lang";
-import { Client, QueryResult } from "pg";
+import { QueryResult } from "pg";
 import { sanitizeColumnName, sanitizeTableName } from "./templates/common";
+import { Queryable } from "../execution/execution";
 
 type sql_identifier = string;
 // type cardinal_number = number;
@@ -73,7 +74,7 @@ const constraintQuery = `SELECT kcu.table_schema,
              kcu.table_name,
              position;`;
 
-async function populateColumnTypes(client: Client, tablesMetadata: DefaultMap<string, TableMetadata>, schema: string): Promise<void> {
+async function populateColumnTypes(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, schema: string): Promise<void> {
 	const result: QueryResult = await client.query(columnMetadataQuery, [schema]);
 	const rows: ColumnsRow[] = result.rows;
 	rows.forEach((row) => {
@@ -83,7 +84,7 @@ async function populateColumnTypes(client: Client, tablesMetadata: DefaultMap<st
 	});
 }
 
-async function populatePrimaryKeys(client: Client, tablesMetadata: DefaultMap<string, TableMetadata>, schema: string): Promise<void> {
+async function populatePrimaryKeys(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, schema: string): Promise<void> {
 	const result: QueryResult = await client.query(constraintQuery, [schema, 'PRIMARY KEY']);
 	const rows: Array<{
 		table_schema: string;
@@ -98,7 +99,7 @@ async function populatePrimaryKeys(client: Client, tablesMetadata: DefaultMap<st
 	}
 }
 
-export async function getTableMetadata(client: Client, schema: string = 'public'): Promise<DefaultMap<string, TableMetadata>> {
+export async function getTableMetadata(client: Queryable, schema: string = 'public'): Promise<DefaultMap<string, TableMetadata>> {
 	const tablesMetadata: DefaultMap<string, TableMetadata> = new DefaultMap<string, TableMetadata>((key: string) => new TableMetadata(schema, key));
 	await populateColumnTypes(client, tablesMetadata, schema);
 	await populatePrimaryKeys(client, tablesMetadata, schema);

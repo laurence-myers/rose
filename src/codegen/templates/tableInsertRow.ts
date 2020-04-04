@@ -7,7 +7,7 @@ export function TableInsertRowTemplate(table: TableMetadata): InterfaceNode {
 	return iface(
 		insertRowIfaceName(table),
 		table.columns.map((col) => ifaceProp(
-			col.name,
+			col.niceName,
 			anno(getColumnTypeScriptType(col)),
 			col.isNullable || col.hasDefault
 		)),
