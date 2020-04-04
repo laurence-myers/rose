@@ -6,13 +6,20 @@
   "author": "Laurence Dougal Myers <laurencedougalmyers@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "introspect": "rimraf ./generated/ && rose --url postgresql://postgres:password@localhost:5432/postgres --out generated\\db"
+    "docker:start": "docker run --name rose-example-db -p 5442:5432 -d mujz/pagila",
+    "docker:stop": "docker stop rose-example-db && docker rm rose-example-db",
+    "introspect": "rimraf ./generated/ && rose --url postgresql://root:admin@localhost:5442/pagila --out generated\\db",
+    "start": "ts-node ./src/index.ts"
   },
   "devDependencies": {
+    "@types/node": "12",
+    "@types/pg": "7.14.3",
+    "rimraf": "3.0.2",
+    "ts-node": "8.8.1",
     "typescript": "3.8.3"
   },
   "dependencies": {
-    "rimraf": "3.0.2",
+    "pg": "8.0.0",
     "rose": "../rose/package"
   }
 }
