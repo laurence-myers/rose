@@ -21,6 +21,15 @@ export function alias<TNode>(aliasedNode: TNode, alias: string): AliasedExpressi
 	};
 }
 
+export function aliasCol(aliasedNode: ColumnMetamodel<unknown>, alias: string): AliasedExpressionNode<ColumnReferenceNode> {
+	return {
+		type: 'aliasedExpressionNode',
+		alias,
+		aliasPath: [alias],
+		expression: col(aliasedNode)
+	};
+}
+
 export function aliasTable(tableName: string, alias: string): AliasedExpressionNode<TableReferenceNode> {
 	return {
 		type: 'aliasedExpressionNode',

@@ -3,6 +3,7 @@ import {
 	AliasedExpressionNode,
 	InsertCommandNode,
 	ParameterOrValueExpressionNode,
+	SelectCommandNode,
 	SimpleColumnReferenceNode,
 	SubSelectNode,
 	TableReferenceNode
@@ -81,9 +82,39 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 		return this;
 	}
 
+	private getQueryOutputExpressionNames(query: SelectCommandNode): SimpleColumnReferenceNode[] {
+		const outputNames: SimpleColumnReferenceNode[] = [];
+		for (const node of query.outputExpressions) {
+			let outputNode: SimpleColumnReferenceNode;
+			switch (node.type) {
+				case "aliasedExpressionNode":
+					outputNode = {
+						type: "simpleColumnReferenceNode",
+						columnName: node.alias
+					};
+					break;
+				case "columnReferenceNode":
+					outputNode = {
+						type: "simpleColumnReferenceNode",
+						columnName: node.columnName
+					};
+					break;
+				default:
+					return [];
+			}
+			outputNames.push(outputNode);
+		}
+		return outputNames;
+	}
+
 	@Clone()
 	insertFromQuery(query: SubSelectNode, propertyNames?: Array<keyof TInsertRow & string>) {
-		if (propertyNames) {
+		if (propertyNames === undefined) {
+			const outputNames = this.getQueryOutputExpressionNames(query.query);
+			if (outputNames.length > 0) {
+				this.queryAst.columns.push(...outputNames);
+			}
+		} else if (propertyNames.length > 0) {
 			const insertColumns = this.extractColumnNamesFromObject(propertyNames);
 			this.queryAst.columns.push(
 				...insertColumns.map((insertColumn): SimpleColumnReferenceNode => ({
