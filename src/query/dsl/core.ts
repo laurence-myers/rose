@@ -12,6 +12,15 @@ import {
 } from "../ast";
 import { ColumnMetamodel } from "../metamodel";
 
+export function alias<TNode>(aliasedNode: TNode, alias: string): AliasedExpressionNode<TNode> {
+	return {
+		type: 'aliasedExpressionNode',
+		alias,
+		aliasPath: [alias],
+		expression: aliasedNode
+	};
+}
+
 export function aliasTable(tableName: string, alias: string): AliasedExpressionNode<TableReferenceNode> {
 	return {
 		type: 'aliasedExpressionNode',

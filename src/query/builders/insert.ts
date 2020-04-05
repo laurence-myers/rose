@@ -4,6 +4,7 @@ import {
 	InsertCommandNode,
 	ParameterOrValueExpressionNode,
 	SimpleColumnReferenceNode,
+	SubSelectNode,
 	TableReferenceNode
 } from "../ast";
 import { ColumnMetamodel, QueryTable, TableColumnsForInsertCommand } from "../metamodel";
@@ -12,6 +13,7 @@ import { GeneratedQuery, PreparedQueryNonReturning } from "../preparedQuery";
 import { Queryable } from "../../execution/execution";
 import { InvalidInsertError } from "../../errors";
 import { SqlAstWalker } from "../walkers/sqlAstWalker";
+import { RectifyingWalker } from "../walkers/rectifyingWalker";
 
 export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends TableColumnsForInsertCommand<TQTable>, TParams> {
 	protected readonly tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
@@ -79,7 +81,30 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 		return this;
 	}
 
+	@Clone()
+	insertFromQuery(query: SubSelectNode, propertyNames?: Array<keyof TInsertRow & string>) {
+		if (propertyNames) {
+			const insertColumns = this.extractColumnNamesFromObject(propertyNames);
+			this.queryAst.columns.push(
+				...insertColumns.map((insertColumn): SimpleColumnReferenceNode => ({
+					type: "simpleColumnReferenceNode",
+					columnName: insertColumn
+				}))
+			);
+		}
+		this.queryAst.query = query;
+		return this;
+	}
+
+	protected rectifyTableReferences() {
+		if (this.queryAst.query) {
+			const rectifier = new RectifyingWalker(this.queryAst.query.query, this.tableMap);
+			rectifier.rectify();
+		}
+	}
+
 	prepare(): PreparedQueryNonReturning<TParams> {
+		this.rectifyTableReferences();
 		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
 		const data = walker.prepare();
 		return new PreparedQueryNonReturning<TParams>(data.sql, data.parameterGetters);

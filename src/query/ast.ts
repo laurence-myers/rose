@@ -330,6 +330,7 @@ export interface InsertCommandNode {
 	table: FromItemNode;
 	columns: SimpleColumnReferenceNode[];
 	values: ParameterOrValueExpressionNode[][];
+	query?: SubSelectNode;
 }
 
 export type AnyCommandNode = SelectCommandNode | DeleteCommandNode | UpdateCommandNode | InsertCommandNode;

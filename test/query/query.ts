@@ -4,7 +4,7 @@ import { count } from "../../src/query/postgresql/functions/aggregate/general";
 import { deepFreeze, OptionalNulls } from "../../src/lang";
 import { deleteFrom, insert, insertFromObject, select, update, updateFromObject } from "../../src/query/dsl/commands";
 import { selectExpression, selectNestedMany, subSelect } from "../../src/query/dsl/select";
-import { and, col, constant, not, or, ParamsWrapper } from "../../src/query/dsl/core";
+import { alias, and, col, constant, not, or, ParamsWrapper } from "../../src/query/dsl/core";
 import {
 	ColumnMetamodel,
 	PartialTableColumns,
@@ -723,7 +723,6 @@ describe("Query DSL", function () {
 
 		it(`can omit nullable fields`, function () {
 			// Set up
-
 			interface Params extends OptionalNulls<TableColumns<TUsers>> {
 
 			}
@@ -758,7 +757,6 @@ describe("Query DSL", function () {
 
 		it(`supports dynamically generating inserted values from an entity-like object`, function () {
 			// Set up
-
 			interface Params {
 
 			}
@@ -781,6 +779,51 @@ describe("Query DSL", function () {
 			const expected = {
 				sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES ($1, $2, $3)`,
 				parameters: [123, 456, 'Fred'] // In order of column name (sorted alphabetically)
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`supports inserting from a sub-query, using alias to specify column name`, function () {
+			// Set up
+			const query = insert(QUsers)
+				.insertFromQuery(
+					subSelect(
+						alias(QLocations.id.toColumnReferenceNode(), 'locationId')
+					).where(QLocations.name.eq(constant('Launceston')))
+						.toSubQuery()
+				);
+
+			// Execute
+			const actual = query.toSql({});
+
+			// Verify
+			const expected = {
+				sql: `INSERT INTO "Users" as "t1" (SELECT "t2"."id" as "locationId" FROM "Locations" as "t2" WHERE "t2"."name" = $1)`,
+				parameters: ['Launceston']
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`supports inserting from a sub-query, using columns argument`, function () {
+			// Set up
+			const query = insert(QUsers)
+				.insertFromQuery(
+					subSelect(
+						QLocations.id
+					).where(QLocations.name.eq(constant('Launceston')))
+						.toSubQuery(),
+					[
+						'locationId'
+					]
+				);
+
+			// Execute
+			const actual = query.toSql({});
+
+			// Verify
+			const expected = {
+				sql: `INSERT INTO "Users" as "t1" ("locationId") (SELECT "t2"."id" FROM "Locations" as "t2" WHERE "t2"."name" = $1)`,
+				parameters: ['Launceston']
 			};
 			assert.deepEqual(actual, expected);
 		});

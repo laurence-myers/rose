@@ -73,6 +73,9 @@ export class SkippingWalker extends BaseWalker {
 		for (const values of node.values) {
 			values.forEach(this.doItemWalk());
 		}
+		if (node.query) {
+			this.walk(node.query);
+		}
 	}
 
 	protected walkLimitOffsetNode(node: LimitOffsetNode): void {

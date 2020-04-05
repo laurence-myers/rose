@@ -10,7 +10,7 @@ export function selectExpression<T = never>(expression: ParameterOrValueExpressi
 	return {
 		$selectorKind: 'expression',
 		expression
-	} as SelectorExpression<T>;
+	};
 }
 
 export function selectNestedMany<T extends QuerySelector>(querySelector: T): SelectorNestedMany<T> {

@@ -2,7 +2,9 @@ import { QuerySelector } from "../querySelector";
 import { SelectQueryBuilder } from "../builders/select";
 import {
 	PartialTableColumns,
-	QueryTable, TableColumns, TableColumnsForInsertCommand,
+	QueryTable,
+	TableColumns,
+	TableColumnsForInsertCommand,
 	TableColumnsForUpdateCommand
 } from "../metamodel";
 import { DeleteQueryBuilder } from "../builders/delete";
