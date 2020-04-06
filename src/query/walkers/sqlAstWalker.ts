@@ -2,10 +2,12 @@ import {
 	AnyAliasedExpressionNode,
 	AnyCommandNode,
 	AstNode,
+	BeginCommandNode,
 	BinaryOperationNode,
 	BooleanExpression,
 	BooleanExpressionGroupNode,
 	ColumnReferenceNode,
+	CommitCommandNode,
 	ConstantNode,
 	DeleteCommandNode,
 	ExpressionListNode,
@@ -18,11 +20,19 @@ import {
 	NaturalSyntaxFunctionExpressionNode,
 	NotExpressionNode,
 	OrderByExpressionNode,
+	ReleaseSavepointCommandNode,
+	RollbackCommandNode,
+	RollbackToSavepointCommandNode,
+	SavepointCommandNode,
 	SelectCommandNode,
 	SetItemNode,
+	SetSessionsCharacteristicsAsTransactionCommandNode,
+	SetTransactionCommandNode,
+	SetTransactionSnapshotCommandNode,
 	SimpleColumnReferenceNode,
 	SubSelectNode,
 	TableReferenceNode,
+	TransactionModeNode,
 	UnaryOperationNode,
 	UpdateCommandNode,
 	WithNode
@@ -62,9 +72,17 @@ export class SqlAstWalker extends BaseWalker {
 
 	constructor(
 		protected queryAst: AnyCommandNode,
-		protected tableMap: DefaultMap<string, string>
+		protected tableMap: DefaultMap<string, string> = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`)
 	) {
 		super();
+	}
+
+	prepare(): PreparedQueryData {
+		this.walk(this.queryAst);
+		return {
+			sql: this.sb,
+			parameterGetters: this.parameterGetters
+		};
 	}
 
 	protected doListWalk<N extends AstNode>() {
@@ -75,12 +93,31 @@ export class SqlAstWalker extends BaseWalker {
 			this.walk(node);
 		};
 	}
-
 	protected walkAliasedExpressionNode(node: AnyAliasedExpressionNode): void {
 		this.walk(node.expression);
 		this.sb += ` as "`;
 		this.sb += node.alias;
 		this.sb += `"`;
+	}
+
+	protected walkBeginCommandNode(node: BeginCommandNode): void {
+		this.sb += `BEGIN`;
+		if (node.transactionMode && [
+			node.transactionMode.deferrable,
+			node.transactionMode.readMode,
+			node.transactionMode.isolationLevel
+		].some((entry) => entry !== undefined)) {
+			this.sb += ` `;
+			this.walk(node.transactionMode);
+		}
+	}
+
+	protected walkBinaryOperationNode(node: BinaryOperationNode): void {
+		this.walk(node.left);
+		this.sb += ` `;
+		this.sb += node.operator;
+		this.sb += ` `;
+		this.walk(node.right);
 	}
 
 	protected walkBooleanExpressionGroupNode(node: BooleanExpressionGroupNode): void {
@@ -97,14 +134,6 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += `)`;
 	}
 
-	protected walkBinaryOperationNode(node: BinaryOperationNode): void {
-		this.walk(node.left);
-		this.sb += ` `;
-		this.sb += node.operator;
-		this.sb += ` `;
-		this.walk(node.right);
-	}
-
 	protected walkColumnReferenceNode(node: ColumnReferenceNode): void {
 		const tableAlias = node.tableAlias || this.tableMap.get(node.tableName);
 		this.sb += `"`;
@@ -112,6 +141,17 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += `"."`;
 		this.sb += node.columnName;
 		this.sb += `"`;
+	}
+
+	protected walkCommitCommandNode(node: CommitCommandNode): void {
+		this.sb += `COMMIT`;
+		if (node.chain !== undefined) {
+			this.sb += ` AND `;
+			if (node.chain === false) {
+				this.sb += `NO `;
+			}
+			this.sb += `CHAIN`
+		}
 	}
 
 	protected walkConstantNode(node: ConstantNode<any>): void {
@@ -133,7 +173,7 @@ export class SqlAstWalker extends BaseWalker {
 
 		if (node.conditions.length > 0) {
 			this.sb += " WHERE ";
-			node.conditions.forEach(this.doItemWalk());
+			this.walkNodes(node.conditions);
 		}
 
 		// TODO: support WHERE CURRENT OF
@@ -147,32 +187,6 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += ')';
 	}
 
-	protected walkGroupByExpressionNode(node: GroupByExpressionNode): void {
-		this.walk(node.expression);
-	}
-
-	protected walkJoinNode(node: JoinNode): void {
-		const joinText = JOIN_TEXT_MAP[node.joinType];
-		if (node.joinType == 'cross' && (node.on || (node.using && node.using.length > 0))) {
-			throw new UnsupportedOperationError(`Cross joins cannot specify "on" or "using" conditions.`);
-		}
-		if (node.on && node.using && node.using.length > 0) {
-			throw new UnsupportedOperationError(`Joins cannot specify both "on" and "using" conditions.`);
-		}
-
-		this.sb += joinText;
-		this.sb += ` JOIN `;
-		this.walk(node.fromItem);
-		if (node.on) {
-			this.sb += ` ON `;
-			this.walk(node.on);
-		} else if (node.using) {
-			this.sb += ` USING `;
-			node.using.forEach(this.doListWalk());
-		}
-		// TODO: support "natural"
-	}
-
 	protected walkFunctionExpressionNode(node: FunctionExpressionNode): void {
 		this.sb += node.name;
 		this.sb += '(';
@@ -180,6 +194,10 @@ export class SqlAstWalker extends BaseWalker {
 			node.arguments.forEach(this.doListWalk());
 		}
 		this.sb += ')';
+	}
+
+	protected walkGroupByExpressionNode(node: GroupByExpressionNode): void {
+		this.walk(node.expression);
 	}
 
 	protected walkInsertCommandNode(node: InsertCommandNode): void {
@@ -206,6 +224,28 @@ export class SqlAstWalker extends BaseWalker {
 			this.sb += ' ';
 			this.walk(node.query);
 		}
+	}
+
+	protected walkJoinNode(node: JoinNode): void {
+		const joinText = JOIN_TEXT_MAP[node.joinType];
+		if (node.joinType == 'cross' && (node.on || (node.using && node.using.length > 0))) {
+			throw new UnsupportedOperationError(`Cross joins cannot specify "on" or "using" conditions.`);
+		}
+		if (node.on && node.using && node.using.length > 0) {
+			throw new UnsupportedOperationError(`Joins cannot specify both "on" and "using" conditions.`);
+		}
+
+		this.sb += joinText;
+		this.sb += ` JOIN `;
+		this.walk(node.fromItem);
+		if (node.on) {
+			this.sb += ` ON `;
+			this.walk(node.on);
+		} else if (node.using) {
+			this.sb += ` USING `;
+			node.using.forEach(this.doListWalk());
+		}
+		// TODO: support "natural"
 	}
 
 	protected walkLimitOffsetNode(node: LimitOffsetNode): void {
@@ -267,6 +307,32 @@ export class SqlAstWalker extends BaseWalker {
 		}
 	}
 
+	protected walkReleaseSavepointCommandNode(node: ReleaseSavepointCommandNode): void {
+		this.sb += `RELEASE SAVEPOINT `;
+		this.walk(node.name);
+	}
+
+	protected walkRollbackCommandNode(node: RollbackCommandNode): void {
+		this.sb += `ROLLBACK`;
+		if (node.chain !== undefined) {
+			this.sb += ` AND `;
+			if (node.chain === false) {
+				this.sb += `NO `;
+			}
+			this.sb += `CHAIN`
+		}
+	}
+
+	protected walkRollbackToSavepointCommandNode(node: RollbackToSavepointCommandNode): void {
+		this.sb += `ROLLBACK TO SAVEPOINT `;
+		this.walk(node);
+	}
+
+	protected walkSavepointCommandNode(node: SavepointCommandNode): void {
+		this.sb += `SAVEPOINT `;
+		this.walk(node.name);
+	}
+
 	protected walkSelectCommandNode(node: SelectCommandNode): void {
 		if (node.with) {
 			this.walk(node.with);
@@ -297,11 +363,11 @@ export class SqlAstWalker extends BaseWalker {
 		}
 		if (node.joins.length > 0) {
 			this.sb += " ";
-			node.joins.forEach(this.doItemWalk());
+			this.walkNodes(node.joins);
 		}
 		if (node.conditions.length > 0) {
 			this.sb += " WHERE ";
-			node.conditions.forEach(this.doItemWalk());
+			this.walkNodes(node.conditions);
 		}
 		if (node.grouping.length > 0) {
 			this.sb += " GROUP BY (";
@@ -324,6 +390,21 @@ export class SqlAstWalker extends BaseWalker {
 		this.walk(node.expression);
 	}
 
+	protected walkSetSessionsCharacteristicsAsTransactionCommandNode(node: SetSessionsCharacteristicsAsTransactionCommandNode): void {
+		this.sb += `SET SESSION CHARACTERISTICS AS TRANSACTION `;
+		this.walk(node.transactionMode);
+	}
+
+	protected walkSetTransactionCommandNode(node: SetTransactionCommandNode): void {
+		this.sb += `SET TRANSACTION `;
+		this.walk(node.transactionMode);
+	}
+
+	protected walkSetTransactionSnapshotCommandNode(node: SetTransactionSnapshotCommandNode): void {
+		this.sb += `SET TRANSACTION SNAPSHOT `;
+		this.walk(node.snapshotId);
+	}
+
 	protected walkSimpleColumnReferenceNode(node: SimpleColumnReferenceNode): void {
 		this.sb += `"`;
 		this.sb += node.columnName;
@@ -340,6 +421,23 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += `"`;
 		this.sb += node.tableName;
 		this.sb += `"`;
+	}
+
+	protected walkTransactionModeNode(node: TransactionModeNode): void {
+		const values = [];
+		if (node.isolationLevel) {
+			values.push(`ISOLATION LEVEL ${ node.isolationLevel }`); // TODO: this is cheating, should abstract the output from the enum string
+		}
+		if (node.readMode) {
+			values.push(`READ ${ node.readMode }`); // TODO: also cheating
+		}
+		if (node.deferrable !== undefined) {
+			values.push(
+				(node.deferrable === false ? 'NOT ' : '')
+				+ `DEFERRABLE`
+			);
+		}
+		this.sb += values.join(' ');
 	}
 
 	protected walkUnaryOperationNode(node: UnaryOperationNode): void {
@@ -384,13 +482,5 @@ export class SqlAstWalker extends BaseWalker {
 			}
 			this.sb += ` `;
 		}
-	}
-
-	prepare(): PreparedQueryData {
-		this.walk(this.queryAst);
-		return {
-			sql: this.sb,
-			parameterGetters: this.parameterGetters
-		};
 	}
 }

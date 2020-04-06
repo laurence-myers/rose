@@ -13,6 +13,17 @@ import { InsertQueryBuilder } from "../builders/insert";
 import { param } from "./core";
 import { hasAtLeastOneKey, safeKeys } from "../../lang";
 import { InvalidUpdateError } from "../../errors";
+import { BeginCommandBuilder } from "../builders/begin";
+import { CommitCommandBuilder } from "../builders/commit";
+import { RollbackCommandBuilder } from "../builders/rollback";
+
+export function begin() {
+	return new BeginCommandBuilder();
+}
+
+export function commit() {
+	return new CommitCommandBuilder();
+}
 
 export function deleteFrom<TParams>(table: QueryTable) {
 	return new DeleteQueryBuilder(table);
@@ -43,6 +54,10 @@ export function insertFromObject<
 
 	return insert<TQTable, TableColumnsForInsertCommand<TQTable>, TParams>(table)
 		.insert(sqlValues as any as TableColumnsForInsertCommand<TQTable>);
+}
+
+export function rollback() {
+	return new RollbackCommandBuilder();
 }
 
 export function select<TQuerySelector extends QuerySelector, TParams>(querySelector: TQuerySelector): SelectQueryBuilder<TQuerySelector, TParams> {

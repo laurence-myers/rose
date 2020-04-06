@@ -333,21 +333,88 @@ export interface InsertCommandNode {
 	query?: SubSelectNode;
 }
 
-export type AnyCommandNode = SelectCommandNode | DeleteCommandNode | UpdateCommandNode | InsertCommandNode;
+export interface TransactionModeNode {
+	type: 'transactionModeNode';
+	isolationLevel?: 'SERIALIZABLE' | 'REPEATABLE READ' | 'READ COMMITTED' | 'READ UNCOMMITTED';
+	readMode?: 'WRITE' | 'ONLY';
+	deferrable?: boolean;
+}
+
+export interface BeginCommandNode {
+	type: 'beginCommandNode';
+	transactionMode?: TransactionModeNode;
+}
+
+export interface SetTransactionCommandNode {
+	type: 'setTransactionCommandNode';
+	transactionMode: TransactionModeNode;
+}
+
+export interface SetTransactionSnapshotCommandNode {
+	type: 'setTransactionSnapshotCommandNode';
+	snapshotId: ConstantNode<string>;
+}
+
+export interface SetSessionsCharacteristicsAsTransactionCommandNode {
+	type: 'setSessionsCharacteristicsAsTransactionCommandNode';
+	transactionMode: TransactionModeNode;
+}
+
+export interface SavepointCommandNode {
+	type: 'savepointCommandNode';
+	name: ConstantNode<string>;
+}
+
+export interface CommitCommandNode {
+	type: 'commitCommandNode';
+	chain?: boolean;
+}
+
+export interface RollbackCommandNode {
+	type: 'rollbackCommandNode';
+	chain?: boolean;
+}
+
+export interface RollbackToSavepointCommandNode {
+	type: 'rollbackToSavepointCommandNode';
+	name: ConstantNode<string>;
+}
+
+export interface ReleaseSavepointCommandNode {
+	type: 'releaseSavepointCommandNode';
+	name: ConstantNode<string>;
+}
+
+type TransactionCommandNodes = (
+	| BeginCommandNode
+	| CommitCommandNode
+	| ReleaseSavepointCommandNode
+	| RollbackCommandNode
+	| RollbackToSavepointCommandNode
+	| SavepointCommandNode
+	| SetSessionsCharacteristicsAsTransactionCommandNode
+	| SetTransactionCommandNode
+	| SetTransactionSnapshotCommandNode
+);
+
+type TransactionNodes = TransactionCommandNodes | TransactionModeNode;
+
+export type AnyCommandNode = SelectCommandNode | DeleteCommandNode | UpdateCommandNode | InsertCommandNode | TransactionCommandNodes;
 
 export type AstNode =
-	| AnyCommandNode
-	| ParameterOrValueExpressionNode
 	| AliasedSelectExpressionNode
-	| JoinNode
-	| FromItemNode
-	| OrderByExpressionNode
-	| FunctionExpressionNode
-	| LimitOffsetNode
+	| AnyCommandNode
 	| BooleanExpressionGroupNode
-	| NotExpressionNode
 	| ExpressionListNode
+	| FromItemNode
+	| FunctionExpressionNode
 	| GroupByExpressionNode
-	| WithNode
+	| JoinNode
+	| LimitOffsetNode
+	| NotExpressionNode
+	| OrderByExpressionNode
+	| ParameterOrValueExpressionNode
+	| SetItemNode
 	| SimpleColumnReferenceNode
-	| SetItemNode;
+	| TransactionNodes
+	| WithNode;

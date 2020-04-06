@@ -1,8 +1,10 @@
 import {
 	AnyAliasedExpressionNode,
+	BeginCommandNode,
 	BinaryOperationNode,
 	BooleanExpressionGroupNode,
 	ColumnReferenceNode,
+	CommitCommandNode,
 	ConstantNode,
 	DeleteCommandNode,
 	ExpressionListNode,
@@ -15,11 +17,18 @@ import {
 	NaturalSyntaxFunctionExpressionNode,
 	NotExpressionNode,
 	OrderByExpressionNode,
+	ReleaseSavepointCommandNode,
+	RollbackCommandNode,
+	RollbackToSavepointCommandNode,
+	SavepointCommandNode,
 	SelectCommandNode,
 	SetItemNode,
+	SetSessionsCharacteristicsAsTransactionCommandNode,
+	SetTransactionCommandNode,
+	SetTransactionSnapshotCommandNode,
 	SimpleColumnReferenceNode,
 	SubSelectNode,
-	TableReferenceNode,
+	TableReferenceNode, TransactionModeNode,
 	UnaryOperationNode,
 	UpdateCommandNode,
 	WithNode
@@ -35,13 +44,22 @@ export class SkippingWalker extends BaseWalker {
 		this.walk(node.expression);
 	}
 
+	protected walkBeginCommandNode(node: BeginCommandNode): void {
+		if (node.transactionMode) {
+			this.walk(node.transactionMode);
+		}
+	}
+
 	protected walkBinaryOperationNode(node: BinaryOperationNode): void {
 		this.walk(node.left);
 		this.walk(node.right);
 	}
 
+	protected walkCommitCommandNode(node: CommitCommandNode): void {
+	}
+
 	protected walkBooleanExpressionGroupNode(node: BooleanExpressionGroupNode): void {
-		node.expressions.forEach(this.doItemWalk());
+		this.walkNodes(node.expressions);
 	}
 
 	protected walkColumnReferenceNode(node: ColumnReferenceNode): void {
@@ -49,18 +67,18 @@ export class SkippingWalker extends BaseWalker {
 
 	protected walkDeleteCommandNode(node: DeleteCommandNode): void {
 		this.walk(node.from);
-		node.conditions.forEach(this.doItemWalk());
+		this.walkNodes(node.conditions);
 	}
 
 	protected walkConstantNode(node: ConstantNode<unknown>): void {
 	}
 
 	protected walkExpressionListNode(node: ExpressionListNode): void {
-		node.expressions.forEach(this.doItemWalk());
+		this.walkNodes(node.expressions);
 	}
 
 	protected walkFunctionExpressionNode(node: FunctionExpressionNode): void {
-		node.arguments.forEach(this.doItemWalk());
+		this.walkNodes(node.arguments);
 	}
 
 	protected walkGroupByExpressionNode(node: GroupByExpressionNode): void {
@@ -69,9 +87,9 @@ export class SkippingWalker extends BaseWalker {
 
 	protected walkInsertCommandNode(node: InsertCommandNode): void {
 		this.walk(node.table);
-		node.columns.forEach(this.doItemWalk());
+		this.walkNodes(node.columns);
 		for (const values of node.values) {
-			values.forEach(this.doItemWalk());
+			this.walkNodes(values);
 		}
 		if (node.query) {
 			this.walk(node.query);
@@ -90,13 +108,14 @@ export class SkippingWalker extends BaseWalker {
 			this.walk(node.on);
 		}
 		if (node.using) {
-			node.using.forEach(this.doItemWalk());
+			this.walkNodes(node.using);
 		}
 	}
 
 	protected walkNaturalSyntaxFunctionExpressionNode(node: NaturalSyntaxFunctionExpressionNode): void {
-		node.arguments.map((node) => node.value)
-			.forEach(this.doItemWalk());
+		this.walkNodes(
+			node.arguments.map((node) => node.value)
+		);
 	}
 
 	protected walkNotExpressionNode(node: NotExpressionNode): void {
@@ -107,16 +126,43 @@ export class SkippingWalker extends BaseWalker {
 		this.walk(node.expression);
 	}
 
+	protected walkReleaseSavepointCommandNode(node: ReleaseSavepointCommandNode): void {
+		this.walk(node.name);
+	}
+
+	protected walkRollbackCommandNode(node: RollbackCommandNode): void {
+	}
+
+	protected walkRollbackToSavepointCommandNode(node: RollbackToSavepointCommandNode): void {
+		this.walk(node.name);
+	}
+
+	protected walkSavepointCommandNode(node: SavepointCommandNode): void {
+		this.walk(node.name);
+	}
+
 	protected walkSelectCommandNode(node: SelectCommandNode): void {
-		node.outputExpressions.forEach(this.doItemWalk());
-		node.fromItems.forEach(this.doItemWalk());
-		node.joins.forEach(this.doItemWalk());
-		node.conditions.forEach(this.doItemWalk());
-		node.ordering.forEach(this.doItemWalk());
-		node.grouping.forEach(this.doItemWalk());
+		this.walkNodes(node.outputExpressions);
+		this.walkNodes(node.fromItems);
+		this.walkNodes(node.joins);
+		this.walkNodes(node.conditions);
+		this.walkNodes(node.ordering);
+		this.walkNodes(node.grouping);
 	}
 
 	protected walkSetItemNode(node: SetItemNode): void {
+	}
+
+	protected walkSetSessionsCharacteristicsAsTransactionCommandNode(node: SetSessionsCharacteristicsAsTransactionCommandNode): void {
+		this.walk(node.transactionMode);
+	}
+
+	protected walkSetTransactionCommandNode(node: SetTransactionCommandNode): void {
+		this.walk(node.transactionMode);
+	}
+
+	protected walkSetTransactionSnapshotCommandNode(node: SetTransactionSnapshotCommandNode): void {
+		this.walk(node.snapshotId);
 	}
 
 	protected walkSimpleColumnReferenceNode(node: SimpleColumnReferenceNode): void {
@@ -130,18 +176,21 @@ export class SkippingWalker extends BaseWalker {
 	protected walkTableReferenceNode(node: TableReferenceNode): void {
 	}
 
+	protected walkTransactionModeNode(node: TransactionModeNode): void {
+	}
+
 	protected walkUnaryOperationNode(node: UnaryOperationNode): void {
 		this.walk(node.expression);
 	}
 
 	protected walkUpdateCommandNode(node: UpdateCommandNode): void {
 		this.walk(node.table);
-		node.setItems.forEach(this.doItemWalk());
-		node.fromItems.forEach(this.doItemWalk());
-		node.conditions.forEach(this.doItemWalk());
+		this.walkNodes(node.setItems);
+		this.walkNodes(node.fromItems);
+		this.walkNodes(node.conditions);
 	}
 
 	protected walkWithNode(node: WithNode): void {
-		node.selectNodes.forEach(this.doItemWalk());
+		this.walkNodes(node.selectNodes);
 	}
 }

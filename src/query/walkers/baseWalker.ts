@@ -1,9 +1,11 @@
 import {
 	AnyAliasedExpressionNode,
 	AstNode,
+	BeginCommandNode,
 	BinaryOperationNode,
 	BooleanExpressionGroupNode,
 	ColumnReferenceNode,
+	CommitCommandNode,
 	ConstantNode,
 	DeleteCommandNode,
 	ExpressionListNode,
@@ -16,11 +18,19 @@ import {
 	NaturalSyntaxFunctionExpressionNode,
 	NotExpressionNode,
 	OrderByExpressionNode,
+	ReleaseSavepointCommandNode,
+	RollbackCommandNode,
+	RollbackToSavepointCommandNode,
+	SavepointCommandNode,
 	SelectCommandNode,
 	SetItemNode,
+	SetSessionsCharacteristicsAsTransactionCommandNode,
+	SetTransactionCommandNode,
+	SetTransactionSnapshotCommandNode,
 	SimpleColumnReferenceNode,
 	SubSelectNode,
 	TableReferenceNode,
+	TransactionModeNode,
 	UnaryOperationNode,
 	UpdateCommandNode,
 	WithNode
@@ -28,20 +38,17 @@ import {
 import { assertNever } from "../../lang";
 
 export abstract class BaseWalker {
-
-	protected doItemWalk<N extends AstNode>() {
-		return (node: N): void => {
-			this.walk(node);
-		};
-	}
-
 	protected abstract walkAliasedExpressionNode(node: AnyAliasedExpressionNode): void;
+
+	protected abstract walkBeginCommandNode(node: BeginCommandNode): void;
 
 	protected abstract walkBinaryOperationNode(node: BinaryOperationNode): void;
 
 	protected abstract walkBooleanExpressionGroupNode(node: BooleanExpressionGroupNode): void;
 
 	protected abstract walkColumnReferenceNode(node: ColumnReferenceNode): void;
+
+	protected abstract walkCommitCommandNode(node: CommitCommandNode): void;
 
 	protected abstract walkConstantNode(node: ConstantNode<any>): void;
 
@@ -67,15 +74,31 @@ export abstract class BaseWalker {
 
 	protected abstract walkOrderByExpressionNode(node: OrderByExpressionNode): void;
 
+	protected abstract walkReleaseSavepointCommandNode(node: ReleaseSavepointCommandNode): void;
+
+	protected abstract walkRollbackCommandNode(node: RollbackCommandNode): void;
+
+	protected abstract walkRollbackToSavepointCommandNode(node: RollbackToSavepointCommandNode): void;
+
+	protected abstract walkSavepointCommandNode(node: SavepointCommandNode): void;
+
 	protected abstract walkSelectCommandNode(node: SelectCommandNode): void;
 
-	protected abstract walkSimpleColumnReferenceNode(node: SimpleColumnReferenceNode): void;
-
 	protected abstract walkSetItemNode(node: SetItemNode): void;
+
+	protected abstract walkSetSessionsCharacteristicsAsTransactionCommandNode(node: SetSessionsCharacteristicsAsTransactionCommandNode): void;
+
+	protected abstract walkSetTransactionCommandNode(node: SetTransactionCommandNode): void;
+
+	protected abstract walkSetTransactionSnapshotCommandNode(node: SetTransactionSnapshotCommandNode): void;
+
+	protected abstract walkSimpleColumnReferenceNode(node: SimpleColumnReferenceNode): void;
 
 	protected abstract walkSubSelectNode(node: SubSelectNode): void;
 
 	protected abstract walkTableReferenceNode(node: TableReferenceNode): void;
+
+	protected abstract walkTransactionModeNode(node: TransactionModeNode): void;
 
 	protected abstract walkUnaryOperationNode(node: UnaryOperationNode): void;
 
@@ -83,10 +106,19 @@ export abstract class BaseWalker {
 
 	protected abstract walkWithNode(node: WithNode): void;
 
+	protected walkNodes(nodes: AstNode[]): void {
+		for (const node of nodes) {
+			this.walk(node);
+		}
+	}
+
 	protected walk(node: AstNode): void {
 		switch (node.type) {
 			case "aliasedExpressionNode":
 				this.walkAliasedExpressionNode(node);
+				break;
+			case "beginCommandNode":
+				this.walkBeginCommandNode(node);
 				break;
 			case "binaryOperationNode":
 				this.walkBinaryOperationNode(node);
@@ -96,6 +128,9 @@ export abstract class BaseWalker {
 				break;
 			case "columnReferenceNode":
 				this.walkColumnReferenceNode(node);
+				break;
+			case "commitCommandNode":
+				this.walkCommitCommandNode(node);
 				break;
 			case "constantNode":
 				this.walkConstantNode(node);
@@ -133,11 +168,32 @@ export abstract class BaseWalker {
 			case "orderByExpressionNode":
 				this.walkOrderByExpressionNode(node);
 				break;
+			case "releaseSavepointCommandNode":
+				this.walkReleaseSavepointCommandNode(node);
+				break;
+			case "rollbackCommandNode":
+				this.walkRollbackCommandNode(node);
+				break;
+			case "rollbackToSavepointCommandNode":
+				this.walkRollbackToSavepointCommandNode(node);
+				break;
+			case "savepointCommandNode":
+				this.walkSavepointCommandNode(node);
+				break;
 			case "selectCommandNode":
 				this.walkSelectCommandNode(node);
 				break;
 			case "setItemNode":
 				this.walkSetItemNode(node);
+				break;
+			case "setSessionsCharacteristicsAsTransactionCommandNode":
+				this.walkSetSessionsCharacteristicsAsTransactionCommandNode(node);
+				break;
+			case "setTransactionCommandNode":
+				this.walkSetTransactionCommandNode(node);
+				break;
+			case "setTransactionSnapshotCommandNode":
+				this.walkSetTransactionSnapshotCommandNode(node);
 				break;
 			case "simpleColumnReferenceNode":
 				this.walkSimpleColumnReferenceNode(node);
@@ -147,6 +203,9 @@ export abstract class BaseWalker {
 				break;
 			case "tableReferenceNode":
 				this.walkTableReferenceNode(node);
+				break;
+			case "transactionModeNode":
+				this.walkTransactionModeNode(node);
 				break;
 			case "unaryOperationNode":
 				this.walkUnaryOperationNode(node);

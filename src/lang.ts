@@ -1,6 +1,5 @@
 import cloneDeep = require("lodash.clonedeep");
 import fs = require('fs');
-import path = require('path');
 import * as util from "util";
 
 export class DefaultMap<K, V> extends Map<K, V> {
@@ -28,6 +27,10 @@ export class SettingMap<K, V> extends Map<K, V> {
 			return <V> super.get(key); // should never be undefined
 		}
 	}
+}
+
+export function coerceNullToUndefined<T>(value: T | null): T | undefined {
+	return value === null ? undefined : value;
 }
 
 /**
