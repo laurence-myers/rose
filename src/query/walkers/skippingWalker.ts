@@ -94,6 +94,9 @@ export class SkippingWalker extends BaseWalker {
 		if (node.query) {
 			this.walk(node.query);
 		}
+		if (node.returning) {
+			this.walkNodes(node.returning);
+		}
 	}
 
 	protected walkLimitOffsetNode(node: LimitOffsetNode): void {

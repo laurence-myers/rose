@@ -331,6 +331,7 @@ export interface InsertCommandNode {
 	columns: SimpleColumnReferenceNode[];
 	values: ParameterOrValueExpressionNode[][];
 	query?: SubSelectNode;
+	returning?: Array<SelectOutputExpression>;
 }
 
 export interface TransactionModeNode {

@@ -265,4 +265,37 @@ describe(`INSERT commands`, () => {
 		};
 		assert.deepEqual(actual, expected);
 	});
+
+	it(`supports returning values`, () => {
+		// Set up
+		interface Params {
+
+		}
+
+		interface InsertRow extends UsersInsertRow {
+		}
+
+		const insertRow: InsertRow = {
+			id: 123,
+			name: 'Fred',
+			locationId: 456,
+		};
+
+		const query = insertFromObject<TUsers, InsertRow, Params>(QUsers, insertRow)
+			.returning({
+				newUserId: QUsers.id,
+				name: QUsers.name,
+				locationId: QUsers.locationId,
+			});
+
+		// Execute
+		const actual = query.toSql({});
+
+		// Verify
+		const expected = {
+			sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES ($1, $2, $3) RETURNING ("t1"."id" as "newUserId", "t1"."name" as "name", "t1"."locationId" as "locationId")`,
+			parameters: [123, 456, 'Fred'] // In order of column name (sorted alphabetically)
+		};
+		assert.deepEqual(actual, expected);
+	});
 });
