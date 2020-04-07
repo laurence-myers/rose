@@ -191,6 +191,9 @@ export class SkippingWalker extends BaseWalker {
 		this.walkNodes(node.setItems);
 		this.walkNodes(node.fromItems);
 		this.walkNodes(node.conditions);
+		if (node.returning) {
+			this.walkNodes(node.returning);
+		}
 	}
 
 	protected walkWithNode(node: WithNode): void {

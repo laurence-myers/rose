@@ -61,4 +61,39 @@ describe(`UPDATE commands`, function () {
 		};
 		assert.deepEqual(actual, expected);
 	});
+
+	it(`supports returning updated rows`, function () {
+		// Set up
+		interface Params {
+			id: TableColumns<TUsers>['id'];
+		}
+
+		const now = new Date('2020-04-01T14:30:00Z');
+
+		const updates: PartialTableColumns<TUsers> = {
+			deletedAt: now,
+			name: 'fred'
+		};
+		const paramsWrapper = new ParamsWrapper<Params>();
+
+		const query = updateFromObject<TUsers, Params>(QUsers, updates)
+			.where(QUsers.id.eq(paramsWrapper.get((p) => p.id)))
+			.returning({
+				updatedId: QUsers.id,
+				name: QUsers.name,
+			});
+
+		// Execute
+		const actual = query.toSql({
+			id: 123,
+			...updates
+		});
+
+		// Verify
+		const expected = {
+			sql: `UPDATE "Users" as "t1" SET "deletedAt" = $1, "name" = $2 WHERE "t1"."id" = $3 RETURNING ("t1"."id" as "updatedId", "t1"."name" as "name")`,
+			parameters: [now, 'fred', 123]
+		};
+		assert.deepEqual(actual, expected);
+	});
 });

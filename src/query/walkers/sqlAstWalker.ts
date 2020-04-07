@@ -469,6 +469,11 @@ export class SqlAstWalker extends BaseWalker {
 			this.sb += " WHERE ";
 			node.conditions.forEach(this.doListWalk());
 		}
+		if (node.returning) {
+			this.sb += ` RETURNING (`;
+			node.returning.forEach(this.doListWalk());
+			this.sb += `)`
+		}
 	}
 
 	protected walkWithNode(node: WithNode): void {

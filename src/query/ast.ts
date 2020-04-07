@@ -301,6 +301,7 @@ export interface UpdateCommandNode {
 	setItems: SetItemNode[];
 	fromItems: FromItemNode[];
 	conditions: BooleanExpression[];
+	returning?: Array<SelectOutputExpression>;
 }
 
 /*
