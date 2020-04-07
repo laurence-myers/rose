@@ -1,4 +1,4 @@
-import { begin, commit, rollback } from "../../../../src/query/dsl";
+import { begin, commit, rollback } from "../../../../src/query/dsl/commands";
 import * as assert from "assert";
 import {
 	BeginCommandBuilder,

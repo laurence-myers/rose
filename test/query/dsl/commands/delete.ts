@@ -1,20 +1,6 @@
-import { QAgencies, QLocations, QUsers, TLocations, TUsers, UsersInsertRow } from "../../../fixtures";
-import { lower, upper } from "../../../../src/query/postgresql/functions/string/sql";
-import { count } from "../../../../src/query/postgresql/functions/aggregate/general";
-import { deepFreeze, OptionalNulls } from "../../../../src/lang";
-import { deleteFrom, insert, insertFromObject, select, update, updateFromObject } from "../../../../src/query/dsl/commands";
-import { selectExpression, selectNestedMany, subSelect } from "../../../../src/query/dsl/select";
-import { alias, aliasCol, and, col, constant, not, or, ParamsWrapper } from "../../../../src/query/dsl/core";
-import {
-	ColumnMetamodel,
-	PartialTableColumns,
-	QueryTable,
-	TableColumns,
-	TableColumnsForInsertCommand,
-	TableColumnsForUpdateCommand,
-	TableMetamodel
-} from "../../../../src/query/metamodel";
-import { AsQuerySelector } from "../../../../src/query";
+import { QUsers } from "../../../fixtures";
+import { deleteFrom } from "../../../../src/query/dsl/commands";
+import { constant } from "../../../../src/query/dsl/core";
 import assert = require('assert');
 
 describe(`DELETE commands`, () => {
