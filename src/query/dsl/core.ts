@@ -96,6 +96,25 @@ export class ParamsWrapper<P> {
 	}
 }
 
+type ParamsProxy<T> = {
+	readonly [K in keyof T]: ConstantNode<T[K]>;
+}
+
+export function params<T = never>(): ParamsProxy<T> {
+	return new Proxy({}, {
+		get(target: {}, key: keyof T): any {
+			return param((p: T) => p[key]);
+		}
+	}) as ParamsProxy<T>;
+}
+
+export function withParams<T = never>() {
+	// Dumb workaround so that we can infer U but require T to be specified
+	return function <U>(cb: (p: ParamsProxy<T>) => U) {
+		return cb(params<T>());
+	}
+}
+
 export function row(first: ParameterOrValueExpressionNode, ...rest: ParameterOrValueExpressionNode[]): ExpressionListNode {
 	return {
 		type: "expressionListNode",

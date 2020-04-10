@@ -2,7 +2,7 @@ import { QLocations, QUsers, TUsers, UsersInsertRow } from "../../../fixtures";
 import { deepFreeze, OptionalNulls } from "../../../../src/lang";
 import { insert, insertFromObject } from "../../../../src/query/dsl/commands";
 import { subSelect } from "../../../../src/query/dsl/select";
-import { alias, aliasCol, col, constant, ParamsWrapper } from "../../../../src/query/dsl/core";
+import { alias, aliasCol, col, constant, params, ParamsWrapper, withParams } from "../../../../src/query/dsl/core";
 import {
 	ColumnMetamodel,
 	QueryTable,
@@ -23,16 +23,15 @@ describe(`INSERT commands`, () => {
 		interface InsertRow extends TableColumnsForUpdateCommand<TUsers> {
 
 		}
-		const paramsWrapper = new ParamsWrapper<Params>();
-		const query = insert<TUsers, InsertRow, Params>(QUsers)
+		const query = withParams<Params>()((p) => insert<TUsers, InsertRow, Params>(QUsers)
 			.insert({
 				// NOTE: for this test, property names should not be in alphabetical order, to verify that
 				// `insert()` explicitly sorts them.
-				id: paramsWrapper.get((p) => p.id),
-				name: paramsWrapper.get((p) => p.name),
-				deletedAt: paramsWrapper.get((p) => p.deletedAt),
-				locationId: paramsWrapper.get((p) => p.locationId)
-			});
+				id: p.id,
+				name: p.name,
+				deletedAt: p.deletedAt,
+				locationId: p.locationId
+			}));
 
 		// Execute
 		const actual = query.toSql({
@@ -69,13 +68,13 @@ describe(`INSERT commands`, () => {
 		interface InsertRow extends TableColumnsForUpdateCommand<TUsers> {
 
 		}
-		const paramsWrapper = new ParamsWrapper<Params>();
+		const p = params<Params>();
 		const query = insert<TUsers, InsertRow, Params>(QUsers)
 			.insert({
-				id: paramsWrapper.get((p) => p.id),
-				name: paramsWrapper.get((p) => p.name),
-				deletedAt: paramsWrapper.get((p) => p.deletedAt),
-				locationId: paramsWrapper.get((p) => p.locationId)
+				id: p.id,
+				name: p.name,
+				deletedAt: p.deletedAt,
+				locationId: p.locationId
 			});
 
 		// Execute

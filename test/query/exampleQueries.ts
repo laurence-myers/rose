@@ -16,7 +16,7 @@ import { exists } from "../../src/query/postgresql/functions/subquery/expression
 import { sum } from "../../src/query/postgresql/functions/aggregate/general";
 import { divide } from "../../src/query/postgresql/functions/mathematical/operators";
 import { selectCte, selectExpression, selectNestedMany, subSelect } from "../../src/query/dsl/select";
-import { and, col, literal, or, ParamsWrapper, row } from "../../src/query/dsl/core";
+import { and, col, literal, or, params, row } from "../../src/query/dsl/core";
 
 describe(`Example queries`, function () {
 	describe(`Recurring payments`, function () {
@@ -105,19 +105,19 @@ describe(`Example queries`, function () {
 				locationId: number;
 			}
 			// Make our use of parameters within the sub-query type safe
-			const P = new ParamsWrapper<QueryParams>();
+			const P = params<QueryParams>();
 			// Define our sub-query before the query class. (We could also define it inline, at the expense of readability.)
 			const subQuery = subSelect<QueryParams>(QRP.id)
 				.where(and(
-					QRP.locationId.eq(P.get(p => p.locationId)),
+					QRP.locationId.eq(P.locationId),
 					or(
 						and(
 							QRP.endDate.isNull(),
-							QRP.startDate.eq(P.get(p => p.startDate))
+							QRP.startDate.eq(P.startDate)
 						),
 						overlaps(
 							row(col(QRP.startDate), col(QRP.endDate)),
-							row(P.get(p => p.startDate), P.get(p => p.endDate))
+							row(P.startDate, P.endDate)
 						)
 					)
 				))

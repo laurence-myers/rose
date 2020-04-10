@@ -9,8 +9,8 @@ export const FooTableDefaultQueries = {
 			id: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.select<typeof FooTableAllColumns, Params>(FooTableAllColumns).where(QFooTable.id.eq(P.get((p) => p.id))).prepare();
+		const P = new rose.params<Params>();
+		return rose.select<typeof FooTableAllColumns, Params>(FooTableAllColumns).where(QFooTable.id.eq(P.id)).prepare();
 	})(),
 	insertOne: function updateOne(row: FooTableInsertRow) {
 		return rose.insertFromObject<TFooTable, FooTableInsertRow, {}>(QFooTable, row).prepare();
@@ -20,15 +20,15 @@ export const FooTableDefaultQueries = {
 			id: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.updateFromObject<TFooTable, Params>(QFooTable, updates).where(QFooTable.id.eq(P.get((p) => p.id))).prepare();
+		const P = new rose.params<Params>();
+		return rose.updateFromObject<TFooTable, Params>(QFooTable, updates).where(QFooTable.id.eq(P.id)).prepare();
 	},
 	deleteOne: (function deleteOne() {
 		interface Params {
 			id: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.deleteFrom<Params>(QFooTable).where(QFooTable.id.eq(P.get((p) => p.id))).prepare();
+		const P = new rose.params<Params>();
+		return rose.deleteFrom<Params>(QFooTable).where(QFooTable.id.eq(P.id)).prepare();
 	})(),
 };

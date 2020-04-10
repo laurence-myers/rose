@@ -46,15 +46,9 @@ function generateAllColumns(tableMetadata: TableMetadata) {
 }
 
 function getParameter(name: string) {
-	return invokeMethod(
+	return propLookup(
 		id('P'),
-		'get',
-		[
-			arrowFunc(
-				[param('p')],
-				propLookup(id('p'), name)
-			)
-		]
+		name,
 	);
 }
 
@@ -98,7 +92,7 @@ function generateGetOne(table: TableMetadata): ObjectPropertyNode | undefined {
 				stmt(varDecl(
 					'const',
 					'P',
-					funcCall(id('new rose.ParamsWrapper<Params>'), [])
+					funcCall(id('new rose.params<Params>'), [])
 				)),
 				stmt(ret(
 					invokeMethodChain(
@@ -173,7 +167,7 @@ function generateUpdateOne(table: TableMetadata) {
 				stmt(varDecl(
 					'const',
 					'P',
-					funcCall(id('new rose.ParamsWrapper<Params>'), [])
+					funcCall(id('new rose.params<Params>'), [])
 				)),
 				stmt(ret(
 					invokeMethodChain(
@@ -216,7 +210,7 @@ function generateDeleteOne(table: TableMetadata) {
 				stmt(varDecl(
 					'const',
 					'P',
-					funcCall(id('new rose.ParamsWrapper<Params>'), [])
+					funcCall(id('new rose.params<Params>'), [])
 				)),
 				stmt(ret(
 					invokeMethodChain(

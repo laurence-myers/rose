@@ -4,7 +4,7 @@ import { count } from "../../../../src/query/postgresql/functions/aggregate/gene
 import { deepFreeze } from "../../../../src/lang";
 import { select } from "../../../../src/query/dsl/commands";
 import { selectExpression, selectNestedMany, subSelect } from "../../../../src/query/dsl/select";
-import { and, col, not, or } from "../../../../src/query/dsl/core";
+import { and, col, not, or, params, withParams } from "../../../../src/query/dsl/core";
 import { AsQuerySelector } from "../../../../src/query";
 import assert = require('assert');
 
@@ -548,4 +548,39 @@ describe(`SELECT commands`, () => {
 	xit(`supports "USING" (multiple FROMs, an alternative to sub-queries)`, function () {});
 
 	xit(`supports cursors`, function () {});
+
+	describe(`Params`, function () {
+		it(`can be provided via a convenience proxy`, function () {
+			const querySelect = {
+				name: QUsers.name
+			};
+
+			interface Params {
+				id: number;
+			}
+
+			const p = params<Params>();
+
+			const query = select<typeof querySelect, Params>(querySelect)
+				.where(QUsers.id.eq(p.id));
+
+			query.toSql({
+				id: 123
+			});
+		});
+
+		it(`can be provided via withParams`, function () {
+			const querySelect = {
+				name: QUsers.name
+			};
+
+			const query = withParams<{
+				id: number;
+			}>()((p) => select(querySelect)
+				.where(QUsers.id.eq(p.id))
+			).toSql({
+				shouldError: 123
+			});
+		});
+	});
 });
