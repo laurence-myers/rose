@@ -1,5 +1,5 @@
 import { transaction } from "../../../src/query/dsl/transaction";
-import { Queryable } from "../../../src/execution/execution";
+import { Queryable } from "../../../src/execution";
 import { QueryResult } from "pg";
 import * as assert from "assert";
 

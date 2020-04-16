@@ -10,7 +10,7 @@ import {
 import { QueryTable, TableColumnsForUpdateCommand } from "../metamodel";
 import { aliasTable } from "../dsl";
 import { GeneratedQuery, PreparedQuery, PreparedQueryNonReturning } from "../preparedQuery";
-import { Queryable } from "../../execution/execution";
+import { Queryable } from "../../execution";
 import { SqlAstWalker } from "../walkers/sqlAstWalker";
 import { QuerySelector } from "../querySelector";
 import { QuerySelectorProcessor } from "../metadata";

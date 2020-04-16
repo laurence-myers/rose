@@ -1,4 +1,4 @@
-import { execute, executeNonReturning, Queryable } from "../execution/execution";
+import { execute, executeNonReturning, Queryable } from "../execution";
 import { QuerySelector } from "./querySelector";
 import { SelectOutputExpression } from "./ast";
 import { MappedQuerySelector } from "./typeMapping";

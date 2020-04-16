@@ -1,7 +1,7 @@
 import { DefaultMap } from "../lang";
 import { QueryResult } from "pg";
 import { sanitizeColumnName, sanitizeTableName } from "./templates/common";
-import { Queryable } from "../execution/execution";
+import { Queryable } from "../execution";
 
 type sql_identifier = string;
 // type cardinal_number = number;

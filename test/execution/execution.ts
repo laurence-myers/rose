@@ -1,7 +1,7 @@
 import assert = require('assert');
 import { QUsers } from "../fixtures";
 import { select } from "../../src/query/dsl/commands";
-import { Queryable } from "../../src/execution/execution";
+import { Queryable } from "../../src/execution";
 import { QueryResult } from "pg";
 
 class MockQueryable implements Queryable {

@@ -15,7 +15,7 @@ import { QuerySelectorProcessor } from "../metadata";
 import { ColumnMetamodel, QueryTable, TableMetamodel } from "../metamodel";
 import { UnsupportedOperationError } from "../../errors";
 import { Clone, DefaultMap } from "../../lang";
-import { Queryable } from "../../execution/execution";
+import { Queryable } from "../../execution";
 import { MappedQuerySelector } from "../typeMapping";
 import { GeneratedQuery, PreparedQuery } from "../preparedQuery";
 import { aliasTable } from "../dsl/core";

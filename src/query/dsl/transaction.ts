@@ -1,6 +1,6 @@
 import { TransactionIsolationLevel, TransactionReadMode } from "../builders/begin";
 import { begin, commit, rollback } from "./commands";
-import { Queryable } from "../../execution/execution";
+import { Queryable } from "../../execution";
 import { PreparedQueryNonReturning } from "../preparedQuery";
 
 export interface TransactionOptions {

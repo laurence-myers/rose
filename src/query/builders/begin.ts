@@ -2,7 +2,7 @@ import { BeginCommandNode, TransactionModeNode } from "../ast";
 import { Clone, coerceNullToUndefined } from "../../lang";
 import { GeneratedQuery, PreparedQueryNonReturning } from "../preparedQuery";
 import { SqlAstWalker } from "../walkers/sqlAstWalker";
-import { Queryable } from "../../execution/execution";
+import { Queryable } from "../../execution";
 
 export enum TransactionIsolationLevel {
 	Serializable = 'SERIALIZABLE',

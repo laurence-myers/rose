@@ -2,7 +2,7 @@ import { Clone, DefaultMap } from "../../lang";
 import { AliasedExpressionNode, BooleanExpression, DeleteCommandNode, TableReferenceNode } from "../ast";
 import { QueryTable } from "../metamodel";
 import { GeneratedQuery, PreparedQueryNonReturning } from "../preparedQuery";
-import { Queryable } from "../../execution/execution";
+import { Queryable } from "../../execution";
 import { aliasTable } from "../dsl/core";
 import { SqlAstWalker } from "../walkers/sqlAstWalker";
 
