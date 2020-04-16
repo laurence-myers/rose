@@ -26,14 +26,14 @@
     "lodash.clonedeep": "4.5.0",
     "metrohash": "2.6.0",
     "outdent": "0.7.1",
-    "pg": "6.1.0"
+    "pg": "8.0.2"
   },
   "devDependencies": {
     "@types/app-root-path": "1.2.4",
     "@types/lodash.clonedeep": "4.5.3",
     "@types/mocha": "7.0.1",
     "@types/node": "12",
-    "@types/pg": "6.1.34",
+    "@types/pg": "7.14.3",
     "@typescript-eslint/eslint-plugin": "2.19.0",
     "@typescript-eslint/parser": "2.19.0",
     "app-root-path": "3.0.0",
