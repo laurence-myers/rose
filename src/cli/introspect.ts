@@ -105,7 +105,7 @@ async function main(rawArgs: string[]): Promise<ExitCode> {
 		const args = parseArgs(rawArgs);
 		if (isCliOptions(args)) {
 			client = new Client(args.url);
-			client.connect();
+			await client.connect();
 			console.log(`Querying the database...`);
 			const tablesMetadata: Map<string, TableMetadata> = await getTableMetadata(client);
 			console.log(`Generating interfaces and metamodels for ${ tablesMetadata.size } tables...`);
