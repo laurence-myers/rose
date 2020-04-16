@@ -1,15 +1,8 @@
 import { ColumnMetadata, TableMetadata } from "../dbmetadata";
-import {
-	allColumnsName,
-	getColumnTypeScriptType,
-	insertRowIfaceName,
-	metamodelClassName,
-	metamodelInstanceName,
-} from "./common";
+import { allColumnsName, insertRowIfaceName, metamodelClassName, metamodelInstanceName, } from "./common";
 import { CodeGeneratorError } from "../../errors";
 import {
 	anno,
-	arrowFunc,
 	body,
 	funcCall,
 	funcExpr,
@@ -18,7 +11,6 @@ import {
 	ifaceProp,
 	iife,
 	impAll,
-	invokeMethod,
 	invokeMethodChain,
 	modl,
 	obj,
@@ -245,7 +237,7 @@ function findColumnMetadataByName(tableMetadata: TableMetadata, columnName: stri
 }
 
 function getColumnNameAndType(columnMetadata: ColumnMetadata): InterfacePropertyNode {
-	return ifaceProp(columnMetadata.niceName, anno(getColumnTypeScriptType(columnMetadata)));
+	return ifaceProp(columnMetadata.niceName, anno(columnMetadata.tsType));
 }
 
 function mapPrimaryKeys(tableMetadata: TableMetadata): InterfacePropertyNode[] {

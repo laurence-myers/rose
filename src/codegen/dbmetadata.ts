@@ -2,6 +2,8 @@ import { DefaultMap } from "../lang";
 import { QueryResult } from "pg";
 import { sanitizeColumnName, sanitizeTableName } from "./templates/common";
 import { Queryable } from "../execution";
+import { POSTGRES_TO_TYPESCRIPT_TYPE_MAP } from "./dbtypes";
+import { UnrecognisedColumnTypeError } from "../errors";
 
 type sql_identifier = string;
 // type cardinal_number = number;
@@ -33,8 +35,25 @@ function yesOrNoToBoolean(yesOrNo: yes_or_no): boolean {
  views
  */
 
+function getColumnTypeScriptType(column: ColumnMetadata): string {
+	let isArray = column.type.startsWith('_');
+	let tsType = POSTGRES_TO_TYPESCRIPT_TYPE_MAP.get(column.type.replace(/^_/, ''));
+	if (!tsType) {
+		throw new UnrecognisedColumnTypeError(`No mapping defined for column type: "${ column.type }"`);
+	}
+	if (isArray) {
+		tsType += '[]'
+	}
+	if (column.isNullable) {
+		tsType += ' | null'
+	}
+	return tsType;
+}
+
 export class ColumnMetadata {
 	public readonly niceName: string = sanitizeColumnName(this.name);
+	public readonly tsType: string = getColumnTypeScriptType(this);
+
 	constructor(
 		public readonly name: string,
 		public readonly type: string,

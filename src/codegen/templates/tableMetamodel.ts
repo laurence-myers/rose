@@ -1,5 +1,5 @@
 import { ColumnMetadata, TableMetadata } from "../dbmetadata";
-import { getColumnTypeScriptType, metamodelClassName, metamodelInstanceName } from "./common";
+import { metamodelClassName, metamodelInstanceName } from "./common";
 import {
 	anno,
 	body,
@@ -19,7 +19,7 @@ import {
 import { ModuleNode } from "../ast";
 
 function getColumnMetamodelName(column: ColumnMetadata): string {
-	return `rose.ColumnMetamodel<${ getColumnTypeScriptType(column) }>`;
+	return `rose.ColumnMetamodel<${ column.tsType }>`;
 }
 
 function escapeColumnName(column: ColumnMetadata): string {

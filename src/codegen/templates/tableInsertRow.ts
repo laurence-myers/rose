@@ -1,5 +1,5 @@
 import { TableMetadata } from "../dbmetadata";
-import { getColumnTypeScriptType, insertRowIfaceName } from "./common";
+import { insertRowIfaceName } from "./common";
 import { anno, iface, ifaceProp } from "../dsl";
 import { InterfaceNode } from "../ast";
 
@@ -8,7 +8,7 @@ export function TableInsertRowTemplate(table: TableMetadata): InterfaceNode {
 		insertRowIfaceName(table),
 		table.columns.map((col) => ifaceProp(
 			col.niceName,
-			anno(getColumnTypeScriptType(col)),
+			anno(col.tsType),
 			col.isNullable || col.hasDefault
 		)),
 		[],
