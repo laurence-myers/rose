@@ -1,11 +1,13 @@
 {
-  "name": "rose",
+  "name": "rose-cli",
   "version": "0.0.1",
-  "description": "Type-safe query builder DSL, data mapper, and mini ORM for PostgreSQL",
+  "description": "CLI for rose, a type-safe query builder DSL, data mapper, and mini ORM for PostgreSQL",
   "main": "index.js",
+  "bin": {
+    "rose": "./cli/introspect.js"
+  },
   "scripts": {
     "compile": "tsc",
-    "genFuncs": "node build/tools/pgDocsParsing.js",
     "lint": "eslint . --ext .ts",
     "package": "tsc -p tsconfig_package.json && ts-node tools/package.ts",
     "test": "mocha",
@@ -18,16 +20,17 @@
     "yarn": "1.x"
   },
   "dependencies": {
-    "lodash.clonedeep": "4.5.0",
-    "metrohash": "2.6.0"
+    "camelcase": "5.3.1",
+    "pg": "8.0.2"
   },
   "devDependencies": {
     "@types/app-root-path": "1.2.4",
-    "@types/lodash.clonedeep": "4.5.3",
     "@types/mocha": "7.0.1",
     "@types/node": "12",
+    "@types/pg": "7.14.3",
     "@typescript-eslint/eslint-plugin": "2.19.0",
     "@typescript-eslint/parser": "2.19.0",
+    "app-root-path": "3.0.0",
     "eslint": "6.8.0",
     "eslint-plugin-unused-imports": "0.1.2",
     "mocha": "7.0.1",

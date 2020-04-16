@@ -4,6 +4,6 @@
         "outDir": "package/"
     },
     "include": [
-        "src/index.ts"
+        "src/cli/introspect.ts"
     ]
 }

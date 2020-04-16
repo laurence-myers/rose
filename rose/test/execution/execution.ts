@@ -1,8 +1,7 @@
 import assert = require('assert');
 import { QUsers } from "../fixtures";
 import { select } from "../../src/query/dsl/commands";
-import { Queryable } from "../../src/execution";
-import { QueryResult } from "pg";
+import { Queryable, QueryResult } from "../../src/execution";
 
 class MockQueryable implements Queryable {
 	constructor(protected readonly rows: unknown[]) {
@@ -14,7 +13,8 @@ class MockQueryable implements Queryable {
 			command: 'mockCommand',
 			rowCount: this.rows.length,
 			oid: 12345,
-			rows: this.rows
+			rows: this.rows,
+			fields: []
 		});
 	}
 }

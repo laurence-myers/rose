@@ -1,6 +1,5 @@
 import { transaction } from "../../../src/query/dsl/transaction";
-import { Queryable } from "../../../src/execution";
-import { QueryResult } from "pg";
+import { Queryable, QueryResult } from "../../../src/execution";
 import * as assert from "assert";
 
 describe(`Transactions`, () => {
@@ -16,7 +15,8 @@ describe(`Transactions`, () => {
 						command: ``,
 						oid: 1,
 						rowCount: 0,
-						rows: []
+						rows: [],
+						fields: []
 					};
 				}
 			};
@@ -44,7 +44,8 @@ describe(`Transactions`, () => {
 						command: ``,
 						oid: 1,
 						rowCount: 0,
-						rows: []
+						rows: [],
+						fields: []
 					};
 				}
 			};
