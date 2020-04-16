@@ -75,7 +75,16 @@ export class TableMetadata {
 	}
 }
 
-const columnMetadataQuery = `SELECT "udt_name", "table_name", "column_name", "column_default", "is_nullable" FROM "information_schema"."columns" WHERE "table_schema" = $1 ORDER BY "table_name", "column_name"`;
+const columnMetadataQuery = `SELECT "udt_name",
+       "table_name",
+       "column_name",
+       "column_default",
+       "is_nullable"
+	FROM "information_schema"."columns"
+	WHERE "table_schema" = $1
+		AND NOT lower("table_name") = ANY($2)
+	ORDER BY "table_name",
+	         "column_name"`;
 
 const constraintQuery = `SELECT kcu.table_schema,
            kcu.table_name,
@@ -89,12 +98,26 @@ const constraintQuery = `SELECT kcu.table_schema,
 		AND kcu.constraint_name = tc.constraint_name)
     WHERE tc.table_schema = $1
       AND tc.constraint_type = $2
+      AND NOT lower(kcu."table_name") = ANY($3)
     ORDER BY kcu.table_schema,
              kcu.table_name,
              position;`;
 
-async function populateColumnTypes(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, schema: string): Promise<void> {
-	const result: QueryResult = await client.query(columnMetadataQuery, [schema]);
+const defaultIgnoredTables = [
+	'__MigrationHistory', // Entity Framework
+	'alembic_version', // SQLAlchemy Alembic
+	'DATABASECHANGELOG', // Liquibase
+	'django_migrations', // Django
+	'flyway_schema_history', // Flyway
+	'knex_migrations', // Knex.js
+	'migrations', // db-migrations, TypeORM (could have issues if the DB is tracking bird flight paths... ;))
+	'mikro_orm_migrations', // MikroORM
+	'schema_migrations', // ActiveRecord (Ruby on Rails)
+	'SequelizeMeta' // umzug (Sequelize)
+].map((name) => name.toLowerCase());
+
+async function populateColumnTypes(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, schema: string, allIgnoredTables: string[]): Promise<void> {
+	const result: QueryResult = await client.query(columnMetadataQuery, [schema, allIgnoredTables]);
 	const rows: ColumnsRow[] = result.rows;
 	rows.forEach((row) => {
 		const tableMetadata = tablesMetadata.get(row.table_name);
@@ -103,8 +126,8 @@ async function populateColumnTypes(client: Queryable, tablesMetadata: DefaultMap
 	});
 }
 
-async function populatePrimaryKeys(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, schema: string): Promise<void> {
-	const result: QueryResult = await client.query(constraintQuery, [schema, 'PRIMARY KEY']);
+async function populatePrimaryKeys(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, schema: string, allIgnoredTables: string[]): Promise<void> {
+	const result: QueryResult = await client.query(constraintQuery, [schema, 'PRIMARY KEY', allIgnoredTables]);
 	const rows: Array<{
 		table_schema: string;
 		table_name: string;
@@ -118,9 +141,10 @@ async function populatePrimaryKeys(client: Queryable, tablesMetadata: DefaultMap
 	}
 }
 
-export async function getTableMetadata(client: Queryable, schema: string = 'public'): Promise<DefaultMap<string, TableMetadata>> {
+export async function getTableMetadata(client: Queryable, schema: string = 'public', ignoredTables: string[] = []): Promise<DefaultMap<string, TableMetadata>> {
 	const tablesMetadata: DefaultMap<string, TableMetadata> = new DefaultMap<string, TableMetadata>((key: string) => new TableMetadata(schema, key));
-	await populateColumnTypes(client, tablesMetadata, schema);
-	await populatePrimaryKeys(client, tablesMetadata, schema);
+	const allIgnoredTables = defaultIgnoredTables.concat(ignoredTables.map((name) => name.toLowerCase()));
+	await populateColumnTypes(client, tablesMetadata, schema, allIgnoredTables);
+	await populatePrimaryKeys(client, tablesMetadata, schema, allIgnoredTables);
 	return tablesMetadata;
 }
