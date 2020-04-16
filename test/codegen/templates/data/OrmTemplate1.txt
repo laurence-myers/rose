@@ -9,7 +9,7 @@ export const FooTableDefaultQueries = {
 			id: number;
 		}
 
-		const P = new rose.params<Params>();
+		const P = rose.params<Params>();
 		return rose.select<typeof FooTableAllColumns, Params>(FooTableAllColumns).where(QFooTable.id.eq(P.id)).prepare();
 	})(),
 	insertOne: function updateOne(row: FooTableInsertRow) {
@@ -20,7 +20,7 @@ export const FooTableDefaultQueries = {
 			id: number;
 		}
 
-		const P = new rose.params<Params>();
+		const P = rose.params<Params>();
 		return rose.updateFromObject<TFooTable, Params>(QFooTable, updates).where(QFooTable.id.eq(P.id)).prepare();
 	},
 	deleteOne: (function deleteOne() {
@@ -28,7 +28,7 @@ export const FooTableDefaultQueries = {
 			id: number;
 		}
 
-		const P = new rose.params<Params>();
+		const P = rose.params<Params>();
 		return rose.deleteFrom<Params>(QFooTable).where(QFooTable.id.eq(P.id)).prepare();
 	})(),
 };

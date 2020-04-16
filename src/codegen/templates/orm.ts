@@ -92,7 +92,7 @@ function generateGetOne(table: TableMetadata): ObjectPropertyNode | undefined {
 				stmt(varDecl(
 					'const',
 					'P',
-					funcCall(id('new rose.params<Params>'), [])
+					funcCall(id('rose.params<Params>'), [])
 				)),
 				stmt(ret(
 					invokeMethodChain(
@@ -167,7 +167,7 @@ function generateUpdateOne(table: TableMetadata) {
 				stmt(varDecl(
 					'const',
 					'P',
-					funcCall(id('new rose.params<Params>'), [])
+					funcCall(id('rose.params<Params>'), [])
 				)),
 				stmt(ret(
 					invokeMethodChain(
@@ -210,7 +210,7 @@ function generateDeleteOne(table: TableMetadata) {
 				stmt(varDecl(
 					'const',
 					'P',
-					funcCall(id('new rose.params<Params>'), [])
+					funcCall(id('rose.params<Params>'), [])
 				)),
 				stmt(ret(
 					invokeMethodChain(

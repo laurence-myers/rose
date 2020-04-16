@@ -11,7 +11,7 @@ export const FooTableDefaultQueries = {
 			createdAt: Date;
 		}
 
-		const P = new rose.params<Params>();
+		const P = rose.params<Params>();
 		return rose.select<typeof FooTableAllColumns, Params>(FooTableAllColumns).where(rose.and(QFooTable.name.eq(P.name), QFooTable.createdAt.eq(P.createdAt))).prepare();
 	})(),
 	insertOne: function updateOne(row: FooTableInsertRow) {
@@ -23,7 +23,7 @@ export const FooTableDefaultQueries = {
 			createdAt: Date;
 		}
 
-		const P = new rose.params<Params>();
+		const P = rose.params<Params>();
 		return rose.updateFromObject<TFooTable, Params>(QFooTable, updates).where(rose.and(QFooTable.name.eq(P.name), QFooTable.createdAt.eq(P.createdAt))).prepare();
 	},
 	deleteOne: (function deleteOne() {
@@ -32,7 +32,7 @@ export const FooTableDefaultQueries = {
 			createdAt: Date;
 		}
 
-		const P = new rose.params<Params>();
+		const P = rose.params<Params>();
 		return rose.deleteFrom<Params>(QFooTable).where(rose.and(QFooTable.name.eq(P.name), QFooTable.createdAt.eq(P.createdAt))).prepare();
 	})(),
 };
