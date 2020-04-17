@@ -237,7 +237,7 @@ function findColumnMetadataByName(tableMetadata: TableMetadata, columnName: stri
 }
 
 function getColumnNameAndType(columnMetadata: ColumnMetadata): InterfacePropertyNode {
-	return ifaceProp(columnMetadata.niceName, anno(columnMetadata.tsType));
+	return ifaceProp(columnMetadata.niceName, anno(columnMetadata.tsType.type));
 }
 
 function mapPrimaryKeys(tableMetadata: TableMetadata): InterfacePropertyNode[] {

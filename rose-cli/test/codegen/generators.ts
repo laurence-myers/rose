@@ -4,6 +4,8 @@ import * as path from 'path';
 import * as arp from 'app-root-path';
 import { ColumnMetadata, TableMetadata } from "../../src/codegen/dbmetadata";
 import { generateTableCode } from "../../src/codegen/generators";
+import { IntrospectConfig } from "../../src/config";
+import { defaultPostgresTypeMap } from "../../src/codegen/dbtypes";
 
 describe(`Code generators`, () => {
 	describe(`generateTableCode()`, () => {
@@ -13,13 +15,33 @@ describe(`Code generators`, () => {
 		}
 
 		function* generateData(counter: () => string) {
+			const tableName = 'foo_table';
+			const typeMaps: IntrospectConfig['types'] = {
+				global: defaultPostgresTypeMap,
+				columns: new Map([
+					['foo_table.custom_type_1', {
+						type: `'bar' | 'baz'`
+					}],
+					['foo_table.custom_type_2', {
+						type: `CustomType2`,
+						from: '../../src/customTypeProvider'
+					}],
+					['foo_table.custom_type_3', {
+						type: `CustomType2`,
+						from: '../../src/customTypeProvider'
+					}],
+				])
+			};
 			for (const type of ['int', 'text', 'timestamptz']) {
 				for (const isNullable of [false, true]) {
-					for (const hasDefault of [false, true]) { // TODO: test "hasDefault" of "true"
-						yield new ColumnMetadata(counter(), type, isNullable, hasDefault);
+					for (const hasDefault of [false, true]) {
+						yield new ColumnMetadata(tableName, counter(), type, isNullable, hasDefault, typeMaps);
 					}
 				}
 			}
+			yield new ColumnMetadata(tableName, 'custom_type_1', 'text', true, false, typeMaps);
+			yield new ColumnMetadata(tableName, 'custom_type_2', 'json', true, false, typeMaps);
+			yield new ColumnMetadata(tableName, 'custom_type_3', 'json', false, false, typeMaps);
 		}
 
 		it(`should support integer, string, and date column types, with nulls`, async () => {

@@ -5,8 +5,16 @@ import * as arp from "app-root-path";
 import * as path from "path";
 import * as fs from "fs";
 import { astToString } from "../../../src/codegen/walker";
+import { IntrospectConfig } from "../../../src/config";
+import { defaultPostgresTypeMap } from "../../../src/codegen/dbtypes";
 
 describe(`OrmTemplate`, () => {
+	const tableName = `foo_table`;
+	const typeMaps: IntrospectConfig['types'] = {
+		global: defaultPostgresTypeMap,
+		columns: new Map()
+	};
+
 	function readExpectedCode(testNumber: number): string {
 		const filePath = arp.resolve(path.join('test', 'codegen', 'templates', 'data', `OrmTemplate${ testNumber }.txt`));
 		return fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
@@ -14,9 +22,9 @@ describe(`OrmTemplate`, () => {
 
 	it(`generates getOne() with a single column primary key`, () => {
 		// Setup
-		const tableMetadata = new TableMetadata(`public`, `foo_table`);
+		const tableMetadata = new TableMetadata(`public`, tableName);
 		tableMetadata.columns.push(
-			new ColumnMetadata('id', 'int', false, true)
+			new ColumnMetadata(tableName, 'id', 'int', false, true, typeMaps)
 		);
 		tableMetadata.primaryKeys.push('id');
 
@@ -31,8 +39,8 @@ describe(`OrmTemplate`, () => {
 		// Setup
 		const tableMetadata = new TableMetadata(`public`, `foo_table`);
 		tableMetadata.columns.push(
-			new ColumnMetadata('name', 'text', false, true),
-			new ColumnMetadata('created_at', 'date', false, true),
+			new ColumnMetadata(tableName, 'name', 'text', false, true, typeMaps),
+			new ColumnMetadata(tableName, 'created_at', 'date', false, true, typeMaps),
 		);
 		tableMetadata.primaryKeys.push('name');
 		tableMetadata.primaryKeys.push('created_at');

@@ -1,6 +1,7 @@
 import { DefaultMap } from "../lang";
+import { TypeMapEntry } from "../config";
 
-export const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<string, string>(() => "any", <[string, string][]>[
+const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<string, string>(() => "any", <[string, string][]>[
 	["bigint", "string"], // 8 bytes, can't be represented as a FP number
 	["int8", "string"], // 8 bytes, can't be represented as a FP number
 	["bigserial", "string"], // 8 bytes, can't be represented as a FP number
@@ -69,3 +70,13 @@ export const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultM
 
 	// Not supported; other internal formats like
 ]);
+
+export const defaultPostgresTypeMap = (function () {
+	const map: Map<string, TypeMapEntry> = new Map();
+	for (const entry of POSTGRES_TO_TYPESCRIPT_TYPE_MAP.entries()) {
+		map.set(entry[0], {
+			type: entry[1]
+		});
+	}
+	return map;
+})();

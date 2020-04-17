@@ -19,7 +19,7 @@ import {
 import { ModuleNode } from "../ast";
 
 function getColumnMetamodelName(column: ColumnMetadata): string {
-	return `rose.ColumnMetamodel<${ column.tsType }>`;
+	return `rose.ColumnMetamodel<${ column.tsType.type }>`;
 }
 
 function escapeColumnName(column: ColumnMetadata): string {

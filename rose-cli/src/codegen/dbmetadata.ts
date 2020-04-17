@@ -2,8 +2,8 @@ import { DefaultMap } from "../lang";
 import { QueryResult } from "pg";
 import { sanitizeColumnName, sanitizeTableName } from "./templates/common";
 import { Queryable } from "../execution";
-import { POSTGRES_TO_TYPESCRIPT_TYPE_MAP } from "./dbtypes";
 import { UnrecognisedColumnTypeError } from "../errors";
+import { IntrospectConfig, TypeMapEntry } from "../config";
 
 type sql_identifier = string;
 // type cardinal_number = number;
@@ -35,31 +35,45 @@ function yesOrNoToBoolean(yesOrNo: yes_or_no): boolean {
  views
  */
 
-function getColumnTypeScriptType(column: ColumnMetadata): string {
+function getColumnTypeScriptType(tableName: string, column: ColumnMetadata, typeMaps: IntrospectConfig['types']): TypeMapEntry & { importName?: string } {
 	let isArray = column.type.startsWith('_');
-	let tsType = POSTGRES_TO_TYPESCRIPT_TYPE_MAP.get(column.type.replace(/^_/, ''));
-	if (!tsType) {
-		throw new UnrecognisedColumnTypeError(`No mapping defined for column type: "${ column.type }"`);
+	let tsTypeEntry = typeMaps.columns.get([tableName, column.name].join('.'));
+	let newTypeName;
+
+	if (!tsTypeEntry) {
+		const sanitisedType = column.type.replace(/^_/, ''); // Remove the array character
+		tsTypeEntry = typeMaps.global.get(sanitisedType);
+		if (!tsTypeEntry) {
+			throw new UnrecognisedColumnTypeError(`No mapping defined for column type: "${ column.type }"`);
+		}
+		if (isArray) {
+			newTypeName = `Array<${ tsTypeEntry.type }>`;
+		}
 	}
-	if (isArray) {
-		tsType += '[]'
-	}
+
 	if (column.isNullable) {
-		tsType += ' | null'
+		newTypeName = tsTypeEntry.type + ' | null';
 	}
-	return tsType;
+	return {
+		...tsTypeEntry,
+		type: newTypeName || tsTypeEntry.type,
+		importName: tsTypeEntry.type
+	};
 }
 
 export class ColumnMetadata {
 	public readonly niceName: string = sanitizeColumnName(this.name);
-	public readonly tsType: string = getColumnTypeScriptType(this);
+	public readonly tsType: TypeMapEntry & { importName?: string };
 
 	constructor(
+		tableName: string,
 		public readonly name: string,
 		public readonly type: string,
 		public readonly isNullable: boolean,
-		public readonly hasDefault: boolean
+		public readonly hasDefault: boolean,
+		typeMaps: IntrospectConfig['types']
 	) {
+		this.tsType = getColumnTypeScriptType(tableName, this, typeMaps);
 	}
 }
 
@@ -103,31 +117,18 @@ const constraintQuery = `SELECT kcu.table_schema,
              kcu.table_name,
              position;`;
 
-const defaultIgnoredTables = [
-	'__MigrationHistory', // Entity Framework
-	'alembic_version', // SQLAlchemy Alembic
-	'DATABASECHANGELOG', // Liquibase
-	'django_migrations', // Django
-	'flyway_schema_history', // Flyway
-	'knex_migrations', // Knex.js
-	'migrations', // db-migrations, TypeORM (could have issues if the DB is tracking bird flight paths... ;))
-	'mikro_orm_migrations', // MikroORM
-	'schema_migrations', // ActiveRecord (Ruby on Rails)
-	'SequelizeMeta' // umzug (Sequelize)
-].map((name) => name.toLowerCase());
-
-async function populateColumnTypes(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, schema: string, allIgnoredTables: string[]): Promise<void> {
-	const result: QueryResult = await client.query(columnMetadataQuery, [schema, allIgnoredTables]);
+async function populateColumnTypes(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, config: IntrospectConfig): Promise<void> {
+	const result: QueryResult = await client.query(columnMetadataQuery, [config.schema, config.ignoredTables]);
 	const rows: ColumnsRow[] = result.rows;
 	rows.forEach((row) => {
 		const tableMetadata = tablesMetadata.get(row.table_name);
-		const column = new ColumnMetadata(row.column_name, row.udt_name, yesOrNoToBoolean(row.is_nullable), row.column_default !== null);
+		const column = new ColumnMetadata(row.table_name, row.column_name, row.udt_name, yesOrNoToBoolean(row.is_nullable), row.column_default !== null, config.types);
 		tableMetadata.columns.push(column);
 	});
 }
 
-async function populatePrimaryKeys(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, schema: string, allIgnoredTables: string[]): Promise<void> {
-	const result: QueryResult = await client.query(constraintQuery, [schema, 'PRIMARY KEY', allIgnoredTables]);
+async function populatePrimaryKeys(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, config: IntrospectConfig): Promise<void> {
+	const result: QueryResult = await client.query(constraintQuery, [config.schema, 'PRIMARY KEY', config.ignoredTables]);
 	const rows: Array<{
 		table_schema: string;
 		table_name: string;
@@ -141,10 +142,9 @@ async function populatePrimaryKeys(client: Queryable, tablesMetadata: DefaultMap
 	}
 }
 
-export async function getTableMetadata(client: Queryable, schema: string = 'public', ignoredTables: string[] = []): Promise<DefaultMap<string, TableMetadata>> {
-	const tablesMetadata: DefaultMap<string, TableMetadata> = new DefaultMap<string, TableMetadata>((key: string) => new TableMetadata(schema, key));
-	const allIgnoredTables = defaultIgnoredTables.concat(ignoredTables.map((name) => name.toLowerCase()));
-	await populateColumnTypes(client, tablesMetadata, schema, allIgnoredTables);
-	await populatePrimaryKeys(client, tablesMetadata, schema, allIgnoredTables);
+export async function getTableMetadata(client: Queryable, config: IntrospectConfig): Promise<DefaultMap<string, TableMetadata>> {
+	const tablesMetadata: DefaultMap<string, TableMetadata> = new DefaultMap<string, TableMetadata>((key: string) => new TableMetadata(config.schema, key));
+	await populateColumnTypes(client, tablesMetadata, config);
+	await populatePrimaryKeys(client, tablesMetadata, config);
 	return tablesMetadata;
 }

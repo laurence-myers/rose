@@ -1,5 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
+import { CustomType2 } from '../../src/customTypeProvider';
 import * as rose from 'rose';
 
 export interface FooTableRow {
@@ -15,6 +16,9 @@ export interface FooTableRow {
 	column10: Date;
 	column11: Date | null;
 	column12: Date | null;
+	customType1: 'bar' | 'baz' | null;
+	customType2: CustomType2 | null;
+	customType3: CustomType2;
 }
 
 export interface FooTableInsertRow {
@@ -30,6 +34,9 @@ export interface FooTableInsertRow {
 	column10?: Date;
 	column11?: Date | null;
 	column12?: Date | null;
+	customType1?: 'bar' | 'baz' | null;
+	customType2?: CustomType2 | null;
+	customType3: CustomType2;
 }
 
 export class TFooTable extends rose.QueryTable {
@@ -45,6 +52,9 @@ export class TFooTable extends rose.QueryTable {
 	column10 = new rose.ColumnMetamodel<Date>(this.$table, 'column_10');
 	column11 = new rose.ColumnMetamodel<Date | null>(this.$table, 'column_11');
 	column12 = new rose.ColumnMetamodel<Date | null>(this.$table, 'column_12');
+	customType1 = new rose.ColumnMetamodel<'bar' | 'baz' | null>(this.$table, 'custom_type_1');
+	customType2 = new rose.ColumnMetamodel<CustomType2 | null>(this.$table, 'custom_type_2');
+	customType3 = new rose.ColumnMetamodel<CustomType2>(this.$table, 'custom_type_3');
 
 	constructor ($tableAlias?: string) {
 		super(new rose.TableMetamodel('foo_table', $tableAlias));
@@ -66,6 +76,9 @@ export const FooTableAllColumns = {
 	column10: QFooTable.column10,
 	column11: QFooTable.column11,
 	column12: QFooTable.column12,
+	customType1: QFooTable.customType1,
+	customType2: QFooTable.customType2,
+	customType3: QFooTable.customType3,
 };
 export const FooTableDefaultQueries = {
 	insertOne: function updateOne(row: FooTableInsertRow) {

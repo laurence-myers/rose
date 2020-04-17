@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 import { Client } from "pg";
 import { makeDirs } from "../lang";
+import { getTableMetadata, TableMetadata } from "../codegen/dbmetadata";
+import { generateTableCode } from "../codegen/generators";
+import { mergeConfigWithDefaults, parseConfig } from "../config";
 import fs = require('fs');
 import path = require('path');
-import { TableMetadata, getTableMetadata } from "../codegen/dbmetadata";
-import { generateTableCode } from "../codegen/generators";
 
 enum ExitCode {
 	Okay,
@@ -36,6 +37,12 @@ const cliOptionsConfig = [
 		description: 'The output directory',
 		required: true,
 	},
+	{
+		long: 'config',
+		short: 'c',
+		description: 'The config file',
+		required: false
+	},
 	// {
 	// 	long: 'help',
 	// 	short: 'h',
@@ -47,6 +54,7 @@ const cliOptionsConfig = [
 interface CliOptions {
 	url: string;
 	outDir: string;
+	configFileName?: string;
 }
 
 function parseArgs(args: string[]): CliOptions | Error {
@@ -71,7 +79,8 @@ function parseArgs(args: string[]): CliOptions | Error {
 
 	return {
 		url: rawOptions.url!,
-		outDir: rawOptions.out!
+		outDir: rawOptions.out!,
+		configFileName: rawOptions.config
 	};
 }
 
@@ -104,10 +113,11 @@ async function main(rawArgs: string[]): Promise<ExitCode> {
 	try {
 		const args = parseArgs(rawArgs);
 		if (isCliOptions(args)) {
+			const config = mergeConfigWithDefaults(args.configFileName ? parseConfig(args.configFileName) : undefined);
 			client = new Client(args.url);
 			await client.connect();
 			console.log(`Querying the database...`);
-			const tablesMetadata: Map<string, TableMetadata> = await getTableMetadata(client);
+			const tablesMetadata: Map<string, TableMetadata> = await getTableMetadata(client, config);
 			console.log(`Generating interfaces and metamodels for ${ tablesMetadata.size } tables...`);
 			generateInterfacesAndMetamodel(tablesMetadata, args);
 			console.log("Done!");
