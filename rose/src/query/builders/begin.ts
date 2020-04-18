@@ -60,7 +60,7 @@ export class BeginCommandBuilder {
 
 	prepare(): PreparedQueryNonReturning<{}> {
 		const walker = new SqlAstWalker(this.queryAst);
-		const data = walker.prepare();
+		const data = walker.toSql();
 		return new PreparedQueryNonReturning<{}>(data.sql, data.parameterGetters);
 	}
 

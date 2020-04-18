@@ -1,8 +1,9 @@
 import { QUsers, TUsers } from "../../../fixtures";
 import { upper } from "../../../../src/query/postgresql/functions/string/sql";
 import { update, updateFromObject } from "../../../../src/query/dsl/commands";
-import { constant, ParamsWrapper } from "../../../../src/query/dsl/core";
+import { constant } from "../../../../src/query/dsl/core";
 import { PartialTableColumns, TableColumns } from "../../../../src/query/metamodel";
+import { ParamsWrapper } from "../../../../src/query/params";
 import assert = require('assert');
 
 describe(`UPDATE commands`, function () {
@@ -84,7 +85,7 @@ describe(`UPDATE commands`, function () {
 			});
 
 		// Execute
-		const actual = query.toSql({
+		const actual = query.finalise({}).toSql({
 			id: 123,
 			...updates
 		});

@@ -35,11 +35,12 @@ export interface Queryable {
 
 export async function execute<T extends QuerySelector>(
 	queryable: Queryable,
-	query: GeneratedQuery,
+	sql: string,
+	parameters: unknown[],
 	querySelector: T,
 	selectOutputExpressions: SelectOutputExpression[]
 ): Promise<MappedQuerySelector<T>[]> {
-	const queryResult = await queryable.query(query.sql, query.parameters);
+	const queryResult = await queryable.query(sql, parameters);
 	return mapRowsToClass<T>(selectOutputExpressions, queryResult.rows);
 }
 

@@ -16,7 +16,8 @@ import { exists } from "../../src/query/postgresql/functions/subquery/expression
 import { sum } from "../../src/query/postgresql/functions/aggregate/general";
 import { divide } from "../../src/query/postgresql/functions/mathematical/operators";
 import { selectCte, selectExpression, selectNestedMany, subSelect } from "../../src/query/dsl/select";
-import { and, col, literal, or, params, row } from "../../src/query/dsl/core";
+import { and, col, literal, or, row } from "../../src/query/dsl/core";
+import { params, withParams } from "../../src/query/params";
 
 describe(`Example queries`, function () {
 	describe(`Recurring payments`, function () {
@@ -45,13 +46,14 @@ describe(`Example queries`, function () {
 			const params = {
 				clientId: 123
 			};
-			const query = select(querySelect)
+			const query = withParams<{ clientId: number }>()(
+				(p) => select(querySelect)
 				.distinctOn(col(QRP.locationId))
 				.join(QLocations)
 				.on(QLocations.id.eq(QRP.locationId))
 				.where(and(
 					QRP.nextDate.gte(now()),
-					QLocations.clientId.eq((p) => p.clientId),
+					QLocations.clientId.eq(p.clientId),
 					or(
 						QRP.endDate.isNull(),
 						QRP.endDate.gt(QRP.nextDate)
@@ -59,7 +61,8 @@ describe(`Example queries`, function () {
 				)).orderBy(
 					QRP.locationId.asc(),
 					QRP.nextDate.asc()
-				);
+				).finalise(p)
+			);
 
 			const result = query.toSql(params);
 
@@ -128,7 +131,7 @@ describe(`Example queries`, function () {
 				exists: selectExpression(exists(subQuery))
 			};
 
-			const query = select<typeof querySelect, QueryParams>(querySelect);
+			const query = select(querySelect).finalise(P);
 
 			const result = query.toSql({
 				startDate: new Date(Date.parse("2017-05-11")),
@@ -216,17 +219,17 @@ describe(`Example queries`, function () {
 				.orderBy(QBuilderTemplates.createdAt.desc())
 				.limit();
 			if (params.criteria.clients) {
-				idSubQueryBuilder = idSubQueryBuilder.where(QBuilderTemplates.clientId.eqAny((p) => p.criteria.clients || []));
+				idSubQueryBuilder = idSubQueryBuilder.where(QBuilderTemplates.clientId.eqAny(() => params.criteria.clients || []));
 			} else if (params.criteria.platforms) {
 				idSubQueryBuilder = idSubQueryBuilder.where(and(
-					QBuilderTemplateCategories.platformId.eqAny((p) => p.criteria.platforms),
+					QBuilderTemplateCategories.platformId.eqAny(() => params.criteria.platforms || []),
 					QBuilderTemplateToCategoryMap.builderTemplateId.eq(QBuilderTemplates.id),
 					QBuilderTemplateToCategoryMap.builderTemplateCategoryId.eq(QBuilderTemplateCategories.id)
 				));
 			}
 			const idSubQuery = idSubQueryBuilder.toSubQuery();
 
-			return select<typeof BuilderTemplate, Params>(BuilderTemplate)
+			return select(BuilderTemplate)
 				.join(QCategoryMap)
 				.on(QCategoryMap.builderTemplateId.eq(QBuilderTemplates.id))
 				.join(QCategories)
@@ -238,6 +241,7 @@ describe(`Example queries`, function () {
 				.join(QUploads)
 				.on(QUploads.id.eq(QBuilderTemplates.compositeImageId))
 				.where(QBuilderTemplates.id.in(idSubQuery))
+				.finalise({})
 				.toSql(params);
 		}
 
@@ -322,7 +326,7 @@ describe(`Example queries`, function () {
 					expression: QOrders.product.toColumnReferenceNode()
 				});
 
-			const result = query.toSql({});
+			const result = query.finalise({}).toSql({});
 			assert.equal(result.sql, 'WITH "regional_sales" as (SELECT "t1"."region" as "region", sum("t1"."amount") as "total_sales" FROM "orders" as "t1" GROUP BY ("t1"."region")), "top_regions" as (SELECT "t1"."region" as "region" FROM "regional_sales" as "t1" WHERE "t1"."total_sales" > (SELECT sum("t1"."total_sales") / 10 FROM "regional_sales" as "t1")) SELECT "t2"."region" as "region", "t2"."product" as "product", sum("t2"."quantity") as "product_units", sum("t2"."amount") as "product_sales" FROM "orders" as "t2" WHERE "t2"."region" IN (SELECT "t1"."region" FROM "top_regions" as "t1") GROUP BY ("t2"."region", "t2"."product")');
 		});
 

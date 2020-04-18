@@ -2,6 +2,7 @@ export * from './ast';
 export * from './dsl';
 export * from './metadata';
 export * from './metamodel';
+export * from './params';
 export * from './postgresql';
 export * from './preparedQuery';
 export * from './querySelector';

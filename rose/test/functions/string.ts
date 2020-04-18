@@ -5,15 +5,20 @@ import { trim } from "../../src/query/postgresql/functions/string/sql";
 import { btrim, pg_client_encoding } from "../../src/query/postgresql/functions/string/other";
 import { selectExpression } from "../../src/query/dsl/select";
 import { col, constant } from "../../src/query/dsl/core";
+import { QuerySelector, withParams } from "../../src/query";
 
 describe(`String functions`, function () {
+	function wrapQuery<T extends QuerySelector>(querySelect: T) {
+		return withParams()((p) => select(querySelect).finalise(p).toSql({}))
+	}
+
 	describe(`btrim()`, function () {
 		it(`without characters`, function () {
 			const querySelect = {
 				name: selectExpression(btrim(col(QUsers.name)))
 			};
 
-			const actual = select(querySelect).toSql({});
+			const actual = wrapQuery(querySelect);
 			const expected = {
 				sql: `SELECT btrim("t1"."name") as "name" FROM "Users" as "t1"`,
 				parameters: []
@@ -26,7 +31,7 @@ describe(`String functions`, function () {
 				name: selectExpression(btrim(col(QUsers.name), constant("abcd1234")))
 			};
 
-			const actual = select(querySelect).toSql({});
+			const actual = wrapQuery(querySelect);
 			const expected = {
 				sql: `SELECT btrim("t1"."name", $1) as "name" FROM "Users" as "t1"`,
 				parameters: ["abcd1234"]
@@ -40,7 +45,7 @@ describe(`String functions`, function () {
 			clientEncoding: selectExpression(pg_client_encoding())
 		};
 
-		const actual = select(querySelect).toSql({});
+		const actual = wrapQuery(querySelect);
 		const expected = {
 			sql: `SELECT pg_client_encoding() as "clientEncoding"`,
 			parameters: []
@@ -54,7 +59,7 @@ describe(`String functions`, function () {
 				name: selectExpression(trim("both", col(QUsers.name)))
 			};
 
-			const actual = select(querySelect).toSql({});
+			const actual = wrapQuery(querySelect);
 			const expected = {
 				sql: `SELECT trim($1 from "t1"."name") as "name" FROM "Users" as "t1"`,
 				parameters: ["both"] // odd, "both" should be a keyword, but this seems to work in pgsql.
@@ -67,7 +72,7 @@ describe(`String functions`, function () {
 				name: selectExpression(trim("both", col(QUsers.name), constant("abcd1234")))
 			};
 
-			const actual = select(querySelect).toSql({});
+			const actual = wrapQuery(querySelect);
 			const expected = {
 				sql: `SELECT trim($1 $2 from "t1"."name") as "name" FROM "Users" as "t1"`,
 				parameters: ["both", "abcd1234"]

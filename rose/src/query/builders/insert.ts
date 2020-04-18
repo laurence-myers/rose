@@ -4,21 +4,19 @@ import {
 	InsertCommandNode,
 	ParameterOrValueExpressionNode,
 	SelectCommandNode,
-	SelectOutputExpression,
 	SimpleColumnReferenceNode,
 	SubSelectNode,
 	TableReferenceNode
 } from "../ast";
 import { ColumnMetamodel, QueryTable, TableColumnsForInsertCommand } from "../metamodel";
 import { aliasTable } from "../dsl";
-import { GeneratedQuery, PreparedQuery, PreparedQueryNonReturning } from "../preparedQuery";
+import { FinalisedQueryWithParams, GeneratedQuery, PreparedQueryNonReturning } from "../preparedQuery";
 import { Queryable } from "../../execution";
 import { InvalidInsertError } from "../../errors";
 import { SqlAstWalker } from "../walkers/sqlAstWalker";
 import { RectifyingWalker } from "../walkers/rectifyingWalker";
 import { QuerySelector } from "../querySelector";
-import { QuerySelectorProcessor } from "../metadata";
-import { MappedQuerySelector } from "../typeMapping";
+import { ParamsProxy } from "../params";
 
 export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends TableColumnsForInsertCommand<TQTable>, TParams> {
 	protected readonly tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
@@ -131,8 +129,8 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 		return this;
 	}
 
-	returning<TQuerySelector extends QuerySelector>(querySelector: TQuerySelector): InsertReturningQueryBuilder<TQTable, TInsertRow, TQuerySelector, TParams> {
-		return new InsertReturningQueryBuilder<TQTable, TInsertRow, TQuerySelector, TParams>(
+	returning<TQuerySelector extends QuerySelector>(querySelector: TQuerySelector): InsertReturningQueryBuilder<TQTable, TQuerySelector> {
+		return new InsertReturningQueryBuilder<TQTable, TQuerySelector>(
 			this.qtable,
 			this.tableMap,
 			{
@@ -152,7 +150,7 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 	prepare(): PreparedQueryNonReturning<TParams> {
 		this.rectifyTableReferences();
 		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
-		const data = walker.prepare();
+		const data = walker.toSql();
 		return new PreparedQueryNonReturning<TParams>(data.sql, data.parameterGetters);
 	}
 
@@ -167,43 +165,21 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 	}
 }
 
-export class InsertReturningQueryBuilder<TQTable extends QueryTable, TInsertRow extends TableColumnsForInsertCommand<TQTable>, TQuerySelector extends QuerySelector, TParams> {
+export class InsertReturningQueryBuilder<TQTable extends QueryTable, TQuerySelector extends QuerySelector> {
 	constructor(
 		protected readonly qtable: TQTable,
 		protected readonly tableMap: DefaultMap<string, string>,
 		protected readonly queryAst: InsertCommandNode,
 		protected readonly querySelector: TQuerySelector,
 	) {
-		this.queryAst.returning = this.processQuerySelector(querySelector);
 	}
 
-	protected processQuerySelector(querySelector: QuerySelector): Array<SelectOutputExpression> {
-		const processor = new QuerySelectorProcessor(querySelector);
-		return processor.process();
-	}
-
-	protected rectifyTableReferences() {
-		if (this.queryAst.query) {
-			const rectifier = new RectifyingWalker(this.queryAst.query.query, this.tableMap);
-			rectifier.rectify();
-		}
-	}
-
-	prepare(): PreparedQuery<TQuerySelector, TParams> {
-		const querySelector = this.querySelector;
-		this.rectifyTableReferences();
-		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
-		const data = walker.prepare();
-		return new PreparedQuery<typeof querySelector, TParams>(querySelector, this.queryAst.returning || [], data.sql, data.parameterGetters);
-	}
-
-	toSql(params: TParams): GeneratedQuery {
-		return this.prepare()
-			.generate(params);
-	}
-
-	execute(queryable: Queryable, params: TParams): Promise<MappedQuerySelector<TQuerySelector>[]> {
-		return this.prepare()
-			.execute(queryable, params);
+	finalise<TParams>(paramsProxy: ParamsProxy<TParams>): FinalisedQueryWithParams<TQuerySelector, TParams> {
+		return new FinalisedQueryWithParams<TQuerySelector, TParams>(
+			this.querySelector,
+			this.queryAst,
+			this.tableMap,
+			paramsProxy
+		);
 	}
 }

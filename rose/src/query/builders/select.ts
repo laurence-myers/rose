@@ -15,19 +15,12 @@ import { QuerySelectorProcessor } from "../metadata";
 import { ColumnMetamodel, QueryTable, TableMetamodel } from "../metamodel";
 import { UnsupportedOperationError } from "../../errors";
 import { Clone, DefaultMap } from "../../lang";
-import { Queryable } from "../../execution";
-import { MappedQuerySelector } from "../typeMapping";
-import { GeneratedQuery, PreparedQuery } from "../preparedQuery";
+import { FinalisedQueryWithParams } from "../preparedQuery";
 import { aliasTable } from "../dsl/core";
-import { SqlAstWalker } from "../walkers/sqlAstWalker";
 import { RectifyingWalker } from "../walkers/rectifyingWalker";
+import { ParamsProxy } from "../params";
 
 export type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<any>;
-
-export interface HasLimit {
-	limit?: number;
-	offset?: number;
-}
 
 class JoinBuilder<TResult> {
 	protected joinType: 'inner' | 'left' | 'right' | 'full' | 'cross' = 'inner';
@@ -104,7 +97,7 @@ class JoinBuilder<TResult> {
 	}
 }
 
-abstract class BaseSelectQueryBuilder<TParams extends HasLimit> {
+abstract class BaseSelectQueryBuilder {
 	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
 	protected queryAst: SelectCommandNode = {
 		type: 'selectCommandNode',
@@ -190,7 +183,7 @@ abstract class BaseSelectQueryBuilder<TParams extends HasLimit> {
 	}
 
 	@Clone()
-	limit(limitNum?: number): this {
+	limit(limitNum?: number): this { // TODO: fix this so it only accepts param getters
 		this.queryAst.limit = {
 			type: 'limitOffsetNode',
 			limit: {
@@ -206,7 +199,7 @@ abstract class BaseSelectQueryBuilder<TParams extends HasLimit> {
 	}
 }
 
-export class SelectQueryBuilder<TQuerySelector extends QuerySelector, TParams extends HasLimit> extends BaseSelectQueryBuilder<TParams> {
+export class SelectQueryBuilder<TQuerySelector extends QuerySelector> extends BaseSelectQueryBuilder {
 	constructor(private querySelector: TQuerySelector) {
 		super();
 		this.select();
@@ -231,27 +224,18 @@ export class SelectQueryBuilder<TQuerySelector extends QuerySelector, TParams ex
 		return this;
 	}
 
-	prepare(): PreparedQuery<TQuerySelector, TParams> {
-		const querySelector = this.querySelector;
-		this.rectifyTableReferences();
-		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
-		const data = walker.prepare();
-		return new PreparedQuery<typeof querySelector, TParams>(querySelector, this.queryAst.outputExpressions, data.sql, data.parameterGetters);
-	}
-
-	toSql(params: TParams): GeneratedQuery {
-		return this.prepare()
-			.generate(params);
-	}
-
-	execute(queryable: Queryable, params: TParams): Promise<MappedQuerySelector<TQuerySelector>[]> {
-		return this.prepare()
-			.execute(queryable, params);
+	finalise<TParams>(paramsProxy: ParamsProxy<TParams>): FinalisedQueryWithParams<TQuerySelector, TParams> {
+		return new FinalisedQueryWithParams(
+			this.querySelector,
+			this.queryAst,
+			this.tableMap,
+			paramsProxy
+		);
 	}
 }
 
 // TODO: how to reference expressions defined outside of this sub-query?
-export class SubQueryBuilder<TParams extends HasLimit> extends BaseSelectQueryBuilder<TParams> {
+export class SubQueryBuilder<TParams> extends BaseSelectQueryBuilder {
 	constructor(subSelectExpressions: SubSelectExpression[]) {
 		super();
 		this.select(subSelectExpressions);
@@ -295,7 +279,7 @@ export type CommonTableExpressionMetamodel<T extends QuerySelector> = {
 	[K in keyof T]: ColumnMetamodel<any>;
 };
 
-export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector, TParams> extends BaseSelectQueryBuilder<TParams> {
+export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector> extends BaseSelectQueryBuilder {
 	constructor(
 		protected readonly alias: string,
 		protected readonly querySelector: TQuerySelector

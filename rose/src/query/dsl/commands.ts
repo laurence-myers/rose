@@ -60,8 +60,8 @@ export function rollback() {
 	return new RollbackCommandBuilder();
 }
 
-export function select<TQuerySelector extends QuerySelector, TParams>(querySelector: TQuerySelector): SelectQueryBuilder<TQuerySelector, TParams> {
-	return new SelectQueryBuilder<TQuerySelector, TParams>(querySelector);
+export function select<TQuerySelector extends QuerySelector>(querySelector: TQuerySelector): SelectQueryBuilder<TQuerySelector> {
+	return new SelectQueryBuilder<TQuerySelector>(querySelector);
 }
 
 export function update<TQTable extends QueryTable, TParams>(table: TQTable) {

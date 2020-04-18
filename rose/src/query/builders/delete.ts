@@ -34,7 +34,7 @@ export class DeleteQueryBuilder<TParams> {
 
 	prepare(): PreparedQueryNonReturning<TParams> {
 		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
-		const data = walker.prepare();
+		const data = walker.toSql();
 		return new PreparedQueryNonReturning<TParams>(data.sql, data.parameterGetters);
 	}
 

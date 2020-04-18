@@ -3,18 +3,16 @@ import {
 	AliasedExpressionNode,
 	BooleanExpression,
 	ParameterOrValueExpressionNode,
-	SelectOutputExpression,
 	TableReferenceNode,
 	UpdateCommandNode
 } from "../ast";
 import { QueryTable, TableColumnsForUpdateCommand } from "../metamodel";
 import { aliasTable } from "../dsl";
-import { GeneratedQuery, PreparedQuery, PreparedQueryNonReturning } from "../preparedQuery";
+import { FinalisedQueryWithParams, GeneratedQuery, PreparedQueryNonReturning } from "../preparedQuery";
 import { Queryable } from "../../execution";
 import { SqlAstWalker } from "../walkers/sqlAstWalker";
 import { QuerySelector } from "../querySelector";
-import { QuerySelectorProcessor } from "../metadata";
-import { MappedQuerySelector } from "../typeMapping";
+import { ParamsProxy } from "../params";
 
 export class UpdateQueryBuilder<TQTable extends QueryTable, TParams> {
 	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
@@ -46,8 +44,8 @@ export class UpdateQueryBuilder<TQTable extends QueryTable, TParams> {
 		return this;
 	}
 
-	returning<TQuerySelector extends QuerySelector>(querySelector: TQuerySelector): UpdateReturningQueryBuilder<TQTable, TQuerySelector, TParams> {
-		return new UpdateReturningQueryBuilder<TQTable, TQuerySelector, TParams>(
+	returning<TQuerySelector extends QuerySelector>(querySelector: TQuerySelector): UpdateReturningQueryBuilder<TQTable, TQuerySelector> {
+		return new UpdateReturningQueryBuilder<TQTable, TQuerySelector>(
 			this.qtable,
 			this.tableMap,
 			this.queryAst,
@@ -79,7 +77,7 @@ export class UpdateQueryBuilder<TQTable extends QueryTable, TParams> {
 
 	prepare(): PreparedQueryNonReturning<TParams> {
 		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
-		const data = walker.prepare();
+		const data = walker.toSql();
 		return new PreparedQueryNonReturning<TParams>(data.sql, data.parameterGetters);
 	}
 
@@ -94,35 +92,21 @@ export class UpdateQueryBuilder<TQTable extends QueryTable, TParams> {
 	}
 }
 
-export class UpdateReturningQueryBuilder<TQTable extends QueryTable, TQuerySelector extends QuerySelector, TParams> {
+export class UpdateReturningQueryBuilder<TQTable extends QueryTable, TQuerySelector extends QuerySelector> {
 	constructor(
 		protected readonly qtable: TQTable,
 		protected readonly tableMap: DefaultMap<string, string>,
 		protected readonly queryAst: UpdateCommandNode,
 		protected readonly querySelector: TQuerySelector,
 	) {
-		this.queryAst.returning = this.processQuerySelector(querySelector);
 	}
 
-	protected processQuerySelector(querySelector: QuerySelector): Array<SelectOutputExpression> {
-		const processor = new QuerySelectorProcessor(querySelector);
-		return processor.process();
-	}
-
-	prepare(): PreparedQuery<TQuerySelector, TParams> {
-		const querySelector = this.querySelector;
-		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
-		const data = walker.prepare();
-		return new PreparedQuery<typeof querySelector, TParams>(querySelector, this.queryAst.returning || [], data.sql, data.parameterGetters);
-	}
-
-	toSql(params: TParams): GeneratedQuery {
-		return this.prepare()
-			.generate(params);
-	}
-
-	execute(queryable: Queryable, params: TParams): Promise<MappedQuerySelector<TQuerySelector>[]> {
-		return this.prepare()
-			.execute(queryable, params);
+	finalise<TParams>(paramsProxy: ParamsProxy<TParams>): FinalisedQueryWithParams<TQuerySelector, TParams> {
+		return new FinalisedQueryWithParams<TQuerySelector, TParams>(
+			this.querySelector,
+			this.queryAst,
+			this.tableMap,
+			paramsProxy
+		);
 	}
 }

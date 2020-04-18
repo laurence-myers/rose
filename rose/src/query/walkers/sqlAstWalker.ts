@@ -41,9 +41,9 @@ import { assertNever, DefaultMap } from "../../lang";
 import { UnsupportedOperationError } from "../../errors";
 import { BaseWalker } from "./baseWalker";
 
-interface PreparedQueryData {
+interface WalkedQueryData {
 	sql: string;
-	parameterGetters: Array<(params: Object) => any>;
+	parameterGetters: Array<(params: unknown) => unknown>;
 }
 
 const JOIN_TEXT_MAP: {
@@ -68,7 +68,7 @@ const BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP: {
  */
 export class SqlAstWalker extends BaseWalker {
 	protected sb: string = '';
-	protected parameterGetters: Array<(p: Object) => any> = [];
+	protected parameterGetters: Array<(p: unknown) => unknown> = [];
 
 	constructor(
 		protected queryAst: AnyCommandNode,
@@ -77,7 +77,7 @@ export class SqlAstWalker extends BaseWalker {
 		super();
 	}
 
-	prepare(): PreparedQueryData {
+	toSql(): WalkedQueryData {
 		this.walk(this.queryAst);
 		return {
 			sql: this.sb,

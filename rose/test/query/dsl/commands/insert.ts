@@ -2,7 +2,7 @@ import { QLocations, QUsers, TUsers, UsersInsertRow } from "../../../fixtures";
 import { deepFreeze, OptionalNulls } from "../../../../src/lang";
 import { insert, insertFromObject } from "../../../../src/query/dsl/commands";
 import { subSelect } from "../../../../src/query/dsl/select";
-import { alias, aliasCol, col, constant, params, ParamsWrapper, withParams } from "../../../../src/query/dsl/core";
+import { alias, aliasCol, col, constant } from "../../../../src/query/dsl/core";
 import {
 	ColumnMetamodel,
 	QueryTable,
@@ -11,6 +11,7 @@ import {
 	TableColumnsForUpdateCommand,
 	TableMetamodel
 } from "../../../../src/query/metamodel";
+import { params, ParamsWrapper, withParams } from "../../../../src/query/params";
 import assert = require('assert');
 
 describe(`INSERT commands`, () => {
@@ -288,7 +289,7 @@ describe(`INSERT commands`, () => {
 			});
 
 		// Execute
-		const actual = query.toSql({});
+		const actual = query.finalise({}).toSql({});
 
 		// Verify
 		const expected = {

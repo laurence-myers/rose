@@ -37,6 +37,7 @@ describe("Execution", function () {
 
 		const result = await select(querySelect)
 			.orderBy(QUsers.id.desc())
+			.finalise({})
 			.execute(mockDb, {});
 
 		assert.deepEqual(result, [
