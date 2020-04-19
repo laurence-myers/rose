@@ -1,6 +1,7 @@
 import { Client } from "pg";
 import { FilmRepository } from "./repositories/filmRepository";
 import { LanguageRepository } from "./repositories/languageRepository";
+import { transaction } from "rose";
 
 const dbUrl = `postgresql://root:admin@localhost:5442/pagila`;
 
@@ -19,17 +20,19 @@ async function insertNewFilm(client: Client) {
     if (!language) {
         throw new Error(`The English language must exist!`);
     }
-    await filmRepository.insertOne(client, {
-        description: `An intrepid shooty bang bang man Giggles McVuvuzela enters a once-familiar marsh, but unexpected perils quack in the shadows.`,
-        fulltext: ``, // This is a tsvector. It's not nullable, but we don't need to populate it ourselves.
-        languageId: language.languageId,
-        length: 120,
-        title: "DUCK HUNTED"
+    await transaction(client, async () => {
+        await filmRepository.insertOne(client, {
+            description: `An intrepid shooty bang bang man Giggles McVuvuzela enters a once-familiar marsh, but unexpected perils quack in the shadows.`,
+            fulltext: ``, // This is a tsvector. It's not nullable, but we don't need to populate it ourselves.
+            languageId: language.languageId,
+            length: 120,
+            title: "DUCK HUNTED"
+        });
+        await filmRepository.addActorToFilm(client, {
+            firstName: 'Joe',
+            lastName: 'Swank'
+        }, 'Duck Hunted');
     });
-    await filmRepository.addActorToFilm(client, {
-        firstName: 'Joe',
-        lastName: 'Swank'
-    }, 'Duck Hunted');
 }
 
 async function selectJoeSwankFilms(client: Client) {
