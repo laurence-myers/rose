@@ -378,9 +378,11 @@ class CodegenAstWalker {
 
 	private walkObject(node: ObjectNode) {
 		this.sb += '{';
-		this.newline(Dent.In);
-		this.walkNodes(node.properties, NodeSeperator.Newline);
-		this.newline(Dent.Out);
+		if (node.properties.length > 0) {
+			this.newline(Dent.In);
+			this.walkNodes(node.properties, NodeSeperator.Newline);
+			this.newline(Dent.Out);
+		}
 		this.sb += '}';
 	}
 

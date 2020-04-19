@@ -81,7 +81,7 @@ export const FooTableAllColumns = {
 	customType3: QFooTable.customType3,
 };
 export const FooTableDefaultQueries = {
-	insertOne: function updateOne(row: FooTableInsertRow) {
-		return rose.insertFromObject<TFooTable, FooTableInsertRow, {}>(QFooTable, row).prepare();
+	insertOne: function insertOne(row: FooTableInsertRow) {
+		return rose.insertFromObject<TFooTable, FooTableInsertRow>(QFooTable, row).finalise({});
 	},
 };

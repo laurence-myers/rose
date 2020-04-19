@@ -89,7 +89,7 @@ function generateGetOne(table: TableMetadata): ObjectPropertyNode | undefined {
 				stmt(ret(
 					invokeMethodChain(
 						funcCall(
-							id(`rose.select<typeof ${ allColumnsName(table) }, Params>`),
+							id(`rose.select`),
 							[id(allColumnsName(table))]
 						),
 						[
@@ -98,8 +98,8 @@ function generateGetOne(table: TableMetadata): ObjectPropertyNode | undefined {
 								[criteria]
 							],
 							[
-								'prepare',
-								[]
+								'finalise',
+								[id('P')]
 							]
 						],
 					)
@@ -121,7 +121,7 @@ function generateInsertOne(table: TableMetadata) {
 				stmt(ret(
 					invokeMethodChain(
 						funcCall(
-							id(`rose.insertFromObject<${ metamodelClassName(table) }, ${ insertRowIfaceName(table) }, {}>`),
+							id(`rose.insertFromObject<${ metamodelClassName(table) }, ${ insertRowIfaceName(table) }>`),
 							[
 								id(metamodelInstanceName(table)),
 								id('row')
@@ -129,14 +129,14 @@ function generateInsertOne(table: TableMetadata) {
 						),
 						[
 							[
-								'prepare',
-								[]
+								'finalise',
+								[obj([])]
 							]
 						]
 					)
 				))
 			],
-			'updateOne'
+			'insertOne'
 		)
 	);
 }
@@ -164,7 +164,7 @@ function generateUpdateOne(table: TableMetadata) {
 				stmt(ret(
 					invokeMethodChain(
 						funcCall(
-							id(`rose.updateFromObject<${ metamodelClassName(table) }, Params>`),
+							id(`rose.updateFromObject`),
 							[
 								id(metamodelInstanceName(table)),
 								id('updates')
@@ -176,8 +176,8 @@ function generateUpdateOne(table: TableMetadata) {
 								[criteria]
 							],
 							[
-								'prepare',
-								[]
+								'finalise',
+								[id('P')]
 							]
 						]
 					)
@@ -207,7 +207,7 @@ function generateDeleteOne(table: TableMetadata) {
 				stmt(ret(
 					invokeMethodChain(
 						funcCall(
-							id(`rose.deleteFrom<Params>`),
+							id(`rose.deleteFrom`),
 							[id(metamodelInstanceName(table))]
 						),
 						[
@@ -216,8 +216,8 @@ function generateDeleteOne(table: TableMetadata) {
 								[criteria]
 							],
 							[
-								'prepare',
-								[]
+								'finalise',
+								[id('P')]
 							]
 						],
 					)
