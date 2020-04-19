@@ -24,7 +24,7 @@ describe(`INSERT commands`, () => {
 		interface InsertRow extends TableColumnsForUpdateCommand<TUsers> {
 
 		}
-		const query = withParams<Params>()((p) => insert<TUsers, InsertRow, Params>(QUsers)
+		const query = withParams<Params>()((p) => insert<TUsers, InsertRow>(QUsers)
 			.insert({
 				// NOTE: for this test, property names should not be in alphabetical order, to verify that
 				// `insert()` explicitly sorts them.
@@ -70,7 +70,7 @@ describe(`INSERT commands`, () => {
 
 		}
 		const p = params<Params>();
-		const query = insert<TUsers, InsertRow, Params>(QUsers)
+		const query = insert<TUsers, InsertRow>(QUsers)
 			.insert({
 				id: p.id,
 				name: p.name,
@@ -110,7 +110,7 @@ describe(`INSERT commands`, () => {
 			locationId: paramsWrapper.get((p) => p.locationId),
 		};
 
-		const query = insert<TUsers, InsertRow, Params>(QUsers)
+		const query = insert<TUsers, InsertRow>(QUsers)
 			.insert(insertRow);
 
 		// Execute
@@ -130,10 +130,6 @@ describe(`INSERT commands`, () => {
 
 	it(`supports dynamically generating inserted values from an entity-like object`, function () {
 		// Set up
-		interface Params {
-
-		}
-
 		interface InsertRow extends UsersInsertRow {
 		}
 
@@ -143,7 +139,7 @@ describe(`INSERT commands`, () => {
 			locationId: 456,
 		};
 
-		const query = insertFromObject<TUsers, InsertRow, Params>(QUsers, insertRow);
+		const query = insertFromObject<TUsers, InsertRow>(QUsers, insertRow);
 
 		// Execute
 		const actual = query.finalise({}).toSql({});
@@ -281,7 +277,7 @@ describe(`INSERT commands`, () => {
 			locationId: 456,
 		};
 
-		const query = insertFromObject<TUsers, InsertRow, Params>(QUsers, insertRow)
+		const query = insertFromObject<TUsers, InsertRow>(QUsers, insertRow)
 			.returning({
 				newUserId: QUsers.id,
 				name: QUsers.name,

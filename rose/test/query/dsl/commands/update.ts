@@ -13,7 +13,7 @@ describe(`UPDATE commands`, function () {
 			name: string;
 		}
 		const paramsWrapper = new ParamsWrapper<Params>();
-		const query = update<TUsers, Params>(QUsers)
+		const query = update(QUsers)
 			.set({
 				name: upper(paramsWrapper.get((p) => p.name))
 			})
@@ -46,7 +46,7 @@ describe(`UPDATE commands`, function () {
 		};
 		const paramsWrapper = new ParamsWrapper<Params>();
 
-		const query = updateFromObject<TUsers, Params>(QUsers, updates)
+		const query = updateFromObject(QUsers, updates)
 			.where(QUsers.id.eq(paramsWrapper.get((p) => p.id)));
 
 		// Execute
@@ -77,7 +77,7 @@ describe(`UPDATE commands`, function () {
 		};
 		const paramsWrapper = new ParamsWrapper<Params>();
 
-		const query = updateFromObject<TUsers, Params>(QUsers, updates)
+		const query = updateFromObject(QUsers, updates)
 			.where(QUsers.id.eq(paramsWrapper.get((p) => p.id)))
 			.returning({
 				updatedId: QUsers.id,
