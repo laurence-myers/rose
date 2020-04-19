@@ -1,4 +1,15 @@
-import { and, insert, ParamsWrapper, select, subSelect, TableColumnsForInsertCommand, upper } from "rose";
+import {
+    and,
+    col,
+    initcap,
+    insert,
+    ParamsWrapper,
+    select,
+    selectExpression,
+    subSelect,
+    TableColumnsForInsertCommand,
+    upper
+} from "rose";
 import { FilmDefaultQueries, FilmInsertRow, QFilm } from "../../generated/db/Film";
 import { QActor } from "../../generated/db/Actor";
 import { QFilmActor, TFilmActor } from "../../generated/db/FilmActor";
@@ -7,7 +18,9 @@ import { Queryable } from "rose/execution/execution";
 export class FilmRepository {
     private readonly selectLongestFilmsByActorNameQuery = (function () {
         const selector = {
-            name: QFilm.title,
+            name: selectExpression(
+                initcap(col(QFilm.title))
+            ),
             length: QFilm.length,
         };
 
