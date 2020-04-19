@@ -2,6 +2,20 @@
 # yarn lockfile v1
 
 
+"@rose/rose-cli@../rose-cli/package":
+  version "0.0.1"
+  dependencies:
+    "@sinclair/typebox" "0.9.13"
+    ajv "6.12.0"
+    camelcase "5.3.1"
+    pg "8.0.2"
+
+"@rose/rose@../rose/package":
+  version "0.0.1"
+  dependencies:
+    lodash.clonedeep "4.5.0"
+    metrohash "2.6.0"
+
 "@sinclair/typebox@0.9.13":
   version "0.9.13"
   resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.9.13.tgz#1536ae77fe3980d84922d95b51168529efb17b0f"
@@ -725,20 +739,6 @@ rimraf@3.0.2:
   integrity sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==
   dependencies:
     glob "^7.1.3"
-
-rose-cli@../rose-cli/package:
-  version "0.0.1"
-  dependencies:
-    "@sinclair/typebox" "0.9.13"
-    ajv "6.12.0"
-    camelcase "5.3.1"
-    pg "8.0.2"
-
-rose@../rose/package:
-  version "0.0.1"
-  dependencies:
-    lodash.clonedeep "4.5.0"
-    metrohash "2.6.0"
 
 safe-buffer@^5.0.1, safe-buffer@^5.1.2:
   version "5.2.0"

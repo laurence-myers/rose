@@ -1,6 +1,6 @@
 import {
     and,
-    col,
+    col, constant,
     initcap,
     insert,
     ParamsWrapper,
@@ -9,11 +9,11 @@ import {
     subSelect,
     TableColumnsForInsertCommand,
     upper
-} from "rose";
+} from "@rose/rose";
 import { FilmDefaultQueries, FilmInsertRow, QFilm } from "../../generated/db/Film";
 import { QActor } from "../../generated/db/Actor";
 import { QFilmActor, TFilmActor } from "../../generated/db/FilmActor";
-import { Queryable } from "rose/execution/execution";
+import { Queryable } from "@rose/rose/execution/execution";
 
 export class FilmRepository {
     private readonly selectLongestFilmsByActorNameQuery = (function () {
@@ -86,7 +86,7 @@ export class FilmRepository {
                         QActor.firstName.eq(upper(P.get((p) => p.actorName.firstName))),
                         QActor.lastName.eq(upper(P.get((p) => p.actorName.lastName)))
                     )
-                ).limit(1)
+                ).limit(constant(1))
                     .toSubQuery()
             ).finalise(P)
     })();

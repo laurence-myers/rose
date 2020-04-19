@@ -1,5 +1,5 @@
 {
-  "name": "rose-docs",
+  "name": "@rose/rose-docs",
   "version": "0.0.1",
   "description": "Documentation for rose",
   "main": "index.js",
@@ -30,7 +30,7 @@
     "typescript": "3.8.3"
   },
   "dependencies": {
-    "app-root-path": "3.0.0",
-    "rose": "../rose/package"
+    "@rose/rose": "../rose/package",
+    "app-root-path": "3.0.0"
   }
 }

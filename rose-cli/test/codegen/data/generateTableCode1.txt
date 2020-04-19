@@ -1,7 +1,7 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
 import { CustomType2 } from '../../src/customTypeProvider';
-import * as rose from 'rose';
+import * as rose from '@rose/rose';
 
 export interface FooTableRow {
 	column1: number;

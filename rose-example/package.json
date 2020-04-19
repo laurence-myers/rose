@@ -1,6 +1,6 @@
 {
-  "name": "rose-example",
-  "version": "1.0.0",
+  "name": "@rose/rose-example",
+  "version": "0.0.1",
   "description": "Example project using rose",
   "main": "index.js",
   "author": "Laurence Dougal Myers <laurencedougalmyers@gmail.com>",
@@ -19,8 +19,8 @@
     "typescript": "3.8.3"
   },
   "dependencies": {
-    "pg": "8.0.0",
-    "rose": "../rose/package",
-    "rose-cli": "../rose-cli/package"
+    "@rose/rose": "../rose/package",
+    "@rose/rose-cli": "../rose-cli/package",
+    "pg": "8.0.0"
   }
 }

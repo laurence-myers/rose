@@ -1,4 +1,4 @@
-import * as rose from 'rose';
+import * as rose from '@rose/rose';
 
 export const FooTableAllColumns = {
 	id: QFooTable.id,
