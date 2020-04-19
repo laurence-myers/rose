@@ -1,0 +1,30 @@
+// Generated file; do not manually edit, as your changes will be overwritten!
+/* eslint-disable */
+import * as rose from 'rose';
+
+export interface FooTableRow {
+	id: number;
+}
+
+export interface FooTableInsertRow {
+	id?: number;
+}
+
+export class TFooTable extends rose.QueryTable {
+	id = new rose.ColumnMetamodel<number>(this.$table, 'id');
+
+	constructor ($tableAlias?: string) {
+		super(new rose.TableMetamodel('foo_table', $tableAlias));
+	}
+
+}
+
+export const QFooTable = rose.deepFreeze(new TFooTable());
+export const FooTableAllColumns = {
+	id: QFooTable.id,
+};
+export const FooTableDefaultQueries = {
+	insertOne: function insertOne(row: FooTableInsertRow) {
+		return rose.insertFromObject<TFooTable, FooTableInsertRow>(QFooTable, row).finalise({});
+	},
+};

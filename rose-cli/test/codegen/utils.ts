@@ -1,6 +1,7 @@
 import { imp, impAll, namedImport } from "../../src/codegen/dsl";
 import { mergeImports, uniqueImports } from "../../src/codegen/utils";
 import * as assert from "assert";
+import { ImportNode } from "../../src/codegen/ast";
 
 describe(`utils`, () => {
 	describe(`mergeImports()`, () => {
@@ -71,6 +72,24 @@ describe(`utils`, () => {
 			// Set up
 			const imports1 = [
 				impAll('../bar', 'bar')
+			];
+			const imports2 = [
+				impAll('../bar', 'bar')
+			];
+
+			// Execute
+			const result = mergeImports(imports1, imports2);
+
+			// Verify
+			assert.deepEqual(result, [
+				impAll('../bar', 'bar')
+			]);
+		});
+
+
+		it(`should include all imports of 2 if 1 is empty`, async () => {
+			// Set up
+			const imports1: ImportNode[] = [
 			];
 			const imports2 = [
 				impAll('../bar', 'bar')

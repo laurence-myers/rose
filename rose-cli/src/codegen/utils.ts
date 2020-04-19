@@ -33,8 +33,10 @@ export function uniqueImports(imports: ImportNode[]) {
 export function mergeImports(firstImports: ImportNode[], secondImports: ImportNode[]) {
 	const imports = firstImports.slice();
 	for (const importNode1 of secondImports) {
+		let importMatched = false;
 		for (const importNode2 of imports) {
 			if (importNode1.from === importNode2.from) {
+				importMatched = true;
 				if (importNode1.importType === importNode2.importType && importNode1.importType !== 'named' && importNode1.alias === importNode2.alias) {
 					// Skip if we're importing the exact same thing.
 					continue;
@@ -54,9 +56,10 @@ export function mergeImports(firstImports: ImportNode[], secondImports: ImportNo
 				} else {
 					imports.push(importNode1);
 				}
-			} else {
-				imports.push(importNode1);
 			}
+		}
+		if (!importMatched) {
+			imports.push(importNode1);
 		}
 	}
 	return imports;
