@@ -31,8 +31,7 @@ export function deleteFrom<TParams>(table: QueryTable) {
 
 export function insert<
 	TQTable extends QueryTable,
-	TInsertRow extends TableColumnsForInsertCommand<TQTable>,
-	TParams
+	TInsertRow extends TableColumnsForInsertCommand<TQTable>
 >(
 	table: TQTable
 ) {
@@ -42,7 +41,6 @@ export function insert<
 export function insertFromObject<
 	TQTable extends QueryTable,
 	TInsertRow extends Partial<TableColumns<TQTable>>,
-	TParams
 	>(
 	table: TQTable,
 	values: TInsertRow
@@ -52,7 +50,7 @@ export function insertFromObject<
 		(sqlValues as any)[key as any] = param(() => values[key]);
 	}
 
-	return insert<TQTable, TableColumnsForInsertCommand<TQTable>, TParams>(table)
+	return insert<TQTable, TableColumnsForInsertCommand<TQTable>>(table)
 		.insert(sqlValues as any as TableColumnsForInsertCommand<TQTable>);
 }
 
@@ -64,11 +62,11 @@ export function select<TQuerySelector extends QuerySelector>(querySelector: TQue
 	return new SelectQueryBuilder<TQuerySelector>(querySelector);
 }
 
-export function update<TQTable extends QueryTable, TParams>(table: TQTable) {
+export function update<TQTable extends QueryTable>(table: TQTable) {
 	return new UpdateQueryBuilder<TQTable>(table);
 }
 
-export function updateFromObject<TQTable extends QueryTable, TParams>(table: TQTable, updates: PartialTableColumns<TQTable>) {
+export function updateFromObject<TQTable extends QueryTable>(table: TQTable, updates: PartialTableColumns<TQTable>) {
 	const sqlSets: Partial<TableColumnsForUpdateCommand<TQTable>> = {};
 	for (const key of safeKeys(updates)) {
 		sqlSets[key] = param(() => updates[key]);
@@ -78,6 +76,6 @@ export function updateFromObject<TQTable extends QueryTable, TParams>(table: TQT
 		throw new InvalidUpdateError(`Update objects must have at least one property.`);
 	}
 
-	return update<TQTable, TParams & PartialTableColumns<TQTable>>(table)
+	return update<TQTable>(table) // TODO: enforce columns to update are in params
 		.set(sqlSets);
 }
