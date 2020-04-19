@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="link example to rose" type="js.build_tools.npm">
+  <configuration default="false" name="examples: add rose" type="js.build_tools.npm" folderName="examples">
     <package-json value="$PROJECT_DIR$/rose-example/package.json" />
     <command value="add" />
     <arguments value="../rose/package" />

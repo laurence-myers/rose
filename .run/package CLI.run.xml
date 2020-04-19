@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="package CLI" type="js.build_tools.npm">
+  <configuration default="false" name="rose-cli: package" type="js.build_tools.npm" folderName="rose-cli">
     <package-json value="$PROJECT_DIR$/rose-cli/package.json" />
     <command value="run" />
     <scripts>

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="rose Tests" type="mocha-javascript-test-runner">
+  <configuration default="false" name="rose Tests" type="mocha-javascript-test-runner" folderName="rose">
     <node-interpreter>project</node-interpreter>
     <node-options />
     <mocha-package>$PROJECT_DIR$/rose/node_modules/mocha</mocha-package>

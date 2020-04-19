@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="rose: package" type="js.build_tools.npm" folderName="rose">
-    <package-json value="$PROJECT_DIR$/rose/package.json" />
+  <configuration default="false" name="examples: start" type="js.build_tools.npm" folderName="examples">
+    <package-json value="$PROJECT_DIR$/rose-example/package.json" />
     <command value="run" />
     <scripts>
-      <script value="package" />
+      <script value="start" />
     </scripts>
     <node-interpreter value="project" />
     <envs />
