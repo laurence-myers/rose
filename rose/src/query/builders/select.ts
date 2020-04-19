@@ -3,6 +3,7 @@ import {
 	AliasedExpressionNode,
 	BooleanExpression,
 	ColumnReferenceNode,
+	ConstantNode,
 	GroupByExpressionNode,
 	JoinNode,
 	OrderByExpressionNode,
@@ -16,7 +17,7 @@ import { ColumnMetamodel, QueryTable, TableMetamodel } from "../metamodel";
 import { UnsupportedOperationError } from "../../errors";
 import { Clone } from "../../lang";
 import { FinalisedQueryWithParams } from "../finalisedQuery";
-import { aliasTable } from "../dsl/core";
+import { aliasTable, constant } from "../dsl/core";
 import { RectifyingWalker } from "../walkers/rectifyingWalker";
 import { ParamsProxy, ParamsWrapper } from "../params";
 import { TableMap } from "../../data";
@@ -184,17 +185,11 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	limit(limitNum?: number): this { // TODO: fix this so it only accepts param getters
+	limit(limit: ConstantNode<number>, offset: ConstantNode<number> = constant(0)): this {
 		this.queryAst.limit = {
 			type: 'limitOffsetNode',
-			limit: {
-				type: 'constantNode',
-				getter: limitNum !== undefined ? p => limitNum : p => p.limit
-			},
-			offset: {
-				type: 'constantNode',
-				getter: (params) => params.offset || 0
-			}
+			limit,
+			offset
 		};
 		return this;
 	}

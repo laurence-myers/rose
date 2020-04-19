@@ -4,7 +4,7 @@ import { count } from "../../../../src/query/postgresql/functions/aggregate/gene
 import { deepFreeze } from "../../../../src/lang";
 import { select } from "../../../../src/query/dsl/commands";
 import { selectExpression, selectNestedMany, subSelect } from "../../../../src/query/dsl/select";
-import { and, col, not, or } from "../../../../src/query/dsl/core";
+import { and, col, constant, not, or } from "../../../../src/query/dsl/core";
 import { params, ParamsProxy, withParams } from "../../../../src/query/params";
 import { FinalisedQueryWithParams } from "../../../../src/query";
 import assert = require('assert');
@@ -191,8 +191,8 @@ describe(`SELECT commands`, () => {
 			id: QUsers.id,
 		};
 
-		const actual = wrapQuery(
-			() => select(querySelect).limit(),
+		const actual = wrapQuery<{ limit: number; offset: number }>(
+			(p) => select(querySelect).limit(p.limit, p.offset),
 			{
 				limit: 10,
 				offset: 20
@@ -584,7 +584,7 @@ describe(`SELECT commands`, () => {
 		assert.notStrictEqual(builder4, builder5, "distinct() should create a new QueryBuilder");
 		const builder6 = builder5.distinctOn(col(QUsers.id));
 		assert.notStrictEqual(builder5, builder6, "distinctOn() should create a new QueryBuilder");
-		const builder7 = builder6.limit();
+		const builder7 = builder6.limit(constant(10));
 		assert.notStrictEqual(builder6, builder7, "limit() should create a new QueryBuilder");
 		const builder8 = builder7.orderBy(QUsers.id.asc());
 		assert.notStrictEqual(builder7, builder8, "orderBy() should create a new QueryBuilder");

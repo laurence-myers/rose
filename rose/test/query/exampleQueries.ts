@@ -16,7 +16,7 @@ import { exists } from "../../src/query/postgresql/functions/subquery/expression
 import { sum } from "../../src/query/postgresql/functions/aggregate/general";
 import { divide } from "../../src/query/postgresql/functions/mathematical/operators";
 import { selectCte, selectExpression, selectNestedMany, subSelect } from "../../src/query/dsl/select";
-import { and, col, literal, or, row } from "../../src/query/dsl/core";
+import { and, col, constant, literal, or, row } from "../../src/query/dsl/core";
 import { params, withParams } from "../../src/query/params";
 
 describe(`Example queries`, function () {
@@ -124,7 +124,7 @@ describe(`Example queries`, function () {
 						)
 					)
 				))
-				.limit(1)
+				.limit(constant(1))
 				.toSubQuery();
 			// Make the returned values type safe.
 			const querySelect = {
@@ -217,7 +217,7 @@ describe(`Example queries`, function () {
 
 			let idSubQueryBuilder = subSelect<Params>(QBuilderTemplates.id)
 				.orderBy(QBuilderTemplates.createdAt.desc())
-				.limit();
+				.limit(constant(10), constant(0));
 			if (params.criteria.clients) {
 				idSubQueryBuilder = idSubQueryBuilder.where(QBuilderTemplates.clientId.eqAny(() => params.criteria.clients || []));
 			} else if (params.criteria.platforms) {
