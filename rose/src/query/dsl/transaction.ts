@@ -1,7 +1,7 @@
 import { TransactionIsolationLevel, TransactionReadMode } from "../builders/begin";
 import { begin, commit, rollback } from "./commands";
 import { Queryable } from "../../execution";
-import { PreparedQueryNonReturning } from "../preparedQuery";
+import { FinalisedQueryNonReturningWithParams } from "../finalisedQuery";
 
 export interface TransactionOptions {
 	isolationLevel?: TransactionIsolationLevel;
@@ -12,9 +12,9 @@ export interface TransactionOptions {
 
 export class Transaction {
 	public finished: boolean = false;
-	protected readonly beginQuery: PreparedQueryNonReturning<{}>;
-	protected readonly commitQuery: PreparedQueryNonReturning<{}>;
-	protected readonly rollbackQuery: PreparedQueryNonReturning<{}>;
+	protected readonly beginQuery: FinalisedQueryNonReturningWithParams<{}>;
+	protected readonly commitQuery: FinalisedQueryNonReturningWithParams<{}>;
+	protected readonly rollbackQuery: FinalisedQueryNonReturningWithParams<{}>;
 
 	constructor(
 		protected readonly client: Queryable,
@@ -30,13 +30,13 @@ export class Transaction {
 		if (options.deferrable !== undefined) {
 			beginQuery = beginQuery.deferrable(options.deferrable);
 		}
-		this.beginQuery = beginQuery.prepare();
+		this.beginQuery = beginQuery.finalise();
 		this.commitQuery = commit()
 			.andChain(options.andChain === undefined ? null : options.andChain)
-			.prepare();
+			.finalise();
 		this.rollbackQuery = rollback()
 			.andChain(options.andChain === undefined ? null : options.andChain)
-			.prepare();
+			.finalise();
 	}
 
 	begin() {

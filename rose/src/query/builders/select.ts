@@ -14,11 +14,12 @@ import {
 import { QuerySelectorProcessor } from "../metadata";
 import { ColumnMetamodel, QueryTable, TableMetamodel } from "../metamodel";
 import { UnsupportedOperationError } from "../../errors";
-import { Clone, DefaultMap } from "../../lang";
-import { FinalisedQueryWithParams } from "../preparedQuery";
+import { Clone } from "../../lang";
+import { FinalisedQueryWithParams } from "../finalisedQuery";
 import { aliasTable } from "../dsl/core";
 import { RectifyingWalker } from "../walkers/rectifyingWalker";
-import { ParamsProxy } from "../params";
+import { ParamsProxy, ParamsWrapper } from "../params";
+import { TableMap } from "../../data";
 
 export type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<any>;
 
@@ -28,7 +29,7 @@ class JoinBuilder<TResult> {
 	protected usingNodes?: ColumnReferenceNode[];
 
 	constructor(
-		protected tableMap: DefaultMap<string, string>,
+		protected tableMap: TableMap,
 		protected qtable: QueryTable,
 		protected callback: (joinNode: JoinNode) => TResult) {
 	}
@@ -98,7 +99,7 @@ class JoinBuilder<TResult> {
 }
 
 abstract class BaseSelectQueryBuilder {
-	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
+	protected tableMap = new TableMap();
 	protected queryAst: SelectCommandNode = {
 		type: 'selectCommandNode',
 		distinction: 'all',
@@ -224,7 +225,7 @@ export class SelectQueryBuilder<TQuerySelector extends QuerySelector> extends Ba
 		return this;
 	}
 
-	finalise<TParams>(paramsProxy: ParamsProxy<TParams>): FinalisedQueryWithParams<TQuerySelector, TParams> {
+	finalise<TParams>(paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams>): FinalisedQueryWithParams<TQuerySelector, TParams> {
 		return new FinalisedQueryWithParams(
 			this.querySelector,
 			this.queryAst,

@@ -1,10 +1,10 @@
 import { Clone, DefaultMap } from "../../lang";
 import { AliasedExpressionNode, BooleanExpression, DeleteCommandNode, TableReferenceNode } from "../ast";
 import { QueryTable } from "../metamodel";
-import { GeneratedQuery, PreparedQueryNonReturning } from "../preparedQuery";
-import { Queryable } from "../../execution";
+import { FinalisedQueryNonReturningWithParams } from "../finalisedQuery";
 import { aliasTable } from "../dsl/core";
-import { SqlAstWalker } from "../walkers/sqlAstWalker";
+import { TableMap } from "../../data";
+import { ParamsProxy, ParamsWrapper } from "../params";
 
 export class DeleteQueryBuilder<TParams> {
 	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
@@ -32,19 +32,11 @@ export class DeleteQueryBuilder<TParams> {
 		return this;
 	}
 
-	prepare(): PreparedQueryNonReturning<TParams> {
-		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
-		const data = walker.toSql();
-		return new PreparedQueryNonReturning<TParams>(data.sql, data.parameterGetters);
-	}
-
-	toSql(params: TParams): GeneratedQuery {
-		return this.prepare()
-			.generate(params);
-	}
-
-	execute(queryable: Queryable, params: TParams): Promise<void> {
-		return this.prepare()
-			.execute(queryable, params);
+	finalise<TParams>(params: ParamsProxy<TParams> | ParamsWrapper<TParams>): FinalisedQueryNonReturningWithParams<TParams> {
+		return new FinalisedQueryNonReturningWithParams<TParams>(
+			this.queryAst,
+			new TableMap(),
+			params
+		);
 	}
 }

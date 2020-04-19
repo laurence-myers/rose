@@ -10,7 +10,7 @@ describe(`DELETE commands`, () => {
 			.where(QUsers.id.eq(constant(123)));
 
 		// Execute
-		const actual = query.toSql({});
+		const actual = query.finalise({}).toSql({});
 
 		// Verify
 		const expected = {

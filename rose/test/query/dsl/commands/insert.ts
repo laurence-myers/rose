@@ -32,7 +32,7 @@ describe(`INSERT commands`, () => {
 				name: p.name,
 				deletedAt: p.deletedAt,
 				locationId: p.locationId
-			}));
+			}).finalise(p));
 
 		// Execute
 		const actual = query.toSql({
@@ -79,7 +79,7 @@ describe(`INSERT commands`, () => {
 			});
 
 		// Execute
-		const actual = query.toSql({
+		const actual = query.finalise(p).toSql({
 			id: 123,
 			name: 'Fred',
 			deletedAt: null,
@@ -114,7 +114,7 @@ describe(`INSERT commands`, () => {
 			.insert(insertRow);
 
 		// Execute
-		const actual = query.toSql({
+		const actual = query.finalise(paramsWrapper).toSql({
 			id: 123,
 			name: 'Fred',
 			locationId: 456
@@ -146,7 +146,7 @@ describe(`INSERT commands`, () => {
 		const query = insertFromObject<TUsers, InsertRow, Params>(QUsers, insertRow);
 
 		// Execute
-		const actual = query.toSql({});
+		const actual = query.finalise({}).toSql({});
 
 		// Verify
 		const expected = {
@@ -168,7 +168,7 @@ describe(`INSERT commands`, () => {
 			);
 
 		// Execute
-		const actual = query.toSql({});
+		const actual = query.finalise({}).toSql({});
 
 		// Verify
 		const expected = {
@@ -192,7 +192,7 @@ describe(`INSERT commands`, () => {
 			);
 
 		// Execute
-		const actual = query.toSql({});
+		const actual = query.finalise({}).toSql({});
 
 		// Verify
 		const expected = {
@@ -213,7 +213,7 @@ describe(`INSERT commands`, () => {
 			);
 
 		// Execute
-		const actual = query.toSql({});
+		const actual = query.finalise({}).toSql({});
 
 		// Verify
 		const expected = {
@@ -234,7 +234,7 @@ describe(`INSERT commands`, () => {
 			);
 
 		// Execute
-		const actual = query.toSql({});
+		const actual = query.finalise({}).toSql({});
 
 		// Verify
 		const expected = {
@@ -256,7 +256,7 @@ describe(`INSERT commands`, () => {
 			);
 
 		// Execute
-		const actual = query.toSql({});
+		const actual = query.finalise({}).toSql({});
 
 		// Verify
 		const expected = {

@@ -36,7 +36,7 @@ export function insert<
 >(
 	table: TQTable
 ) {
-	return new InsertQueryBuilder<TQTable, TInsertRow, TParams>(table);
+	return new InsertQueryBuilder<TQTable, TInsertRow>(table);
 }
 
 export function insertFromObject<
@@ -65,7 +65,7 @@ export function select<TQuerySelector extends QuerySelector>(querySelector: TQue
 }
 
 export function update<TQTable extends QueryTable, TParams>(table: TQTable) {
-	return new UpdateQueryBuilder<TQTable, TParams>(table);
+	return new UpdateQueryBuilder<TQTable>(table);
 }
 
 export function updateFromObject<TQTable extends QueryTable, TParams>(table: TQTable, updates: PartialTableColumns<TQTable>) {

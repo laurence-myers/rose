@@ -1,8 +1,7 @@
 import { RollbackCommandNode } from "../ast";
 import { Clone, coerceNullToUndefined } from "../../lang";
-import { GeneratedQuery, PreparedQueryNonReturning } from "../preparedQuery";
-import { SqlAstWalker } from "../walkers/sqlAstWalker";
-import { Queryable } from "../../execution";
+import { FinalisedQueryNonReturningWithParams } from "../finalisedQuery";
+import { TableMap } from "../../data";
 
 export class RollbackCommandBuilder {
 	protected readonly queryAst: RollbackCommandNode;
@@ -19,19 +18,11 @@ export class RollbackCommandBuilder {
 		return this;
 	}
 
-	prepare(): PreparedQueryNonReturning<{}> {
-		const walker = new SqlAstWalker(this.queryAst);
-		const data = walker.toSql();
-		return new PreparedQueryNonReturning<{}>(data.sql, data.parameterGetters);
-	}
-
-	toSql(): GeneratedQuery {
-		return this.prepare()
-			.generate({});
-	}
-
-	execute(queryable: Queryable): Promise<void> {
-		return this.prepare()
-			.execute(queryable, {});
+	finalise(): FinalisedQueryNonReturningWithParams<{}> {
+		return new FinalisedQueryNonReturningWithParams<{}>(
+			this.queryAst,
+			new TableMap(),
+			{}
+		);
 	}
 }

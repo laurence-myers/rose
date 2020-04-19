@@ -5,31 +5,11 @@ import { RectifyingWalker } from "./walkers/rectifyingWalker";
 import { DefaultMap } from "../lang";
 import { SqlAstWalker } from "./walkers/sqlAstWalker";
 import { QuerySelectorProcessor } from "./metadata";
-import { ParamsProxy } from "./params";
+import { ParamsProxy, ParamsWrapper } from "./params";
 
 export interface GeneratedQuery {
 	sql: string;
 	parameters: unknown[];
-}
-
-export class PreparedQueryNonReturning<TParams> {
-	constructor(
-		protected readonly sql: string,
-		protected readonly paramGetters: Array<(params: TParams) => unknown>) {
-
-	}
-
-	generate(params: TParams): GeneratedQuery {
-		const values = this.paramGetters.map((getter) => getter(params));
-		return {
-			sql: this.sql,
-			parameters: values
-		};
-	}
-
-	execute(queryable: Queryable, params: TParams): Promise<void> {
-		return executeNonReturning(queryable, this.generate(params));
-	}
 }
 
 export abstract class FinalisedQuery<TQuerySelector extends QuerySelector> {
@@ -48,12 +28,16 @@ export abstract class FinalisedQuery<TQuerySelector extends QuerySelector> {
 			queryAst.outputExpressions = this.outputExpressions;
 			this.rectifyTableReferences(queryAst, tableMap);
 		} else if (queryAst.type === 'insertCommandNode') {
-			queryAst.returning = this.outputExpressions;
+			if (this.outputExpressions.length > 0) {
+				queryAst.returning = this.outputExpressions;
+			}
 			if (queryAst.query?.query) {
 				this.rectifyTableReferences(queryAst.query.query, tableMap);
 			}
 		} else if (queryAst.type === 'updateCommandNode') {
-			queryAst.returning = this.outputExpressions;
+			if (this.outputExpressions.length > 0) {
+				queryAst.returning = this.outputExpressions;
+			}
 		}
 		const walker = new SqlAstWalker(queryAst, tableMap);
 		const data = walker.toSql();
@@ -90,7 +74,7 @@ export class FinalisedQueryWithParams<TQuerySelector extends QuerySelector, TPar
 		querySelector: TQuerySelector,
 		queryAst: AnyCommandNode,
 		tableMap: DefaultMap<string, string>,
-		paramsProxy: ParamsProxy<TParams> // just used for inferring TParams
+		paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams> // just used for inferring TParams
 	) {
 		super(querySelector, queryAst, tableMap);
 	}
@@ -108,5 +92,34 @@ export class FinalisedQueryWithParams<TQuerySelector extends QuerySelector, TPar
 
 	protected mapParameters(params: TParams) {
 		return this.paramGetters.map((getter) => getter(params));
+	}
+}
+
+export class FinalisedQueryNonReturningWithParams<TParams> extends FinalisedQuery<{}> {
+	constructor(
+		queryAst: AnyCommandNode,
+		tableMap: DefaultMap<string, string>,
+		paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams> // just used for inferring TParams
+	) {
+		super({}, queryAst, tableMap);
+	}
+
+	public toSql(params: TParams): GeneratedQuery {
+		return {
+			sql: this.sql,
+			parameters: this.mapParameters(params)
+		};
+	}
+
+	public execute(queryable: Queryable, params: TParams) {
+		return executeNonReturning(queryable, this.sql, this.mapParameters(params));
+	}
+
+	protected mapParameters(params: TParams) {
+		return this.paramGetters.map((getter) => getter(params));
+	}
+
+	protected processQuerySelector(querySelector: QuerySelector): Array<SelectOutputExpression> {
+		return [];
 	}
 }

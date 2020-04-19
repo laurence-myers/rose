@@ -2,7 +2,6 @@ import { mapRowsToClass } from "../rowMapping/rowMapping";
 import { SelectOutputExpression } from "../query/ast";
 import { QuerySelector } from "../query/querySelector";
 import { MappedQuerySelector } from "../query/typeMapping";
-import { GeneratedQuery } from "../query/preparedQuery";
 
 export interface FieldDef {
 	name: string;
@@ -46,7 +45,8 @@ export async function execute<T extends QuerySelector>(
 
 export async function executeNonReturning(
 	queryable: Queryable,
-	query: GeneratedQuery,
+	sql: string,
+	parameters: unknown[],
 ): Promise<void> {
-	await queryable.query(query.sql, query.parameters);
+	await queryable.query(sql, parameters);
 }

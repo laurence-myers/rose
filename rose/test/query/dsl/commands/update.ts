@@ -20,7 +20,7 @@ describe(`UPDATE commands`, function () {
 			.where(QUsers.id.eq(constant(123)));
 
 		// Execute
-		const actual = query.toSql({
+		const actual = query.finalise(paramsWrapper).toSql({
 			name: 'fred'
 		});
 
@@ -50,7 +50,7 @@ describe(`UPDATE commands`, function () {
 			.where(QUsers.id.eq(paramsWrapper.get((p) => p.id)));
 
 		// Execute
-		const actual = query.toSql({
+		const actual = query.finalise(paramsWrapper).toSql({
 			id: 123,
 			...updates
 		});

@@ -10,16 +10,14 @@ import {
 } from "../ast";
 import { ColumnMetamodel, QueryTable, TableColumnsForInsertCommand } from "../metamodel";
 import { aliasTable } from "../dsl";
-import { FinalisedQueryWithParams, GeneratedQuery, PreparedQueryNonReturning } from "../preparedQuery";
-import { Queryable } from "../../execution";
+import { FinalisedQueryNonReturningWithParams, FinalisedQueryWithParams } from "../finalisedQuery";
 import { InvalidInsertError } from "../../errors";
-import { SqlAstWalker } from "../walkers/sqlAstWalker";
-import { RectifyingWalker } from "../walkers/rectifyingWalker";
 import { QuerySelector } from "../querySelector";
-import { ParamsProxy } from "../params";
+import { ParamsProxy, ParamsWrapper } from "../params";
+import { TableMap } from "../../data";
 
-export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends TableColumnsForInsertCommand<TQTable>, TParams> {
-	protected readonly tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
+export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends TableColumnsForInsertCommand<TQTable>> {
+	protected readonly tableMap = new TableMap();
 	protected readonly queryAst: InsertCommandNode;
 
 	constructor(
@@ -140,28 +138,12 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 		);
 	}
 
-	protected rectifyTableReferences() {
-		if (this.queryAst.query) {
-			const rectifier = new RectifyingWalker(this.queryAst.query.query, this.tableMap);
-			rectifier.rectify();
-		}
-	}
-
-	prepare(): PreparedQueryNonReturning<TParams> {
-		this.rectifyTableReferences();
-		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
-		const data = walker.toSql();
-		return new PreparedQueryNonReturning<TParams>(data.sql, data.parameterGetters);
-	}
-
-	toSql(params: TParams): GeneratedQuery {
-		return this.prepare()
-			.generate(params);
-	}
-
-	execute(queryable: Queryable, params: TParams): Promise<void> {
-		return this.prepare()
-			.execute(queryable, params);
+	finalise<TParams>(paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams>): FinalisedQueryNonReturningWithParams<TParams> {
+		return new FinalisedQueryNonReturningWithParams<TParams>(
+			this.queryAst,
+			this.tableMap,
+			paramsProxy
+		);
 	}
 }
 
@@ -174,7 +156,7 @@ export class InsertReturningQueryBuilder<TQTable extends QueryTable, TQuerySelec
 	) {
 	}
 
-	finalise<TParams>(paramsProxy: ParamsProxy<TParams>): FinalisedQueryWithParams<TQuerySelector, TParams> {
+	finalise<TParams>(paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams>): FinalisedQueryWithParams<TQuerySelector, TParams> {
 		return new FinalisedQueryWithParams<TQuerySelector, TParams>(
 			this.querySelector,
 			this.queryAst,

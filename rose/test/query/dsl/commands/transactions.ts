@@ -13,7 +13,8 @@ describe(`Transaction commands`, () => {
 	describe(`BEGIN command`, () => {
 		function doTest(builder: BeginCommandBuilder, expectedSql: string) {
 			const actual = builder
-				.toSql();
+				.finalise()
+				.toSql({});
 
 			// Verify
 			const expected: GeneratedQuery = {
@@ -91,7 +92,8 @@ describe(`Transaction commands`, () => {
 	describe(`COMMIT command`, () => {
 		function doTest(builder: CommitCommandBuilder, expectedSql: string) {
 			const actual = builder
-				.toSql();
+				.finalise()
+				.toSql({});
 
 			// Verify
 			const expected: GeneratedQuery = {
@@ -151,7 +153,8 @@ describe(`Transaction commands`, () => {
 	describe(`ROLLBACK command`, () => {
 		function doTest(builder: RollbackCommandBuilder, expectedSql: string) {
 			const actual = builder
-				.toSql();
+				.finalise()
+				.toSql({});
 
 			// Verify
 			const expected: GeneratedQuery = {

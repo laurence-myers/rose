@@ -37,9 +37,10 @@ import {
 	UpdateCommandNode,
 	WithNode
 } from "../ast";
-import { assertNever, DefaultMap } from "../../lang";
+import { assertNever } from "../../lang";
 import { UnsupportedOperationError } from "../../errors";
 import { BaseWalker } from "./baseWalker";
+import { TableMap } from "../../data";
 
 interface WalkedQueryData {
 	sql: string;
@@ -72,7 +73,7 @@ export class SqlAstWalker extends BaseWalker {
 
 	constructor(
 		protected queryAst: AnyCommandNode,
-		protected tableMap: DefaultMap<string, string> = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`)
+		protected tableMap: TableMap = new TableMap()
 	) {
 		super();
 	}

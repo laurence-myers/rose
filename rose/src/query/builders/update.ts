@@ -8,14 +8,13 @@ import {
 } from "../ast";
 import { QueryTable, TableColumnsForUpdateCommand } from "../metamodel";
 import { aliasTable } from "../dsl";
-import { FinalisedQueryWithParams, GeneratedQuery, PreparedQueryNonReturning } from "../preparedQuery";
-import { Queryable } from "../../execution";
-import { SqlAstWalker } from "../walkers/sqlAstWalker";
+import { FinalisedQueryNonReturningWithParams, FinalisedQueryWithParams } from "../finalisedQuery";
 import { QuerySelector } from "../querySelector";
-import { ParamsProxy } from "../params";
+import { ParamsProxy, ParamsWrapper } from "../params";
+import { TableMap } from "../../data";
 
-export class UpdateQueryBuilder<TQTable extends QueryTable, TParams> {
-	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
+export class UpdateQueryBuilder<TQTable extends QueryTable> {
+	protected tableMap = new TableMap();
 	protected queryAst: UpdateCommandNode;
 
 	constructor(
@@ -75,20 +74,12 @@ export class UpdateQueryBuilder<TQTable extends QueryTable, TParams> {
 		return this;
 	}
 
-	prepare(): PreparedQueryNonReturning<TParams> {
-		const walker = new SqlAstWalker(this.queryAst, this.tableMap);
-		const data = walker.toSql();
-		return new PreparedQueryNonReturning<TParams>(data.sql, data.parameterGetters);
-	}
-
-	toSql(params: TParams): GeneratedQuery {
-		return this.prepare()
-			.generate(params);
-	}
-
-	execute(queryable: Queryable, params: TParams): Promise<void> {
-		return this.prepare()
-			.execute(queryable, params);
+	finalise<TParams>(paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams>): FinalisedQueryNonReturningWithParams<TParams> {
+		return new FinalisedQueryNonReturningWithParams<TParams>(
+			this.queryAst,
+			this.tableMap,
+			paramsProxy
+		);
 	}
 }
 
@@ -101,7 +92,7 @@ export class UpdateReturningQueryBuilder<TQTable extends QueryTable, TQuerySelec
 	) {
 	}
 
-	finalise<TParams>(paramsProxy: ParamsProxy<TParams>): FinalisedQueryWithParams<TQuerySelector, TParams> {
+	finalise<TParams>(paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams>): FinalisedQueryWithParams<TQuerySelector, TParams> {
 		return new FinalisedQueryWithParams<TQuerySelector, TParams>(
 			this.querySelector,
 			this.queryAst,
