@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "pg": "8.0.0",
-    "rose": "../rose/package"
+    "rose": "../rose/package",
+    "rose-cli": "../rose-cli/package"
   }
 }

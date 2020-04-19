@@ -17,7 +17,7 @@ export class FilmRepository {
         }
         const P = new ParamsWrapper<Params>();
 
-        return select<typeof selector, Params>(selector)
+        return select(selector)
             .join(QFilmActor).on(
                 QFilmActor.filmId.eq(QFilm.filmId)
             )
@@ -35,7 +35,7 @@ export class FilmRepository {
                 QFilm.length.desc(),
                 QFilm.title.asc(),
             )
-            .prepare();
+            .finalise(P);
     })();
 
     public async selectLongestFilmsByActorName(client: Queryable, firstName: string, lastName: string): Promise<{ name: string; length: number; }[]> {
@@ -62,7 +62,7 @@ export class FilmRepository {
 
         const P = new ParamsWrapper<Params>();
 
-        return insert<TFilmActor, TableColumnsForInsertCommand<TFilmActor>, Params>(QFilmActor)
+        return insert<TFilmActor, TableColumnsForInsertCommand<TFilmActor>>(QFilmActor)
             .insertFromQuery(
                 subSelect(
                     QFilm.filmId,
@@ -75,7 +75,7 @@ export class FilmRepository {
                     )
                 ).limit(1)
                     .toSubQuery()
-            ).prepare()
+            ).finalise(P)
     })();
 
     public async addActorToFilm(client: Queryable, actorName: { firstName: string; lastName: string; }, filmName: string): Promise<void> {

@@ -9,9 +9,9 @@ export class LanguageRepository {
         }
 
         const P = new ParamsWrapper<Params>();
-        return select<typeof LanguageAllColumns, Params>(LanguageAllColumns)
+        return select(LanguageAllColumns)
             .where(QLanguage.name.eq(P.get((p) => p.name)))
-            .prepare();
+            .finalise(P);
     })();
 
     public async getOneByName(client: Queryable, name: string): Promise<LanguageRow | undefined> {
