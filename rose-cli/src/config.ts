@@ -45,6 +45,7 @@ export interface IntrospectConfig {
 	types: {
 		global: PostgresTypeMap;
 		columns: PostgresTypeMap;
+		enums: PostgresTypeMap;
 	};
 }
 
@@ -84,7 +85,8 @@ export function mergeConfigWithDefaults(config: CliConfig = {}): IntrospectConfi
 		ignoredTables: defaultIgnoredTables.concat((config.ignore || []).map((name) => name.toLowerCase())),
 		types: {
 			global: globalTypes,
-			columns: columnTypes
+			columns: columnTypes,
+			enums: new Map()
 		},
 	};
 }

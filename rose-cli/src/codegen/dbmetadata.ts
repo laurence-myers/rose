@@ -44,7 +44,10 @@ function getColumnTypeScriptType(tableName: string, column: ColumnMetadata, type
 		const sanitisedType = column.type.replace(/^_/, ''); // Remove the array character
 		tsTypeEntry = typeMaps.global.get(sanitisedType);
 		if (!tsTypeEntry) {
-			throw new UnrecognisedColumnTypeError(`No mapping defined for column type: "${ column.type }"`);
+			tsTypeEntry = typeMaps.enums.get(sanitisedType);
+			if (!tsTypeEntry) {
+				throw new UnrecognisedColumnTypeError(`No mapping defined for column type: "${ column.type }"`);
+			}
 		}
 		if (isArray) {
 			newTypeName = `Array<${ tsTypeEntry.type }>`;
@@ -89,6 +92,14 @@ export class TableMetadata {
 	}
 }
 
+const enumQuery = `SELECT
+	  type.typname AS name,
+	  string_agg('''' || enum.enumlabel || '''', ' | ') AS value
+	FROM pg_enum AS enum
+	JOIN pg_type AS type
+	  ON (type.oid = enum.enumtypid)
+	GROUP BY type.typname;`;
+
 const columnMetadataQuery = `SELECT "udt_name",
        "table_name",
        "column_name",
@@ -117,14 +128,27 @@ const constraintQuery = `SELECT kcu.table_schema,
              kcu.table_name,
              position;`;
 
+async function populateEnumTypes(client: Queryable, config: IntrospectConfig) {
+	const result: QueryResult = await client.query(enumQuery, []);
+	const rows: {
+		name: string;
+		value: string;
+	}[] = result.rows;
+	for (const row of rows) {
+		config.types.enums.set(row.name, {
+			type: row.value
+		});
+	}
+}
+
 async function populateColumnTypes(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, config: IntrospectConfig): Promise<void> {
 	const result: QueryResult = await client.query(columnMetadataQuery, [config.schema, config.ignoredTables]);
 	const rows: ColumnsRow[] = result.rows;
-	rows.forEach((row) => {
+	for (const row of rows) {
 		const tableMetadata = tablesMetadata.get(row.table_name);
 		const column = new ColumnMetadata(row.table_name, row.column_name, row.udt_name, yesOrNoToBoolean(row.is_nullable), row.column_default !== null, config.types);
 		tableMetadata.columns.push(column);
-	});
+	}
 }
 
 async function populatePrimaryKeys(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, config: IntrospectConfig): Promise<void> {
@@ -144,6 +168,7 @@ async function populatePrimaryKeys(client: Queryable, tablesMetadata: DefaultMap
 
 export async function getTableMetadata(client: Queryable, config: IntrospectConfig): Promise<DefaultMap<string, TableMetadata>> {
 	const tablesMetadata: DefaultMap<string, TableMetadata> = new DefaultMap<string, TableMetadata>((key: string) => new TableMetadata(config.schema, key));
+	await populateEnumTypes(client, config);
 	await populateColumnTypes(client, tablesMetadata, config);
 	await populatePrimaryKeys(client, tablesMetadata, config);
 	return tablesMetadata;

@@ -14,9 +14,8 @@ describe(`Code generators`, () => {
 			return fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n');
 		}
 
-		function* generateData(counter: () => string) {
-			const tableName = 'foo_table';
-			const typeMaps: IntrospectConfig['types'] = {
+		function getTypeMaps(): IntrospectConfig['types'] {
+			return {
 				global: defaultPostgresTypeMap,
 				columns: new Map([
 					['foo_table.custom_type_1', {
@@ -30,8 +29,19 @@ describe(`Code generators`, () => {
 						type: `CustomType2`,
 						from: '../../src/customTypeProvider'
 					}],
+				]),
+				enums: new Map([
+					['enum_type_1', {
+						type: `'active' | 'locked' | 'pending' | 'disabled'`,
+					}],
 				])
 			};
+		}
+
+
+		function* generateData(counter: () => string) {
+			const tableName = 'foo_table';
+			const typeMaps = getTypeMaps();
 			for (const type of ['int', 'text', 'timestamptz']) {
 				for (const isNullable of [false, true]) {
 					for (const hasDefault of [false, true]) {
@@ -42,6 +52,7 @@ describe(`Code generators`, () => {
 			yield new ColumnMetadata(tableName, 'custom_type_1', 'text', true, false, typeMaps);
 			yield new ColumnMetadata(tableName, 'custom_type_2', 'json', true, false, typeMaps);
 			yield new ColumnMetadata(tableName, 'custom_type_3', 'json', false, false, typeMaps);
+			yield new ColumnMetadata(tableName, 'enum_type_1', 'enum_type_1', true, false, typeMaps);
 		}
 
 		it(`should support integer, string, and date column types, with nulls`, async () => {
@@ -59,6 +70,24 @@ describe(`Code generators`, () => {
 
 			// Verify
 			const expected = readExpectedCode(1);
+			assert.deepEqual(result, expected);
+		});
+
+		it(`produces the import statement when there's no custom types`, async () => {
+			// Set up
+			const tableName = `foo_table`;
+			const tableMetadata = new TableMetadata(`public`, tableName);
+			const typeMaps = getTypeMaps();
+
+			tableMetadata.columns.push(
+				new ColumnMetadata(tableName, 'id', 'int', false, true, typeMaps)
+			);
+
+			// Execute
+			const result = generateTableCode(tableMetadata);
+
+			// Verify
+			const expected = readExpectedCode(2);
 			assert.deepEqual(result, expected);
 		});
 	});

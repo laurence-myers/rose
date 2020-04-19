@@ -19,6 +19,7 @@ export interface FooTableRow {
 	customType1: 'bar' | 'baz' | null;
 	customType2: CustomType2 | null;
 	customType3: CustomType2;
+	enumType1: 'active' | 'locked' | 'pending' | 'disabled' | null;
 }
 
 export interface FooTableInsertRow {
@@ -37,6 +38,7 @@ export interface FooTableInsertRow {
 	customType1?: 'bar' | 'baz' | null;
 	customType2?: CustomType2 | null;
 	customType3: CustomType2;
+	enumType1?: 'active' | 'locked' | 'pending' | 'disabled' | null;
 }
 
 export class TFooTable extends rose.QueryTable {
@@ -55,6 +57,7 @@ export class TFooTable extends rose.QueryTable {
 	customType1 = new rose.ColumnMetamodel<'bar' | 'baz' | null>(this.$table, 'custom_type_1');
 	customType2 = new rose.ColumnMetamodel<CustomType2 | null>(this.$table, 'custom_type_2');
 	customType3 = new rose.ColumnMetamodel<CustomType2>(this.$table, 'custom_type_3');
+	enumType1 = new rose.ColumnMetamodel<'active' | 'locked' | 'pending' | 'disabled' | null>(this.$table, 'enum_type_1');
 
 	constructor ($tableAlias?: string) {
 		super(new rose.TableMetamodel('foo_table', $tableAlias));
@@ -79,6 +82,7 @@ export const FooTableAllColumns = {
 	customType1: QFooTable.customType1,
 	customType2: QFooTable.customType2,
 	customType3: QFooTable.customType3,
+	enumType1: QFooTable.enumType1,
 };
 export const FooTableDefaultQueries = {
 	insertOne: function insertOne(row: FooTableInsertRow) {

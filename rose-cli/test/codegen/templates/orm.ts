@@ -12,7 +12,8 @@ describe(`OrmTemplate`, () => {
 	const tableName = `foo_table`;
 	const typeMaps: IntrospectConfig['types'] = {
 		global: defaultPostgresTypeMap,
-		columns: new Map()
+		columns: new Map(),
+		enums: new Map()
 	};
 
 	function readExpectedCode(testNumber: number): string {
