@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from 'rose';
+import * as rose from '@rosepg/rose';
 
 export interface ActorInfoRow {
 	actorId: number | null;
@@ -36,7 +36,7 @@ export const ActorInfoAllColumns = {
 	lastName: QActorInfo.lastName,
 };
 export const ActorInfoDefaultQueries = {
-	insertOne: function updateOne(row: ActorInfoInsertRow) {
-		return rose.insertFromObject<TActorInfo, ActorInfoInsertRow, {}>(QActorInfo, row).prepare();
+	insertOne: function insertOne(row: ActorInfoInsertRow) {
+		return rose.insertFromObject<TActorInfo, ActorInfoInsertRow>(QActorInfo, row).finalise({});
 	},
 };

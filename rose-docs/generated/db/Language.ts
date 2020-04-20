@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from 'rose';
+import * as rose from '@rosepg/rose';
 
 export interface LanguageRow {
 	languageId: number;
@@ -37,26 +37,26 @@ export const LanguageDefaultQueries = {
 			languageId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.select<typeof LanguageAllColumns, Params>(LanguageAllColumns).where(QLanguage.languageId.eq(P.get((p) => p.languageId))).prepare();
+		const P = rose.params<Params>();
+		return rose.select(LanguageAllColumns).where(QLanguage.languageId.eq(P.languageId)).finalise(P);
 	})(),
-	insertOne: function updateOne(row: LanguageInsertRow) {
-		return rose.insertFromObject<TLanguage, LanguageInsertRow, {}>(QLanguage, row).prepare();
+	insertOne: function insertOne(row: LanguageInsertRow) {
+		return rose.insertFromObject<TLanguage, LanguageInsertRow>(QLanguage, row).finalise({});
 	},
 	updateOne: function updateOne(updates: rose.PartialTableColumns<TLanguage>) {
 		interface Params {
 			languageId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.updateFromObject<TLanguage, Params>(QLanguage, updates).where(QLanguage.languageId.eq(P.get((p) => p.languageId))).prepare();
+		const P = rose.params<Params>();
+		return rose.updateFromObject(QLanguage, updates).where(QLanguage.languageId.eq(P.languageId)).finalise(P);
 	},
 	deleteOne: (function deleteOne() {
 		interface Params {
 			languageId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.deleteFrom<Params>(QLanguage).where(QLanguage.languageId.eq(P.get((p) => p.languageId))).prepare();
+		const P = rose.params<Params>();
+		return rose.deleteFrom(QLanguage).where(QLanguage.languageId.eq(P.languageId)).finalise(P);
 	})(),
 };

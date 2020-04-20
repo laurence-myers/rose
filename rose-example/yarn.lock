@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@rose/rose-cli@../rose-cli/package":
+"@rosepg/rose-cli@../rose-cli/package":
   version "0.0.1"
   dependencies:
     "@sinclair/typebox" "0.9.13"
@@ -10,7 +10,7 @@
     camelcase "5.3.1"
     pg "8.0.2"
 
-"@rose/rose@../rose/package":
+"@rosepg/rose@../rose/package":
   version "0.0.1"
   dependencies:
     lodash.clonedeep "4.5.0"

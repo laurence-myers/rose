@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from 'rose';
+import * as rose from '@rosepg/rose';
 
 export interface CustomerRow {
 	active: number | null;
@@ -65,26 +65,26 @@ export const CustomerDefaultQueries = {
 			customerId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.select<typeof CustomerAllColumns, Params>(CustomerAllColumns).where(QCustomer.customerId.eq(P.get((p) => p.customerId))).prepare();
+		const P = rose.params<Params>();
+		return rose.select(CustomerAllColumns).where(QCustomer.customerId.eq(P.customerId)).finalise(P);
 	})(),
-	insertOne: function updateOne(row: CustomerInsertRow) {
-		return rose.insertFromObject<TCustomer, CustomerInsertRow, {}>(QCustomer, row).prepare();
+	insertOne: function insertOne(row: CustomerInsertRow) {
+		return rose.insertFromObject<TCustomer, CustomerInsertRow>(QCustomer, row).finalise({});
 	},
 	updateOne: function updateOne(updates: rose.PartialTableColumns<TCustomer>) {
 		interface Params {
 			customerId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.updateFromObject<TCustomer, Params>(QCustomer, updates).where(QCustomer.customerId.eq(P.get((p) => p.customerId))).prepare();
+		const P = rose.params<Params>();
+		return rose.updateFromObject(QCustomer, updates).where(QCustomer.customerId.eq(P.customerId)).finalise(P);
 	},
 	deleteOne: (function deleteOne() {
 		interface Params {
 			customerId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.deleteFrom<Params>(QCustomer).where(QCustomer.customerId.eq(P.get((p) => p.customerId))).prepare();
+		const P = rose.params<Params>();
+		return rose.deleteFrom(QCustomer).where(QCustomer.customerId.eq(P.customerId)).finalise(P);
 	})(),
 };

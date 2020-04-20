@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from 'rose';
+import * as rose from '@rosepg/rose';
 
 export interface FilmRow {
 	description: string | null;
@@ -10,12 +10,12 @@ export interface FilmRow {
 	lastUpdate: Date;
 	length: number | null;
 	originalLanguageId: number | null;
-	rating: any | null;
+	rating: 'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null;
 	releaseYear: number | null;
 	rentalDuration: number;
 	rentalRate: number;
 	replacementCost: number;
-	specialFeatures: string[] | null;
+	specialFeatures: string | null;
 	title: string;
 }
 
@@ -27,12 +27,12 @@ export interface FilmInsertRow {
 	lastUpdate?: Date;
 	length?: number | null;
 	originalLanguageId?: number | null;
-	rating?: any | null;
+	rating?: 'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null;
 	releaseYear?: number | null;
 	rentalDuration?: number;
 	rentalRate?: number;
 	replacementCost?: number;
-	specialFeatures?: string[] | null;
+	specialFeatures?: string | null;
 	title: string;
 }
 
@@ -44,12 +44,12 @@ export class TFilm extends rose.QueryTable {
 	lastUpdate = new rose.ColumnMetamodel<Date>(this.$table, 'last_update');
 	length = new rose.ColumnMetamodel<number | null>(this.$table, 'length');
 	originalLanguageId = new rose.ColumnMetamodel<number | null>(this.$table, 'original_language_id');
-	rating = new rose.ColumnMetamodel<any | null>(this.$table, 'rating');
+	rating = new rose.ColumnMetamodel<'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null>(this.$table, 'rating');
 	releaseYear = new rose.ColumnMetamodel<number | null>(this.$table, 'release_year');
 	rentalDuration = new rose.ColumnMetamodel<number>(this.$table, 'rental_duration');
 	rentalRate = new rose.ColumnMetamodel<number>(this.$table, 'rental_rate');
 	replacementCost = new rose.ColumnMetamodel<number>(this.$table, 'replacement_cost');
-	specialFeatures = new rose.ColumnMetamodel<string[] | null>(this.$table, 'special_features');
+	specialFeatures = new rose.ColumnMetamodel<string | null>(this.$table, 'special_features');
 	title = new rose.ColumnMetamodel<string>(this.$table, 'title');
 
 	constructor ($tableAlias?: string) {
@@ -81,26 +81,26 @@ export const FilmDefaultQueries = {
 			filmId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.select<typeof FilmAllColumns, Params>(FilmAllColumns).where(QFilm.filmId.eq(P.get((p) => p.filmId))).prepare();
+		const P = rose.params<Params>();
+		return rose.select(FilmAllColumns).where(QFilm.filmId.eq(P.filmId)).finalise(P);
 	})(),
-	insertOne: function updateOne(row: FilmInsertRow) {
-		return rose.insertFromObject<TFilm, FilmInsertRow, {}>(QFilm, row).prepare();
+	insertOne: function insertOne(row: FilmInsertRow) {
+		return rose.insertFromObject<TFilm, FilmInsertRow>(QFilm, row).finalise({});
 	},
 	updateOne: function updateOne(updates: rose.PartialTableColumns<TFilm>) {
 		interface Params {
 			filmId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.updateFromObject<TFilm, Params>(QFilm, updates).where(QFilm.filmId.eq(P.get((p) => p.filmId))).prepare();
+		const P = rose.params<Params>();
+		return rose.updateFromObject(QFilm, updates).where(QFilm.filmId.eq(P.filmId)).finalise(P);
 	},
 	deleteOne: (function deleteOne() {
 		interface Params {
 			filmId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.deleteFrom<Params>(QFilm).where(QFilm.filmId.eq(P.get((p) => p.filmId))).prepare();
+		const P = rose.params<Params>();
+		return rose.deleteFrom(QFilm).where(QFilm.filmId.eq(P.filmId)).finalise(P);
 	})(),
 };

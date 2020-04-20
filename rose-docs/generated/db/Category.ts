@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from 'rose';
+import * as rose from '@rosepg/rose';
 
 export interface CategoryRow {
 	categoryId: number;
@@ -37,26 +37,26 @@ export const CategoryDefaultQueries = {
 			categoryId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.select<typeof CategoryAllColumns, Params>(CategoryAllColumns).where(QCategory.categoryId.eq(P.get((p) => p.categoryId))).prepare();
+		const P = rose.params<Params>();
+		return rose.select(CategoryAllColumns).where(QCategory.categoryId.eq(P.categoryId)).finalise(P);
 	})(),
-	insertOne: function updateOne(row: CategoryInsertRow) {
-		return rose.insertFromObject<TCategory, CategoryInsertRow, {}>(QCategory, row).prepare();
+	insertOne: function insertOne(row: CategoryInsertRow) {
+		return rose.insertFromObject<TCategory, CategoryInsertRow>(QCategory, row).finalise({});
 	},
 	updateOne: function updateOne(updates: rose.PartialTableColumns<TCategory>) {
 		interface Params {
 			categoryId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.updateFromObject<TCategory, Params>(QCategory, updates).where(QCategory.categoryId.eq(P.get((p) => p.categoryId))).prepare();
+		const P = rose.params<Params>();
+		return rose.updateFromObject(QCategory, updates).where(QCategory.categoryId.eq(P.categoryId)).finalise(P);
 	},
 	deleteOne: (function deleteOne() {
 		interface Params {
 			categoryId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.deleteFrom<Params>(QCategory).where(QCategory.categoryId.eq(P.get((p) => p.categoryId))).prepare();
+		const P = rose.params<Params>();
+		return rose.deleteFrom(QCategory).where(QCategory.categoryId.eq(P.categoryId)).finalise(P);
 	})(),
 };

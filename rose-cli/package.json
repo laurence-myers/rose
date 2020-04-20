@@ -1,5 +1,5 @@
 {
-  "name": "@rose/rose-cli",
+  "name": "@rosepg/rose-cli",
   "version": "0.0.1",
   "description": "CLI for rose, a type-safe query builder DSL, data mapper, and mini ORM for PostgreSQL",
   "main": "index.js",

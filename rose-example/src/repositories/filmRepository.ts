@@ -9,11 +9,11 @@ import {
     subSelect,
     TableColumnsForInsertCommand,
     upper
-} from "@rose/rose";
+} from "@rosepg/rose";
 import { FilmDefaultQueries, FilmInsertRow, QFilm } from "../../generated/db/Film";
 import { QActor } from "../../generated/db/Actor";
 import { QFilmActor, TFilmActor } from "../../generated/db/FilmActor";
-import { Queryable } from "@rose/rose/execution/execution";
+import { Queryable } from "@rosepg/rose/execution/execution";
 
 export class FilmRepository {
     private readonly selectLongestFilmsByActorNameQuery = (function () {

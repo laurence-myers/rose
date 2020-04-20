@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from 'rose';
+import * as rose from '@rosepg/rose';
 
 export interface FilmListRow {
 	actors: string | null;
@@ -9,7 +9,7 @@ export interface FilmListRow {
 	fid: number | null;
 	length: number | null;
 	price: number | null;
-	rating: any | null;
+	rating: 'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null;
 	title: string | null;
 }
 
@@ -20,7 +20,7 @@ export interface FilmListInsertRow {
 	fid?: number | null;
 	length?: number | null;
 	price?: number | null;
-	rating?: any | null;
+	rating?: 'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null;
 	title?: string | null;
 }
 
@@ -31,7 +31,7 @@ export class TFilmList extends rose.QueryTable {
 	fid = new rose.ColumnMetamodel<number | null>(this.$table, 'fid');
 	length = new rose.ColumnMetamodel<number | null>(this.$table, 'length');
 	price = new rose.ColumnMetamodel<number | null>(this.$table, 'price');
-	rating = new rose.ColumnMetamodel<any | null>(this.$table, 'rating');
+	rating = new rose.ColumnMetamodel<'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null>(this.$table, 'rating');
 	title = new rose.ColumnMetamodel<string | null>(this.$table, 'title');
 
 	constructor ($tableAlias?: string) {
@@ -52,7 +52,7 @@ export const FilmListAllColumns = {
 	title: QFilmList.title,
 };
 export const FilmListDefaultQueries = {
-	insertOne: function updateOne(row: FilmListInsertRow) {
-		return rose.insertFromObject<TFilmList, FilmListInsertRow, {}>(QFilmList, row).prepare();
+	insertOne: function insertOne(row: FilmListInsertRow) {
+		return rose.insertFromObject<TFilmList, FilmListInsertRow>(QFilmList, row).finalise({});
 	},
 };

@@ -1,5 +1,5 @@
 // tag::first-import[]
-import { params, select } from '@rose/rose';
+import { params, select } from '@rosepg/rose';
 import { QStaff, StaffAllColumns, StaffRow } from '../generated/db/Staff';
 // end::first-import[]
 // tag::client-import[]

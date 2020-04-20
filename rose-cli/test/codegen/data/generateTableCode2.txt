@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from '@rose/rose';
+import * as rose from '@rosepg/rose';
 
 export interface FooTableRow {
 	id: number;

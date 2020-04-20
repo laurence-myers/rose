@@ -28,7 +28,7 @@ function escapeColumnName(column: ColumnMetadata): string {
 
 export function TableMetamodelTemplate(table: TableMetadata): ModuleNode {
 	return modl([
-			impAll('@rose/rose', 'rose')
+			impAll('@rosepg/rose', 'rose')
 		], body([
 			stmt(
 				classDecl(

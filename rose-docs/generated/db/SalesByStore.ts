@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from 'rose';
+import * as rose from '@rosepg/rose';
 
 export interface SalesByStoreRow {
 	manager: string | null;
@@ -32,7 +32,7 @@ export const SalesByStoreAllColumns = {
 	totalSales: QSalesByStore.totalSales,
 };
 export const SalesByStoreDefaultQueries = {
-	insertOne: function updateOne(row: SalesByStoreInsertRow) {
-		return rose.insertFromObject<TSalesByStore, SalesByStoreInsertRow, {}>(QSalesByStore, row).prepare();
+	insertOne: function insertOne(row: SalesByStoreInsertRow) {
+		return rose.insertFromObject<TSalesByStore, SalesByStoreInsertRow>(QSalesByStore, row).finalise({});
 	},
 };

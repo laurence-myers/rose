@@ -1,5 +1,5 @@
 {
-  "name": "@rose/rose-example",
+  "name": "@rosepg/rose-example",
   "version": "0.0.1",
   "description": "Example project using rose",
   "main": "index.js",
@@ -19,8 +19,8 @@
     "typescript": "3.8.3"
   },
   "dependencies": {
-    "@rose/rose": "../rose/package",
-    "@rose/rose-cli": "../rose-cli/package",
+    "@rosepg/rose": "../rose/package",
+    "@rosepg/rose-cli": "../rose-cli/package",
     "pg": "8.0.0"
   }
 }

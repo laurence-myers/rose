@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from 'rose';
+import * as rose from '@rosepg/rose';
 
 export interface NicerButSlowerFilmListRow {
 	actors: string | null;
@@ -9,7 +9,7 @@ export interface NicerButSlowerFilmListRow {
 	fid: number | null;
 	length: number | null;
 	price: number | null;
-	rating: any | null;
+	rating: 'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null;
 	title: string | null;
 }
 
@@ -20,7 +20,7 @@ export interface NicerButSlowerFilmListInsertRow {
 	fid?: number | null;
 	length?: number | null;
 	price?: number | null;
-	rating?: any | null;
+	rating?: 'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null;
 	title?: string | null;
 }
 
@@ -31,7 +31,7 @@ export class TNicerButSlowerFilmList extends rose.QueryTable {
 	fid = new rose.ColumnMetamodel<number | null>(this.$table, 'fid');
 	length = new rose.ColumnMetamodel<number | null>(this.$table, 'length');
 	price = new rose.ColumnMetamodel<number | null>(this.$table, 'price');
-	rating = new rose.ColumnMetamodel<any | null>(this.$table, 'rating');
+	rating = new rose.ColumnMetamodel<'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null>(this.$table, 'rating');
 	title = new rose.ColumnMetamodel<string | null>(this.$table, 'title');
 
 	constructor ($tableAlias?: string) {
@@ -52,7 +52,7 @@ export const NicerButSlowerFilmListAllColumns = {
 	title: QNicerButSlowerFilmList.title,
 };
 export const NicerButSlowerFilmListDefaultQueries = {
-	insertOne: function updateOne(row: NicerButSlowerFilmListInsertRow) {
-		return rose.insertFromObject<TNicerButSlowerFilmList, NicerButSlowerFilmListInsertRow, {}>(QNicerButSlowerFilmList, row).prepare();
+	insertOne: function insertOne(row: NicerButSlowerFilmListInsertRow) {
+		return rose.insertFromObject<TNicerButSlowerFilmList, NicerButSlowerFilmListInsertRow>(QNicerButSlowerFilmList, row).finalise({});
 	},
 };

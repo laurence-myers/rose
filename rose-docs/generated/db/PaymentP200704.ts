@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from 'rose';
+import * as rose from '@rosepg/rose';
 
 export interface PaymentP200704Row {
 	amount: number;
@@ -44,7 +44,7 @@ export const PaymentP200704AllColumns = {
 	staffId: QPaymentP200704.staffId,
 };
 export const PaymentP200704DefaultQueries = {
-	insertOne: function updateOne(row: PaymentP200704InsertRow) {
-		return rose.insertFromObject<TPaymentP200704, PaymentP200704InsertRow, {}>(QPaymentP200704, row).prepare();
+	insertOne: function insertOne(row: PaymentP200704InsertRow) {
+		return rose.insertFromObject<TPaymentP200704, PaymentP200704InsertRow>(QPaymentP200704, row).finalise({});
 	},
 };

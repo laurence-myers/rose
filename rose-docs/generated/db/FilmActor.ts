@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from 'rose';
+import * as rose from '@rosepg/rose';
 
 export interface FilmActorRow {
 	actorId: number;
@@ -38,11 +38,11 @@ export const FilmActorDefaultQueries = {
 			filmId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.select<typeof FilmActorAllColumns, Params>(FilmActorAllColumns).where(rose.and(QFilmActor.actorId.eq(P.get((p) => p.actorId)), QFilmActor.filmId.eq(P.get((p) => p.filmId)))).prepare();
+		const P = rose.params<Params>();
+		return rose.select(FilmActorAllColumns).where(rose.and(QFilmActor.actorId.eq(P.actorId), QFilmActor.filmId.eq(P.filmId))).finalise(P);
 	})(),
-	insertOne: function updateOne(row: FilmActorInsertRow) {
-		return rose.insertFromObject<TFilmActor, FilmActorInsertRow, {}>(QFilmActor, row).prepare();
+	insertOne: function insertOne(row: FilmActorInsertRow) {
+		return rose.insertFromObject<TFilmActor, FilmActorInsertRow>(QFilmActor, row).finalise({});
 	},
 	updateOne: function updateOne(updates: rose.PartialTableColumns<TFilmActor>) {
 		interface Params {
@@ -50,8 +50,8 @@ export const FilmActorDefaultQueries = {
 			filmId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.updateFromObject<TFilmActor, Params>(QFilmActor, updates).where(rose.and(QFilmActor.actorId.eq(P.get((p) => p.actorId)), QFilmActor.filmId.eq(P.get((p) => p.filmId)))).prepare();
+		const P = rose.params<Params>();
+		return rose.updateFromObject(QFilmActor, updates).where(rose.and(QFilmActor.actorId.eq(P.actorId), QFilmActor.filmId.eq(P.filmId))).finalise(P);
 	},
 	deleteOne: (function deleteOne() {
 		interface Params {
@@ -59,7 +59,7 @@ export const FilmActorDefaultQueries = {
 			filmId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.deleteFrom<Params>(QFilmActor).where(rose.and(QFilmActor.actorId.eq(P.get((p) => p.actorId)), QFilmActor.filmId.eq(P.get((p) => p.filmId)))).prepare();
+		const P = rose.params<Params>();
+		return rose.deleteFrom(QFilmActor).where(rose.and(QFilmActor.actorId.eq(P.actorId), QFilmActor.filmId.eq(P.filmId))).finalise(P);
 	})(),
 };

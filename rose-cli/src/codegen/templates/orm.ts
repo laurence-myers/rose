@@ -249,7 +249,7 @@ function mapPrimaryKeys(tableMetadata: TableMetadata): InterfacePropertyNode[] {
 
 export function OrmTemplate(tableMetadata: TableMetadata): ModuleNode {
 	const imports: ImportNode[] = [
-		impAll('@rose/rose', 'rose')
+		impAll('@rosepg/rose', 'rose')
 	];
 
 	// TODO: support lookup by unique index

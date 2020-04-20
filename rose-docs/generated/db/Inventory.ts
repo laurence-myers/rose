@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from 'rose';
+import * as rose from '@rosepg/rose';
 
 export interface InventoryRow {
 	filmId: number;
@@ -41,26 +41,26 @@ export const InventoryDefaultQueries = {
 			inventoryId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.select<typeof InventoryAllColumns, Params>(InventoryAllColumns).where(QInventory.inventoryId.eq(P.get((p) => p.inventoryId))).prepare();
+		const P = rose.params<Params>();
+		return rose.select(InventoryAllColumns).where(QInventory.inventoryId.eq(P.inventoryId)).finalise(P);
 	})(),
-	insertOne: function updateOne(row: InventoryInsertRow) {
-		return rose.insertFromObject<TInventory, InventoryInsertRow, {}>(QInventory, row).prepare();
+	insertOne: function insertOne(row: InventoryInsertRow) {
+		return rose.insertFromObject<TInventory, InventoryInsertRow>(QInventory, row).finalise({});
 	},
 	updateOne: function updateOne(updates: rose.PartialTableColumns<TInventory>) {
 		interface Params {
 			inventoryId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.updateFromObject<TInventory, Params>(QInventory, updates).where(QInventory.inventoryId.eq(P.get((p) => p.inventoryId))).prepare();
+		const P = rose.params<Params>();
+		return rose.updateFromObject(QInventory, updates).where(QInventory.inventoryId.eq(P.inventoryId)).finalise(P);
 	},
 	deleteOne: (function deleteOne() {
 		interface Params {
 			inventoryId: number;
 		}
 
-		const P = new rose.ParamsWrapper<Params>();
-		return rose.deleteFrom<Params>(QInventory).where(QInventory.inventoryId.eq(P.get((p) => p.inventoryId))).prepare();
+		const P = rose.params<Params>();
+		return rose.deleteFrom(QInventory).where(QInventory.inventoryId.eq(P.inventoryId)).finalise(P);
 	})(),
 };

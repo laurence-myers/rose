@@ -1,5 +1,5 @@
 {
-  "name": "@rose/rose",
+  "name": "@rosepg/rose",
   "version": "0.0.1",
   "description": "Type-safe query builder DSL, data mapper, and mini ORM for PostgreSQL",
   "main": "index.js",

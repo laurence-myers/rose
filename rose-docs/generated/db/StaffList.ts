@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from 'rose';
+import * as rose from '@rosepg/rose';
 
 export interface StaffListRow {
 	address: string | null;
@@ -52,7 +52,7 @@ export const StaffListAllColumns = {
 	zipCode: QStaffList.zipCode,
 };
 export const StaffListDefaultQueries = {
-	insertOne: function updateOne(row: StaffListInsertRow) {
-		return rose.insertFromObject<TStaffList, StaffListInsertRow, {}>(QStaffList, row).prepare();
+	insertOne: function insertOne(row: StaffListInsertRow) {
+		return rose.insertFromObject<TStaffList, StaffListInsertRow>(QStaffList, row).finalise({});
 	},
 };

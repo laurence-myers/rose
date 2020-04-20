@@ -1,6 +1,6 @@
 // Generated file; do not manually edit, as your changes will be overwritten!
 /* eslint-disable */
-import * as rose from 'rose';
+import * as rose from '@rosepg/rose';
 
 export interface SalesByFilmCategoryRow {
 	category: string | null;
@@ -28,7 +28,7 @@ export const SalesByFilmCategoryAllColumns = {
 	totalSales: QSalesByFilmCategory.totalSales,
 };
 export const SalesByFilmCategoryDefaultQueries = {
-	insertOne: function updateOne(row: SalesByFilmCategoryInsertRow) {
-		return rose.insertFromObject<TSalesByFilmCategory, SalesByFilmCategoryInsertRow, {}>(QSalesByFilmCategory, row).prepare();
+	insertOne: function insertOne(row: SalesByFilmCategoryInsertRow) {
+		return rose.insertFromObject<TSalesByFilmCategory, SalesByFilmCategoryInsertRow>(QSalesByFilmCategory, row).finalise({});
 	},
 };
