@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@rose/rose": "../rose/package",
+    "@rose/rose-cli": "../rose-cli/package",
     "app-root-path": "3.0.0"
   }
 }

@@ -1,5 +1,5 @@
 // tag::first-import[]
-import { params, select } from 'rose';
+import { params, select } from '@rose/rose';
 import { QStaff, StaffAllColumns, StaffRow } from '../generated/db/Staff';
 // end::first-import[]
 // tag::client-import[]
@@ -15,10 +15,10 @@ describe(`Quick Start`, () => {
             staffId: number;
         }
         const P = params<Params>();
-        const query = select<typeof StaffAllColumns, Params>(StaffAllColumns)
+        const query = select(StaffAllColumns)
             .where(
                 QStaff.staffId.eq(P.staffId)
-            ).prepare();
+            ).finalise(P);
         // end::first[]
 
         const dummyStaffMember: StaffRow = {
