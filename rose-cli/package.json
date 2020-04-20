@@ -9,7 +9,8 @@
   "scripts": {
     "compile": "tsc",
     "lint": "eslint . --ext .ts",
-    "package": "tsc -p tsconfig_package.json && ts-node tools/package.ts",
+    "package": "rimraf ./package && tsc -p tsconfig_package.json && ts-node tools/package.ts",
+    "publish:npm": "yarn package && cd package && yarn publish --non-interactive --access public",
     "test": "mocha",
     "watch": "tsc -w --pretty"
   },
@@ -36,6 +37,7 @@
     "eslint": "6.8.0",
     "eslint-plugin-unused-imports": "0.1.2",
     "mocha": "7.0.1",
+    "rimraf": "3.0.2",
     "ts-node": "8.8.1",
     "typescript": "3.8.3"
   }
