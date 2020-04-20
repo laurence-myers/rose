@@ -61,6 +61,12 @@ export function constant<T extends number | string>(value: T): ConstantNode<T> {
 	};
 }
 
+export function default_(): LiteralNode {
+	return literal('DEFAULT');
+}
+
+export const dflt = default_;
+
 export function literal(value: string): LiteralNode {
 	return {
 		type: "literalNode",
