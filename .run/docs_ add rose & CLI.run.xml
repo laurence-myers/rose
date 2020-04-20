@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="examples: add rose &amp; CLI" type="js.build_tools.npm" folderName="examples">
-    <package-json value="$PROJECT_DIR$/rose-example/package.json" />
+  <configuration default="false" name="docs: add rose &amp; CLI" type="js.build_tools.npm" folderName="docs">
+    <package-json value="$PROJECT_DIR$/rose-docs/package.json" />
     <command value="add" />
     <arguments value="../rose/package ../rose-cli/package" />
     <node-interpreter value="project" />

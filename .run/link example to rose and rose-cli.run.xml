@@ -1,7 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="link example to rose and rose-cli" type="CompoundRunConfigurationType" folderName="examples">
-    <toRun name="examples: add rose-cli" type="js.build_tools.npm" />
-    <toRun name="examples: add rose" type="js.build_tools.npm" />
+    <toRun name="examples: add rose &amp; CLI" type="js.build_tools.npm" />
     <method v="2" />
   </configuration>
 </component>
