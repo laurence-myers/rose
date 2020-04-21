@@ -289,7 +289,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES ($1, $2, $3) RETURNING ("t1"."id" as "newUserId", "t1"."name" as "name", "t1"."locationId" as "locationId")`,
+			sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES ($1, $2, $3) RETURNING "t1"."id" as "newUserId", "t1"."name" as "name", "t1"."locationId" as "locationId"`,
 			parameters: [123, 456, 'Fred'] // In order of column name (sorted alphabetically)
 		};
 		assert.deepEqual(actual, expected);

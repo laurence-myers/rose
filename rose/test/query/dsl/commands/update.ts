@@ -92,7 +92,7 @@ describe(`UPDATE commands`, function () {
 
 		// Verify
 		const expected = {
-			sql: `UPDATE "Users" as "t1" SET "deletedAt" = $1, "name" = $2 WHERE "t1"."id" = $3 RETURNING ("t1"."id" as "updatedId", "t1"."name" as "name")`,
+			sql: `UPDATE "Users" as "t1" SET "deletedAt" = $1, "name" = $2 WHERE "t1"."id" = $3 RETURNING "t1"."id" as "updatedId", "t1"."name" as "name"`,
 			parameters: [now, 'fred', 123]
 		};
 		assert.deepEqual(actual, expected);

@@ -226,9 +226,8 @@ export class SqlAstWalker extends BaseWalker {
 			this.walk(node.query);
 		}
 		if (node.returning) {
-			this.sb += ` RETURNING (`;
+			this.sb += ` RETURNING `;
 			node.returning.forEach(this.doListWalk());
-			this.sb += `)`
 		}
 	}
 
@@ -471,9 +470,8 @@ export class SqlAstWalker extends BaseWalker {
 			node.conditions.forEach(this.doListWalk());
 		}
 		if (node.returning) {
-			this.sb += ` RETURNING (`;
+			this.sb += ` RETURNING `;
 			node.returning.forEach(this.doListWalk());
-			this.sb += `)`
 		}
 	}
 
