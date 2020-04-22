@@ -1,6 +1,6 @@
 {
   "name": "@rosepg/rose-example",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Example project using rose",
   "main": "index.js",
   "author": "Laurence Dougal Myers <laurencedougalmyers@gmail.com>",
