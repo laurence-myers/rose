@@ -1,6 +1,7 @@
 {
     "extends": "./tsconfig.json",
     "compilerOptions": {
+        "newLine": "lf",
         "outDir": "package/"
     },
     "include": [
