@@ -1,3 +1,4 @@
+import { promises as fs } from 'fs';
 import { Static, Type } from '@sinclair/typebox';
 import { defaultPostgresTypeMap } from "./codegen/dbtypes";
 import { ConfigError } from "./errors";
@@ -91,10 +92,10 @@ export function mergeConfigWithDefaults(config: CliConfig = {}): IntrospectConfi
 	};
 }
 
-export function parseConfig(configFileName: string): CliConfig {
+export async function parseConfig(configFileName: string): Promise<CliConfig> {
 	let rawData;
 	try {
-		rawData = require(configFileName);
+		rawData = JSON.parse(await fs.readFile(configFileName, 'utf8'));
 	} catch (err) {
 		console.error(err);
 		throw new ConfigError(`Could not read from config file "${ configFileName }", make sure it is well-formed JSON.`);

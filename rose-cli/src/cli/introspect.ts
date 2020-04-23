@@ -113,7 +113,7 @@ async function main(rawArgs: string[]): Promise<ExitCode> {
 	try {
 		const args = parseArgs(rawArgs);
 		if (isCliOptions(args)) {
-			const config = mergeConfigWithDefaults(args.configFileName ? parseConfig(args.configFileName) : undefined);
+			const config = mergeConfigWithDefaults(args.configFileName ? await parseConfig(args.configFileName) : undefined);
 			client = new Client(args.url);
 			await client.connect();
 			console.log(`Querying the database...`);
