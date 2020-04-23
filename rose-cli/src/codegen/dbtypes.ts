@@ -39,6 +39,7 @@ const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<stri
 	["money", "number"], // ?
 	["numeric", "number"],
 	["numrange", "any"], // ?
+	["oid", "number"], // unsigned four-byte integer
 	["path", "any"], // ?
 	["point", "any"], // ?
 	["polygon", "any"], // ?
