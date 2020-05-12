@@ -155,6 +155,30 @@ describe(`INSERT commands`, () => {
 		assert.deepEqual(actual, expected);
 	});
 
+	it(`errors when trying to insert values with a different number of properties`, function () {
+		// Set up
+		assert.throws(() => {
+			withParams<Pick<UsersInsertRow, 'name' | 'locationId'>>()((p) =>
+				insert(QUsers)
+					.insert({
+						id: default_(),
+						name: p.name,
+						locationId: p.locationId,
+						deletedAt: undefined
+					})
+					.insert({
+						id: default_(),
+						name: p.name,
+						locationId: p.locationId,
+						deletedAt: default_()
+					})
+					.finalise(p)
+			);
+		}, (err: { message?: string } | undefined ) => {
+			return err && err.message && err.message.startsWith(`Inserted row columns doesn't match the expected columns`);
+		});
+	});
+
 	it(`supports dynamically generating inserted values from an entity-like object`, function () {
 		// Set up
 		interface InsertRow extends UsersInsertRow {
