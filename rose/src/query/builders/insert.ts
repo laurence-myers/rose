@@ -50,7 +50,13 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 
 	@Clone()
 	insert(row: TInsertRow): this {
-		const objectKeys = Object.keys(row).sort();
+		const objectKeys = [];
+		for (const key in row) {
+			if (Object.prototype.hasOwnProperty.call(row, key) && row[key] !== undefined) {
+				objectKeys.push(key);
+			}
+		}
+		objectKeys.sort();
 		const insertColumns = this.extractColumnNamesFromObject(objectKeys);
 		if (this.queryAst.columns.length > 0) {
 			const existingColumns = this.queryAst.columns;

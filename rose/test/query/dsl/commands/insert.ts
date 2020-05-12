@@ -2,7 +2,7 @@ import { QLocations, QUsers, TUsers, UsersInsertRow } from "../../../fixtures";
 import { deepFreeze, OptionalNulls } from "../../../../src/lang";
 import { insert, insertFromObject } from "../../../../src/query/dsl/commands";
 import { subSelect } from "../../../../src/query/dsl/select";
-import { alias, aliasCol, col, constant } from "../../../../src/query/dsl/core";
+import { alias, aliasCol, col, constant, default_ } from "../../../../src/query/dsl/core";
 import {
 	ColumnMetamodel,
 	QueryTable,
@@ -124,6 +124,33 @@ describe(`INSERT commands`, () => {
 		const expected = {
 			sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES ($1, $2, $3)`,
 			parameters: [123, 456, 'Fred'] // In order of column name (sorted alphabetically)
+		};
+		assert.deepEqual(actual, expected);
+	});
+
+	it(`ignores properties that have a value of "undefined"`, function () {
+		// Set up
+		const query = withParams<Pick<UsersInsertRow, 'name' | 'locationId'>>()((p) =>
+			insert(QUsers)
+				.insert({
+					id: default_(),
+					name: p.name,
+					locationId: p.locationId,
+					deletedAt: undefined
+				})
+				.finalise(p)
+		);
+
+		// Execute
+		const actual = query.toSql({
+			name: 'Fred',
+			locationId: 456
+		});
+
+		// Verify
+		const expected = {
+			sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2)`,
+			parameters: [456, 'Fred'] // In order of column name (sorted alphabetically)
 		};
 		assert.deepEqual(actual, expected);
 	});
