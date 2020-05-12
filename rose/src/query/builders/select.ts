@@ -167,10 +167,19 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	groupBy(first: GroupByExpressionNode, ...rest: GroupByExpressionNode[]): this {
-		this.queryAst.grouping.push(first);
-		if (rest && rest.length > 0) {
-			rest.forEach((node) => this.queryAst.grouping.push(node));
+	groupBy(first: GroupByExpressionNode | ColumnMetamodel<unknown>, ...rest: Array<GroupByExpressionNode | ColumnMetamodel<unknown>>): this {
+		const all = [first].concat(rest).map((columnOrNode): GroupByExpressionNode => {
+			if (columnOrNode instanceof ColumnMetamodel) {
+				return { // TODO: Support strings to reference aliased columns/expressions
+					type: "groupByExpressionNode",
+					expression: columnOrNode.col()
+				};
+			} else {
+				return columnOrNode;
+			}
+		});
+		for (const node of all) {
+			this.queryAst.grouping.push(node);
 		}
 		return this;
 	}

@@ -187,6 +187,10 @@ export class ColumnMetamodel<T> {
 			tableAlias: this.table.alias || undefined
 		};
 	}
+
+	col() {
+		return this.toColumnReferenceNode();
+	}
 }
 
 export abstract class QueryTable {

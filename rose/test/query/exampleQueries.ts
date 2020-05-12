@@ -292,39 +292,30 @@ describe(`Example queries`, function () {
 		it(`can query a CTE`, function () {
 			const regionalSales = selectCte(`regional_sales`, {
 				region: QOrders.region,
-				total_sales: selectExpression(sum(QOrders.amount.toColumnReferenceNode()))
+				total_sales: selectExpression(sum(QOrders.amount.col()))
 			})
-				.groupBy({ // TODO: better syntax for GroupBy. Support strings to reference aliased columns/expressions
-					type: "groupByExpressionNode",
-					expression: QOrders.region.toColumnReferenceNode()
-				});
+				.groupBy(QOrders.region);
 			const regionalSalesMetamodel = regionalSales.toMetamodel();
 			const topRegions = selectCte(`top_regions`, {
 				region: regionalSalesMetamodel.region
 			})
 				.where(regionalSalesMetamodel.total_sales.gt(
-					subSelect(divide(sum(regionalSalesMetamodel.total_sales.toColumnReferenceNode()), literal("10")))
+					subSelect(divide(sum(regionalSalesMetamodel.total_sales.col()), literal("10")))
 						.toSubQuery()
 				));
 
 			const query = select({
 				region: QOrders.region,
 				product: QOrders.product,
-				product_units: selectExpression(sum(QOrders.quantity.toColumnReferenceNode())),
-				product_sales: selectExpression(sum(QOrders.amount.toColumnReferenceNode()))
+				product_units: selectExpression(sum(QOrders.quantity.col())),
+				product_sales: selectExpression(sum(QOrders.amount.col()))
 			})
 				.with(regionalSales.toNode(), topRegions.toNode())
 				.where(QOrders.region.in(
 					subSelect(topRegions.toMetamodel().region)
 						.toSubQuery()
 				))
-				.groupBy({
-					type: "groupByExpressionNode",
-					expression: QOrders.region.toColumnReferenceNode()
-				}, {
-					type: "groupByExpressionNode",
-					expression: QOrders.product.toColumnReferenceNode()
-				});
+				.groupBy(QOrders.region, QOrders.product);
 
 			const result = query.finalise({}).toSql({});
 			assert.equal(result.sql, 'WITH "regional_sales" as (SELECT "t1"."region" as "region", sum("t1"."amount") as "total_sales" FROM "orders" as "t1" GROUP BY ("t1"."region")), "top_regions" as (SELECT "t1"."region" as "region" FROM "regional_sales" as "t1" WHERE "t1"."total_sales" > (SELECT sum("t1"."total_sales") / 10 FROM "regional_sales" as "t1")) SELECT "t2"."region" as "region", "t2"."product" as "product", sum("t2"."quantity") as "product_units", sum("t2"."amount") as "product_sales" FROM "orders" as "t2" WHERE "t2"."region" IN (SELECT "t1"."region" FROM "top_regions" as "t1") GROUP BY ("t2"."region", "t2"."product")');
