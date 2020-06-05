@@ -1,0 +1,77 @@
+= Problems
+
+
+== Transaction Support
+
+== Complex Queries
+
+* Selecting columns from multiple tables
+* Selecting values from aggregate functions like `SUM` or `AVERAGE`.
+* Common table expressions (CTE)
+
+TODO
+
+== Dynamic Queries
+
+TODO
+
+== Synchronising Identifiers
+
+We want to avoid runtime errors caused by renaming or deleting a table or column. Using code generated from the DB
+schema allows us to keep the identifiers in sync.
+
+TODO: reword
+
+== Avoid Manual Table Definitions
+
+Many ORMs require manually writing mappings between your application code and the database schema. This is unnecessary
+boilerplate which has to be maintained with any schema changes.
+
+__rose__ avoids this issue by introspecting the DB schema and generating code from it.
+
+== One Table per Entity
+
+Due to the overhead of manually defining tables, some ORMs make it difficult to query tables through different contexts.
+Views can help with this, if the ORM supports them.
+
+__rose__ does not restrict you to querying a single table; any relationship you can express through SQL can be
+
+== Quoted Identifiers
+
+PostgreSQL is case-insensitive by default, but you can quote identifiers to explicitly case them. You could run into
+problems if you create a column liked `"userId"` and then try to query it as `userId` - it'll be read as `userid`, which
+doesn't exist.
+
+__rose__ always quotes all identifiers.
+
+== Synchronising Query Types to TypeScript
+
+If you use a raw SQL query, you could add a wrapper function to enforce the input & output types.
+
+[source,typescript]
+----
+function doQuery(input: { id: number;  }): { name: string; age: number } {
+    return pg.query(`SELECT name, age FROM users WHERE id = $1`, [input.id]);
+}
+
+doQuery({ id: 1 }); // The returned row has both `name` and `age`
+----
+
+However, changes to the table schema will not be automatically applied to the TypeScript types, and vice versa.
+
+[source,typescript]
+----
+function doQuery(input: { id: number;  }): { name: string; age: number } {
+    return pg.query(`SELECT name, date_of_birth FROM users WHERE id = $1`, [input.id]);
+}
+
+doQuery({ id: 1 }); // The returned row has `name`, is missing `age`, and unexpectedly has `date_of_birth`
+----
+
+== Entity vs Struct
+
+Some ORMs require you to set values on an instance of a DB entity, and then call a "save()" method. Any kind of stateful
+mutation can cause bugs and confusion; e.g. if an entity is modified but the SQL call fails, your application can end
+up in an unrecoverable inconsistent state.
+
+Using plain objects allows for simple APIs - a function can take an object, perform a query, and return an object.

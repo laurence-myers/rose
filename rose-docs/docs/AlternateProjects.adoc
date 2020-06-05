@@ -1,0 +1,10 @@
+* https://github.com/adelsz/pgtyped - generates types from SQL query strings, stored in either SQL files or TS tagged template literals.
+* https://github.com/gajus/slonik - an alternative API to node-pg, with intentionally limited query building capabilities using tagged template literals.
+* https://jawj.github.io/zapatos/ - generates separate types for selecting, inserting, and updating rows. Builds queries using tagged template literals. Provides CRUD shortcut methods. Uses PostgreSQL's JSONB functions to returned nested joined results. Does not enforce that selected columns match the returned TS types.
+* https://github.com/hoeck/typesafe-query-builder - similar API to rose but limited query building. Requires manually defining the schema in TS code.
+* https://github.com/kristiandupont/kanel - only generates types for select and insert; no query building. Generates nominal types for primary keys (I'm not sure if composite keys are supported). Does not allow overriding types per column, only globally.
+
+
+Keep an eye on these:
+
+* https://github.com/kyleconroy/sqlc - for Go, but TypeScript support is being worked on.
