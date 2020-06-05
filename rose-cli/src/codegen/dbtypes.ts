@@ -14,7 +14,7 @@ const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<stri
 	["character varying", "string"],
 	["character", "string"],
 	["cidr", "string"],
-	["circle", "any"], // ?
+	["circle", "{ radius: number; x: number; y: number }"],
 	["date", "Date"],
 	["daterange", "any"], // ?
 	["decimal", "string"],
@@ -30,18 +30,18 @@ const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<stri
 	["int8", "string"], // 8 bytes, can't be represented as a FP number
 	["int8range", "any"], // ?
 	["integer", "number"],
-	["interval", "any"], // ?
+	["interval", "{ years?: number; months?: number; days?: number; hours?: number; minutes?: number; seconds?: number; milliseconds?: number; toPostgres(): string; toISO(): string; toISOString(): string }"], // ?
 	["json", "object"], // would be nice to make this more explicit
 	["jsonb", "object"], // would be nice to make this more explicit
 	["line", "any"], // ?
 	["lseg", "any"], // ?
 	["macaddr", "string"],
-	["money", "number"], // ?
-	["numeric", "number"],
-	["numrange", "any"], // ?
+	["money", "string"],
+	["numeric", "string"],
+	["numrange", "string"],
 	["oid", "number"], // unsigned four-byte integer
 	["path", "any"], // ?
-	["point", "any"], // ?
+	["point", "{ x: number; y: number }"],
 	["polygon", "any"], // ?
 	["real", "number"],
 	["serial", "number"],
@@ -53,12 +53,12 @@ const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<stri
 	["text", "string"],
 	["time with time zone", "Date"],
 	["time without time zone", "Date"],
-	["time", "Date"],
+	["time", "string"],
 	["timestamp with time zone", "Date"],
 	["timestamp without time zone", "Date"],
 	["timestamp", "Date"],
 	["timestamptz", "Date"],
-	["timetz", "Date"],
+	["timetz", "string"],
 	["tsquery", "any"], // ?
 	["tsrange", "any"], // ?
 	["tstzrange", "any"], // ?
