@@ -28,7 +28,8 @@ import {
 	SetTransactionSnapshotCommandNode,
 	SimpleColumnReferenceNode,
 	SubSelectNode,
-	TableReferenceNode, TransactionModeNode,
+	TableReferenceNode,
+	TransactionModeNode,
 	UnaryOperationNode,
 	UpdateCommandNode,
 	WithNode

@@ -2,7 +2,6 @@ import { QuerySelector } from "../querySelector";
 import {
 	AliasedExpressionNode,
 	BooleanExpression,
-	ColumnReferenceNode,
 	ConstantNode,
 	GroupByExpressionNode,
 	JoinNode,
@@ -10,6 +9,7 @@ import {
 	ParameterOrValueExpressionNode,
 	SelectCommandNode,
 	SelectOutputExpression,
+	SimpleColumnReferenceNode,
 	SubSelectNode
 } from "../ast";
 import { QuerySelectorProcessor } from "../metadata";
@@ -27,7 +27,7 @@ export type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<any>;
 class JoinBuilder<TResult> {
 	protected joinType: 'inner' | 'left' | 'right' | 'full' | 'cross' = 'inner';
 	protected onNode?: BooleanExpression;
-	protected usingNodes?: ColumnReferenceNode[];
+	protected usingNodes?: SimpleColumnReferenceNode[];
 
 	constructor(
 		protected tableMap: TableMap,
@@ -67,7 +67,10 @@ class JoinBuilder<TResult> {
 
 	using(...columns: ColumnMetamodel<any>[]) {
 		if (columns && columns.length > 0) {
-			this.usingNodes = columns.map((column) => column.toColumnReferenceNode());
+			this.usingNodes = columns.map((column) => ({
+				type: "simpleColumnReferenceNode",
+				columnName: column.name
+			}));
 		}
 		return this.build();
 	}

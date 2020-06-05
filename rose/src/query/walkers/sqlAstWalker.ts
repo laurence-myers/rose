@@ -240,6 +240,7 @@ export class SqlAstWalker extends BaseWalker {
 			throw new UnsupportedOperationError(`Joins cannot specify both "on" and "using" conditions.`);
 		}
 
+		this.sb += ` `;
 		this.sb += joinText;
 		this.sb += ` JOIN `;
 		this.walk(node.fromItem);
@@ -247,8 +248,9 @@ export class SqlAstWalker extends BaseWalker {
 			this.sb += ` ON `;
 			this.walk(node.on);
 		} else if (node.using) {
-			this.sb += ` USING `;
+			this.sb += ` USING (`;
 			node.using.forEach(this.doListWalk());
+			this.sb += `)`;
 		}
 		// TODO: support "natural"
 	}
@@ -367,7 +369,6 @@ export class SqlAstWalker extends BaseWalker {
 			node.fromItems.forEach(this.doListWalk());
 		}
 		if (node.joins.length > 0) {
-			this.sb += " ";
 			this.walkNodes(node.joins);
 		}
 		if (node.conditions.length > 0) {

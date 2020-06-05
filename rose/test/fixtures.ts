@@ -122,3 +122,32 @@ export class TOrders extends QueryTable {
 	amount = new ColumnMetamodel<number>(this.$table, "amount");
 }
 export const QOrders = new TOrders();
+
+export class TParent extends QueryTable {
+	constructor($tableAlias? : string) { super(new TableMetamodel("Parent", $tableAlias)); }
+
+	parentId = new ColumnMetamodel<number>(this.$table, "parentId");
+	name = new ColumnMetamodel<string>(this.$table, "name");
+}
+
+export const QParent = deepFreeze(new TParent());
+
+class TChild extends QueryTable {
+	constructor($tableAlias? : string) { super(new TableMetamodel("Child", $tableAlias)); }
+
+	childId = new ColumnMetamodel<number>(this.$table, "childId");
+	parentId = new ColumnMetamodel<number>(this.$table, "parentId");
+	name = new ColumnMetamodel<string>(this.$table, "name");
+}
+
+export const QChild = deepFreeze(new TChild());
+
+class TOtherChild extends QueryTable {
+	constructor($tableAlias? : string) { super(new TableMetamodel("OtherChild", $tableAlias)); }
+
+	otherChildId = new ColumnMetamodel<number>(this.$table, "otherChildId");
+	parentId = new ColumnMetamodel<number>(this.$table, "parentId");
+	name = new ColumnMetamodel<string>(this.$table, "name");
+}
+
+export const QOtherChild = deepFreeze(new TOtherChild());

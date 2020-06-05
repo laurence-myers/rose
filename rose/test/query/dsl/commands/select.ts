@@ -1,4 +1,4 @@
-import { QAgencies, QLocations, QUsers, TLocations } from "../../../fixtures";
+import { QAgencies, QChild, QLocations, QOtherChild, QParent, QUsers, TLocations } from "../../../fixtures";
 import { lower } from "../../../../src/query/postgresql/functions/string/sql";
 import { count } from "../../../../src/query/postgresql/functions/aggregate/general";
 import { deepFreeze } from "../../../../src/lang";
@@ -6,7 +6,7 @@ import { select } from "../../../../src/query/dsl/commands";
 import { selectExpression, selectNestedMany, subSelect } from "../../../../src/query/dsl/select";
 import { and, col, constant, not, or } from "../../../../src/query/dsl/core";
 import { params, ParamsProxy, withParams } from "../../../../src/query/params";
-import { FinalisedQueryWithParams } from "../../../../src/query";
+import { ColumnMetamodel, FinalisedQueryWithParams, QueryTable, TableMetamodel } from "../../../../src/query";
 import assert = require('assert');
 
 describe(`SELECT commands`, () => {
@@ -216,6 +216,27 @@ describe(`SELECT commands`, () => {
 		it("can perform an inner join", function () {
 			const actual = select(querySelect).join(QUsers).on(QUsers.locationId.eq(QLocations.id)).finalise({}).toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" INNER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can perform multiple inner joins", function () {
+			const actual = select(querySelect).join(QUsers).on(QUsers.locationId.eq(QLocations.id)).join(QAgencies).on(QAgencies.id.eq(QLocations.agencyId)).finalise({}).toSql({}).sql;
+			const expected = `SELECT "t3"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t3" INNER JOIN "Users" as "t1" ON "t1"."locationId" = "t3"."id" INNER JOIN "Agencies" as "t2" ON "t2"."id" = "t3"."agencyId"`;
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can perform inner join with 'USING'", function () {
+			const actual = select({
+				parentName: QParent.name,
+				childName: QChild.name,
+				otherChildName: QOtherChild.name,
+			}).join(QChild)
+				.using(QChild.parentId)
+				.join(QOtherChild)
+				.using(QOtherChild.parentId)
+				.finalise({})
+				.toSql({}).sql;
+			const expected = `SELECT "t3"."name" as "parentName", "t1"."name" as "childName", "t2"."name" as "otherChildName" FROM "Parent" as "t3" INNER JOIN "Child" as "t1" USING ("parentId") INNER JOIN "OtherChild" as "t2" USING ("parentId")`;
 			assert.deepEqual(actual, expected);
 		});
 

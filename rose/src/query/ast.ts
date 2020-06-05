@@ -155,7 +155,7 @@ export interface JoinNode {
 	joinType: 'inner' | 'left' | 'right' | 'full' | 'cross';
 	fromItem: FromItemNode;
 	on? : BooleanExpression;
-	using? : ColumnReferenceNode[];
+	using? : SimpleColumnReferenceNode[];
 	// TODO: support lateral
 	// TODO: support natural
 }
