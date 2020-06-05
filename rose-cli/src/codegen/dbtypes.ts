@@ -17,7 +17,7 @@ const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<stri
 	["circle", "any"], // ?
 	["date", "Date"],
 	["daterange", "any"], // ?
-	["decimal", "number"],
+	["decimal", "string"],
 	["double precision", "number"],
 	["float4", "number"],
 	["float8", "number"],
