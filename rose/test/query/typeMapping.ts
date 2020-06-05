@@ -1,4 +1,3 @@
-import assert = require('assert');
 import { QUsers } from "../fixtures";
 import { QueryOutput } from "../../src/query/typeMapping";
 import { concat } from "../../src/query/postgresql/functions/string/sql";
