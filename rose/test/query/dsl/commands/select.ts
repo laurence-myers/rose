@@ -260,7 +260,7 @@ describe(`SELECT commands`, () => {
 
 		it("can perform a left outer join with 'using'", function () {
 			const actual = select(querySelect).join(QUsers).left().using(QLocations.id).finalise({}).toSql({}).sql;
-			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" LEFT OUTER JOIN "Users" as "t1" USING "t2"."id"`;
+			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" LEFT OUTER JOIN "Users" as "t1" USING ("id")`;
 			assert.deepEqual(actual, expected);
 		});
 
