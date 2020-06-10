@@ -2,11 +2,8 @@ import { TableRowTemplate } from "./templates/tableRow";
 import { TableMetamodelTemplate } from "./templates/tableMetamodel";
 import { TableMetadata } from "./dbmetadata";
 import { TableInsertRowTemplate } from "./templates/tableInsertRow";
-import { ModuleNode } from "./ast";
-import { body, comment, modl, stmt } from "./dsl";
+import { astToString, body, comment, mergeImports, modl, ModuleNode, stmt } from "tscodegendsl";
 import { OrmTemplate } from "./templates/orm";
-import { astToString } from "./walker";
-import { mergeImports } from "./utils";
 import { CustomImportsTemplate } from "./templates/customImports";
 
 function mergeModules(first: ModuleNode, second: ModuleNode) {

@@ -1,7 +1,6 @@
 import { TableMetadata } from "../dbmetadata";
 import { insertRowIfaceName } from "./common";
-import { anno, iface, ifaceProp } from "../dsl";
-import { InterfaceNode } from "../ast";
+import { anno, iface, ifaceProp, InterfaceNode } from "tscodegendsl";
 
 export function TableInsertRowTemplate(table: TableMetadata): InterfaceNode {
 	return iface(

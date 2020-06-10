@@ -4,7 +4,7 @@ import * as assert from "assert";
 import * as arp from "app-root-path";
 import * as path from "path";
 import * as fs from "fs";
-import { astToString } from "../../../src/codegen/walker";
+import { astToString } from "tscodegendsl";
 import { IntrospectConfig } from "../../../src/config";
 import { defaultPostgresTypeMap } from "../../../src/codegen/dbtypes";
 

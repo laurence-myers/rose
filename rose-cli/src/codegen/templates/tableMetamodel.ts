@@ -12,11 +12,11 @@ import {
 	impAll,
 	lit,
 	modl,
+	ModuleNode,
 	propLookup,
 	stmt,
 	varDecl
-} from "../dsl";
-import { ModuleNode } from "../ast";
+} from "tscodegendsl";
 
 function getColumnMetamodelName(column: ColumnMetadata): string {
 	return `rose.ColumnMetamodel<${ column.tsType.type }>`;

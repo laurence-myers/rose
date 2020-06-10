@@ -11,17 +11,20 @@ import {
 	ifaceProp,
 	iife,
 	impAll,
+	ImportNode,
+	InterfacePropertyNode,
 	invokeMethodChain,
 	modl,
+	ModuleNode,
 	obj,
+	ObjectPropertyNode,
 	objProp,
 	param,
 	propLookup,
 	ret,
 	stmt,
 	varDecl
-} from "../dsl";
-import { ImportNode, InterfacePropertyNode, ModuleNode, ObjectPropertyNode } from "../ast";
+} from "tscodegendsl";
 
 function generateAllColumns(tableMetadata: TableMetadata) {
 	return varDecl(

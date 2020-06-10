@@ -1,7 +1,5 @@
 import { TableMetadata } from "../dbmetadata";
-import { body, imp, modl, namedImport } from "../dsl";
-import { uniqueImports } from "../utils";
-import { ImportNode } from "../ast";
+import { body, imp, ImportNode, modl, namedImport, uniqueImports } from "tscodegendsl";
 
 export function CustomImportsTemplate(tableMetadata: TableMetadata) {
 	const allImports = tableMetadata.columns.map((col) => {

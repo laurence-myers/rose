@@ -1,7 +1,5 @@
-import { imp, impAll, namedImport } from "../../src/codegen/dsl";
-import { mergeImports, uniqueImports } from "../../src/codegen/utils";
 import * as assert from "assert";
-import { ImportNode } from "../../src/codegen/ast";
+import { imp, impAll, ImportNode, mergeImports, namedImport, uniqueImports } from "tscodegendsl";
 
 describe(`utils`, () => {
 	describe(`mergeImports()`, () => {
