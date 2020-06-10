@@ -1,6 +1,6 @@
 {
   "name": "@rosepg/rose-cli",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "CLI for rose, a type-safe query builder DSL, data mapper, and mini ORM for PostgreSQL",
   "main": "index.js",
   "bin": {
@@ -24,7 +24,8 @@
     "@sinclair/typebox": "0.9.13",
     "ajv": "6.12.0",
     "camelcase": "5.3.1",
-    "pg": "8.0.2"
+    "pg": "8.0.2",
+    "tscodegendsl": "0.0.1"
   },
   "devDependencies": {
     "@types/app-root-path": "1.2.4",
