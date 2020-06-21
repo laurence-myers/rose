@@ -81,6 +81,17 @@ export function safeKeys<T extends object>(object: T): Array<keyof T> {
 	return Object.keys(object) as Array<keyof T>;
 }
 
+export function sortedPopulatedKeys<T extends { [k: string]: unknown }>(object: T): Array<(keyof T) & string> {
+	const objectKeys = [];
+	for (const key in object) {
+		if (Object.prototype.hasOwnProperty.call(object, key) && object[key] !== undefined) {
+			objectKeys.push(key);
+		}
+	}
+	objectKeys.sort();
+	return objectKeys;
+}
+
 export function logObject(obj: any): void {
 	console.log(util.inspect(obj, false, <any> null));
 }

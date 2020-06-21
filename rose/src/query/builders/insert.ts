@@ -1,4 +1,4 @@
-import { Clone, DefaultMap } from "../../lang";
+import { Clone, DefaultMap, sortedPopulatedKeys } from "../../lang";
 import {
 	AliasedExpressionNode,
 	InsertCommandNode,
@@ -50,13 +50,7 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 
 	@Clone()
 	insert(row: TInsertRow): this {
-		const objectKeys = [];
-		for (const key in row) {
-			if (Object.prototype.hasOwnProperty.call(row, key) && row[key] !== undefined) {
-				objectKeys.push(key);
-			}
-		}
-		objectKeys.sort();
+		const objectKeys = sortedPopulatedKeys(row);
 		const insertColumns = this.extractColumnNamesFromObject(objectKeys);
 		if (this.queryAst.columns.length > 0) {
 			const existingColumns = this.queryAst.columns;

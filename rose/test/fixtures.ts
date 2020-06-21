@@ -15,6 +15,16 @@ export class TUsers extends QueryTable {
 }
 export const QUsers = deepFreeze(new TUsers());
 
+export class TUsersSC extends QueryTable {
+	constructor($tableAlias? : string) { super(new TableMetamodel("Users", $tableAlias)); }
+
+	id = new ColumnMetamodel<number>(this.$table, "id");
+	locationId = new ColumnMetamodel<number>(this.$table, "location_id");
+	name = new ColumnMetamodel<string>(this.$table, "name");
+	deletedAt = new ColumnMetamodel<Date | null>(this.$table, "deleted_at");
+}
+export const QUsersSC = deepFreeze(new TUsersSC());
+
 export interface UsersInsertRow {
 	id?: number;
 	locationId: number;

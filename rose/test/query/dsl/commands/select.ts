@@ -6,7 +6,7 @@ import { select } from "../../../../src/query/dsl/commands";
 import { selectExpression, selectNestedMany, subSelect } from "../../../../src/query/dsl/select";
 import { and, col, constant, not, or } from "../../../../src/query/dsl/core";
 import { params, ParamsProxy, withParams } from "../../../../src/query/params";
-import { ColumnMetamodel, FinalisedQueryWithParams, QueryTable, TableMetamodel } from "../../../../src/query";
+import { FinalisedQueryWithParams } from "../../../../src/query";
 import assert = require('assert');
 
 describe(`SELECT commands`, () => {

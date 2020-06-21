@@ -1,4 +1,4 @@
-import { AtLeastOne, Clone, DefaultMap } from "../../lang";
+import { AtLeastOne, Clone, DefaultMap, sortedPopulatedKeys } from "../../lang";
 import {
 	AliasedExpressionNode,
 	BooleanExpression,
@@ -6,12 +6,13 @@ import {
 	TableReferenceNode,
 	UpdateCommandNode
 } from "../ast";
-import { QueryTable, TableColumnsForUpdateCommand } from "../metamodel";
+import { ColumnMetamodel, QueryTable, TableColumnsForUpdateCommand } from "../metamodel";
 import { aliasTable } from "../dsl";
 import { FinalisedQueryNonReturningWithParams, FinalisedQueryWithParams } from "../finalisedQuery";
 import { QuerySelector } from "../querySelector";
 import { ParamsProxy, ParamsWrapper } from "../params";
 import { TableMap } from "../../data";
+import { InvalidUpdateError } from "../../errors";
 
 export class UpdateQueryBuilder<TQTable extends QueryTable> {
 	protected tableMap = new TableMap();
@@ -52,15 +53,31 @@ export class UpdateQueryBuilder<TQTable extends QueryTable> {
 		);
 	}
 
+	protected getColumnNameMap(propertyNames: string[]): Map<string, string> {
+		const map = new Map();
+		for (const propertyName of propertyNames) {
+			const column = (this.qtable as any)[propertyName];
+			if (column instanceof ColumnMetamodel) {
+				map.set(propertyName, column.name);
+			} else {
+				throw new InvalidUpdateError(`Tried to update property "${ propertyName }", but couldn't find a matching column metamodel in table "${ this.qtable.$table.name }".`);
+			}
+		}
+		return map;
+	}
+
 	@Clone()
 	set(updates: AtLeastOne<Partial<TableColumnsForUpdateCommand<TQTable>>>): this {
-		for (const column of Object.keys(updates)) {
-			const expression: ParameterOrValueExpressionNode = (updates as any)[column];
+		const propertyNames = sortedPopulatedKeys(updates);
+		const columnsMap = this.getColumnNameMap(propertyNames);
+
+		for (const propertyName of propertyNames) {
+			const expression: ParameterOrValueExpressionNode = (updates as any)[propertyName];
 			this.queryAst.setItems.push({
 				type: 'setItemNode',
 				column: {
 					type: 'simpleColumnReferenceNode',
-					columnName: column,
+					columnName: columnsMap.get(propertyName)!,
 				},
 				expression,
 			});

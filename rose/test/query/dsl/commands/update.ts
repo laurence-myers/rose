@@ -1,21 +1,23 @@
-import { QUsers, TUsers } from "../../../fixtures";
+import { QUsers, QUsersSC, TUsers } from "../../../fixtures";
 import { upper } from "../../../../src/query/postgresql/functions/string/sql";
 import { update, updateFromObject } from "../../../../src/query/dsl/commands";
 import { constant } from "../../../../src/query/dsl/core";
 import { PartialTableColumns, TableColumns } from "../../../../src/query/metamodel";
 import { ParamsWrapper } from "../../../../src/query/params";
 import assert = require('assert');
+import { now } from "../../../../src/query/postgresql/functions/dateTime";
 
 describe(`UPDATE commands`, function () {
-	it(`supports updating a table with simple values`, function () {
+	it(`supports updating a table with simple values; updated columns should be sorted alphabetically; supports snake_case columns`, function () {
 		// Set up
 		interface Params {
 			name: string;
 		}
 		const paramsWrapper = new ParamsWrapper<Params>();
-		const query = update(QUsers)
+		const query = update(QUsersSC)
 			.set({
-				name: upper(paramsWrapper.get((p) => p.name))
+				name: upper(paramsWrapper.get((p) => p.name)),
+				deletedAt: now()
 			})
 			.where(QUsers.id.eq(constant(123)));
 
@@ -26,7 +28,7 @@ describe(`UPDATE commands`, function () {
 
 		// Verify
 		const expected = {
-			sql: `UPDATE "Users" as "t1" SET "name" = upper($1) WHERE "t1"."id" = $2`,
+			sql: `UPDATE "Users" as "t1" SET "deleted_at" = now(), "name" = upper($1) WHERE "t1"."id" = $2`,
 			parameters: ['fred', 123]
 		};
 		assert.deepEqual(actual, expected);
