@@ -19,6 +19,11 @@ import {
 	LiteralNode,
 	NaturalSyntaxFunctionExpressionNode,
 	NotExpressionNode,
+	OnConflictDoNothingNode,
+	OnConflictDoUpdateNode,
+	OnConflictNode,
+	OnConflictTargetIndexesNode,
+	OnConflictTargetIndexNode, OnConflictTargetOnConstraintNode,
 	OrderByExpressionNode,
 	ReleaseSavepointCommandNode,
 	RollbackCommandNode,
@@ -225,6 +230,10 @@ export class SqlAstWalker extends BaseWalker {
 			this.sb += ' ';
 			this.walk(node.query);
 		}
+		if (node.onConflict) {
+			this.sb += ` ON CONFLICT `;
+			this.walk(node.onConflict);
+		}
 		if (node.returning) {
 			this.sb += ` RETURNING `;
 			node.returning.forEach(this.doListWalk());
@@ -289,6 +298,57 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += `NOT (`;
 		this.walk(node.expression);
 		this.sb += `)`;
+	}
+
+	protected walkOnConflictDoNothingNode(node: OnConflictDoNothingNode): void {
+		if (node.target) {
+			this.walk(node.target);
+		}
+		this.sb += ` DO NOTHING`;
+	}
+
+	protected walkOnConflictDoUpdateNode(node: OnConflictDoUpdateNode): void {
+		this.walk(node.target);
+		this.sb += ` DO UPDATE SET `;
+		this.walkNodes(node.setItems);
+		if (node.where) {
+			this.sb += ` WHERE `;
+			this.walk(node.where);
+		}
+	}
+
+	protected walkOnConflictNode(node: OnConflictNode): void {
+		this.walk(node.conflictAction);
+	}
+
+	protected walkOnConflictTargetIndexesNode(node: OnConflictTargetIndexesNode): void {
+		this.walkNodes(node.indexes);
+		if (node.where) {
+			this.sb += ` WHERE `;
+			this.walk(node.where);
+		}
+	}
+
+	protected walkOnConflictTargetIndexNode(node: OnConflictTargetIndexNode): void {
+		this.sb += `(`;
+		this.walk(node.identifier);
+		if (node.collation) {
+			this.sb += ` COLLATE '`;
+			this.sb += node.collation;
+			this.sb += `'`;
+		}
+		if (node.opclass) {
+			this.sb += ` "`
+			this.sb += node.opclass;
+			this.sb += `"`
+		}
+		this.sb += `)`;
+	}
+
+	protected walkOnConflictTargetOnConstraintNode(node: OnConflictTargetOnConstraintNode): void {
+		this.sb += `ON CONSTRAINT "`;
+		this.sb += node.constraintName;
+		this.sb += `"`;
 	}
 
 	protected walkOrderByExpressionNode(node: OrderByExpressionNode): void {

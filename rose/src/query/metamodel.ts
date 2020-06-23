@@ -5,6 +5,7 @@ import {
 	ConstantNode,
 	OrderByExpressionNode,
 	ParameterOrValueExpressionNode,
+	SimpleColumnReferenceNode,
 	ValueExpressionNode
 } from "./ast";
 import { any } from "./postgresql/functions/array/functions";
@@ -151,31 +152,31 @@ export class ColumnMetamodel<T> {
 		return this.createBooleanUnaryOperationNode('IS NULL');
 	}
 
-	isNotNull() {
+	isNotNull(): BooleanUnaryOperationNode {
 		return this.createBooleanUnaryOperationNode('IS NOT NULL');
 	}
 
-	isTrue() {
+	isTrue(): BooleanUnaryOperationNode {
 		return this.createBooleanUnaryOperationNode('IS TRUE');
 	}
 
-	isNotTrue() {
+	isNotTrue(): BooleanUnaryOperationNode {
 		return this.createBooleanUnaryOperationNode('IS NOT TRUE');
 	}
 
-	isFalse() {
+	isFalse(): BooleanUnaryOperationNode {
 		return this.createBooleanUnaryOperationNode('IS FALSE');
 	}
 
-	isNotFalse() {
+	isNotFalse(): BooleanUnaryOperationNode {
 		return this.createBooleanUnaryOperationNode('IS NOT FALSE');
 	}
 
-	isUnknown() {
+	isUnknown(): BooleanUnaryOperationNode {
 		return this.createBooleanUnaryOperationNode('IS UNKNOWN');
 	}
 
-	isNotUnknown() {
+	isNotUnknown(): BooleanUnaryOperationNode {
 		return this.createBooleanUnaryOperationNode('IS NOT UNKNOWN');
 	}
 
@@ -188,8 +189,15 @@ export class ColumnMetamodel<T> {
 		};
 	}
 
-	col() {
+	col(): ColumnReferenceNode {
 		return this.toColumnReferenceNode();
+	}
+
+	scol(): SimpleColumnReferenceNode {
+		return {
+			type: "simpleColumnReferenceNode",
+			columnName: this.name
+		};
 	}
 }
 

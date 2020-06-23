@@ -64,6 +64,7 @@ function processOutputExpression(expr: SelectOutputExpression, row: any, output:
 		case "functionExpressionNode":
 		case "literalNode":
 		case "naturalSyntaxFunctionExpressionNode":
+		case "simpleColumnReferenceNode":
 		case "subSelectNode":
 		case "unaryOperationNode":
 			if (!aliases || !aliases.input || !aliases.output) {

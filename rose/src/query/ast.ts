@@ -130,6 +130,7 @@ export type ValueExpressionNode =
 	| UnaryOperationNode
 	| FunctionExpressionNode
 	| NaturalSyntaxFunctionExpressionNode
+	| SimpleColumnReferenceNode
 	| SubSelectNode;
 
 export type ParameterOrValueExpressionNode<TConstantValue = unknown> =
@@ -304,6 +305,62 @@ export interface UpdateCommandNode {
 	returning?: Array<SelectOutputExpression>;
 }
 
+// INSERT ... ON CONFLICT nodes below
+
+export type IndexExpressionNode = (
+	| BinaryOperationNode
+	| UnaryOperationNode
+	| FunctionExpressionNode
+	| NaturalSyntaxFunctionExpressionNode
+);
+
+export interface OnConflictTargetIndexNode {
+	type: 'onConflictTargetIndexNode';
+	identifier: SimpleColumnReferenceNode | IndexExpressionNode;
+	collation?: string;
+	opclass?: string;
+}
+
+export interface OnConflictTargetIndexesNode {
+	type: 'onConflictTargetIndexesNode';
+	indexes: OnConflictTargetIndexNode[];
+	where?: BooleanExpression;
+}
+
+export interface OnConflictTargetOnConstraintNode {
+	type: 'onConflictTargetOnConstraintNode';
+	constraintName: string; // TODO: make this type-safe
+}
+
+export type OnConflictTargetNode = OnConflictTargetIndexesNode | OnConflictTargetOnConstraintNode;
+
+export interface OnConflictDoNothingNode {
+	type: 'onConflictDoNothingNode';
+	target?: OnConflictTargetNode;
+}
+
+export interface OnConflictDoUpdateNode {
+	type: 'onConflictDoUpdateNode';
+	target: OnConflictTargetNode;
+	setItems: SetItemNode[];
+	where?: BooleanExpression;
+}
+
+export interface OnConflictNode {
+	type: 'onConflictNode';
+	conflictAction: OnConflictDoNothingNode | OnConflictDoUpdateNode;
+}
+
+type OnConflictNodes = (
+	| IndexExpressionNode
+	| OnConflictTargetIndexNode
+	| OnConflictTargetIndexesNode
+	| OnConflictTargetOnConstraintNode
+	| OnConflictDoNothingNode
+	| OnConflictDoUpdateNode
+	| OnConflictNode
+);
+
 /*
 [ WITH [ RECURSIVE ] with_query [, ...] ]
 INSERT INTO table_name [ AS alias ] [ ( column_name [, ...] ) ]
@@ -332,6 +389,7 @@ export interface InsertCommandNode {
 	columns: SimpleColumnReferenceNode[];
 	values: ParameterOrValueExpressionNode[][];
 	query?: SubSelectNode;
+	onConflict?: OnConflictNode;
 	returning?: Array<SelectOutputExpression>;
 }
 
@@ -414,6 +472,7 @@ export type AstNode =
 	| JoinNode
 	| LimitOffsetNode
 	| NotExpressionNode
+	| OnConflictNodes
 	| OrderByExpressionNode
 	| ParameterOrValueExpressionNode
 	| SetItemNode

@@ -15,6 +15,7 @@ import { InvalidInsertError } from "../../errors";
 import { QuerySelector } from "../querySelector";
 import { ParamsProxy, ParamsWrapper } from "../params";
 import { TableMap } from "../../data";
+import { OnConflictDoUpdateWhereBuilder, OnConflictDoNothingBuildable } from "./onConflict";
 
 export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends TableColumnsForInsertCommand<TQTable>> {
 	protected readonly tableMap = new TableMap();
@@ -124,6 +125,15 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 			);
 		}
 		this.queryAst.query = query;
+		return this;
+	}
+
+	@Clone()
+	onConflict(conflictAction: OnConflictDoUpdateWhereBuilder | OnConflictDoNothingBuildable): this {
+		this.queryAst.onConflict = {
+			type: "onConflictNode",
+			conflictAction: conflictAction.build()
+		};
 		return this;
 	}
 

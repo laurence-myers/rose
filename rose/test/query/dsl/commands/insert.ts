@@ -12,6 +12,9 @@ import {
 	TableMetamodel
 } from "../../../../src/query/metamodel";
 import { params, ParamsWrapper, withParams } from "../../../../src/query/params";
+import { doNothing, doUpdate, targetIndex } from "../../../../src/query/dsl/onConflict";
+import { char_length, upper } from "../../../../src/query/postgresql/functions/string";
+import { greaterThanOrEqual, lessThanOrEqual } from "../../../../src/query/postgresql/functions/comparison";
 import assert = require('assert');
 
 describe(`INSERT commands`, () => {
@@ -344,5 +347,113 @@ describe(`INSERT commands`, () => {
 			parameters: [123, 456, 'Fred'] // In order of column name (sorted alphabetically)
 		};
 		assert.deepEqual(actual, expected);
+	});
+
+	describe(`on conflict`, () => {
+		describe(`do update`, () => {
+			it(`can pass column references`, () => {
+				// Execute
+				const actual = insert(QUsers)
+					.insert({
+						id: default_(),
+						locationId: constant(123),
+						name: constant('Fred')
+					})
+					.onConflict(
+						doUpdate().onColumns([QUsers.name]).set(QUsers, {
+							name: constant('Fred 2')
+						})
+					).finalise({}).toSql({});
+
+				// Verify
+				const expected = {
+					sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT ("name") DO UPDATE SET "name" = $3`,
+					parameters: [123, 'Fred', 'Fred 2']
+				};
+				assert.deepEqual(actual, expected);
+			});
+
+			it(`can pass constraint reference`, () => {
+				// Execute
+				const actual = insert(QUsers)
+					.insert({
+						id: default_(),
+						locationId: constant(123),
+						name: constant('Fred')
+					})
+					.onConflict(
+						doUpdate().onConstraint('foo_constraint').set(QUsers, {
+							name: constant('Fred 2')
+						})
+					).finalise({}).toSql({});
+
+				// Verify
+				const expected = {
+					sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT ON CONSTRAINT "foo_constraint" DO UPDATE SET "name" = $3`,
+					parameters: [123, 'Fred', 'Fred 2']
+				};
+				assert.deepEqual(actual, expected);
+			});
+
+			it(`can pass indexes`, () => {
+				// Execute
+				const actual = insert(QUsers)
+					.insert({
+						id: default_(),
+						locationId: constant(123),
+						name: constant('Fred')
+					})
+					.onConflict(
+						doUpdate().onIndexes(
+							[
+								targetIndex(upper(QUsers.name.scol()), { opclass: 'text_pattern_ops', collation: 'en_US' })
+							], lessThanOrEqual(
+								char_length(QUsers.name.scol()),
+								constant(10)
+							)
+						).set(QUsers, {
+							name: constant('Fred 2')
+						}).where(
+							greaterThanOrEqual(char_length(QUsers.name.scol()), constant(5))
+						)
+					).finalise({}).toSql({});
+
+				// Verify
+				const expected = {
+					sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT (upper("name") COLLATE 'en_US' "text_pattern_ops") WHERE char_length("name") <= $3 DO UPDATE SET "name" = $4 WHERE char_length("name") >= $5`,
+					parameters: [123, 'Fred', 10, 'Fred 2', 5]
+				};
+				assert.deepEqual(actual, expected);
+			});
+		});
+
+		describe(`do nothing`, () => {
+			it(`can pass indexes`, () => {
+				// Execute
+				const actual = insert(QUsers)
+					.insert({
+						id: default_(),
+						locationId: constant(123),
+						name: constant('Fred')
+					})
+					.onConflict(
+						doNothing().onIndexes(
+							[
+								targetIndex(upper(QUsers.name.scol()), { opclass: 'text_pattern_ops', collation: 'en_US' })
+							], lessThanOrEqual(
+								char_length(QUsers.name.scol()),
+								constant(10)
+							)
+						)
+					).finalise({}).toSql({});
+
+				// Verify
+				const expected = {
+					sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT (upper("name") COLLATE 'en_US' "text_pattern_ops") WHERE char_length("name") <= $3 DO NOTHING`,
+					parameters: [123, 'Fred', 10]
+				};
+				assert.deepEqual(actual, expected);
+			});
+		});
 	});
 });

@@ -16,6 +16,11 @@ import {
 	LiteralNode,
 	NaturalSyntaxFunctionExpressionNode,
 	NotExpressionNode,
+	OnConflictDoNothingNode,
+	OnConflictDoUpdateNode,
+	OnConflictNode,
+	OnConflictTargetIndexesNode,
+	OnConflictTargetIndexNode, OnConflictTargetOnConstraintNode,
 	OrderByExpressionNode,
 	ReleaseSavepointCommandNode,
 	RollbackCommandNode,
@@ -95,6 +100,9 @@ export class SkippingWalker extends BaseWalker {
 		if (node.query) {
 			this.walk(node.query);
 		}
+		if (node.onConflict) {
+			this.walk(node.onConflict);
+		}
 		if (node.returning) {
 			this.walkNodes(node.returning);
 		}
@@ -124,6 +132,38 @@ export class SkippingWalker extends BaseWalker {
 
 	protected walkNotExpressionNode(node: NotExpressionNode): void {
 		this.walk(node.expression);
+	}
+
+	protected walkOnConflictDoNothingNode(node: OnConflictDoNothingNode): void {
+		if (node.target) {
+			this.walk(node.target);
+		}
+	}
+
+	protected walkOnConflictDoUpdateNode(node: OnConflictDoUpdateNode): void {
+		this.walk(node.target);
+		this.walkNodes(node.setItems);
+		if (node.where) {
+			this.walk(node.where);
+		}
+	}
+
+	protected walkOnConflictNode(node: OnConflictNode): void {
+		this.walk(node.conflictAction);
+	}
+
+	protected walkOnConflictTargetIndexesNode(node: OnConflictTargetIndexesNode): void {
+		this.walkNodes(node.indexes);
+		if (node.where) {
+			this.walk(node.where);
+		}
+	}
+
+	protected walkOnConflictTargetIndexNode(node: OnConflictTargetIndexNode): void {
+		this.walk(node.identifier);
+	}
+
+	protected walkOnConflictTargetOnConstraintNode(node: OnConflictTargetOnConstraintNode): void {
 	}
 
 	protected walkOrderByExpressionNode(node: OrderByExpressionNode): void {

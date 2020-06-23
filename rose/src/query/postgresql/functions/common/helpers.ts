@@ -1,8 +1,12 @@
 import {
-	BinaryOperationNode, ExpressionListNode,
-	FunctionExpressionNode, NaturalSyntaxFunctionExpressionNode, NaturalSyntaxFunctionExpressionNodeArgument,
-	 UnaryOperationNode,
-	ParameterOrValueExpressionNode
+	BinaryOperationNode,
+	BooleanBinaryOperationNode,
+	ExpressionListNode,
+	FunctionExpressionNode,
+	NaturalSyntaxFunctionExpressionNode,
+	NaturalSyntaxFunctionExpressionNodeArgument,
+	ParameterOrValueExpressionNode,
+	UnaryOperationNode
 } from "../../../ast";
 
 export function createUnaryOperatorNode(operator: string, position: "left" | "right", expression: ParameterOrValueExpressionNode): UnaryOperationNode {
@@ -10,6 +14,15 @@ export function createUnaryOperatorNode(operator: string, position: "left" | "ri
 		type: 'unaryOperationNode',
 		expression,
 		position,
+		operator
+	};
+}
+
+export function createBooleanBinaryOperatorNode(operator: BooleanBinaryOperationNode['operator'], left: ParameterOrValueExpressionNode | ExpressionListNode, right: ParameterOrValueExpressionNode | ExpressionListNode): BooleanBinaryOperationNode {
+	return {
+		type: 'binaryOperationNode',
+		left,
+		right,
 		operator
 	};
 }

@@ -17,6 +17,12 @@ import {
 	LiteralNode,
 	NaturalSyntaxFunctionExpressionNode,
 	NotExpressionNode,
+	OnConflictDoNothingNode,
+	OnConflictDoUpdateNode,
+	OnConflictNode,
+	OnConflictTargetIndexesNode,
+	OnConflictTargetIndexNode,
+	OnConflictTargetOnConstraintNode,
 	OrderByExpressionNode,
 	ReleaseSavepointCommandNode,
 	RollbackCommandNode,
@@ -71,6 +77,18 @@ export abstract class BaseWalker {
 	protected abstract walkNaturalSyntaxFunctionExpressionNode(node: NaturalSyntaxFunctionExpressionNode): void;
 
 	protected abstract walkNotExpressionNode(node: NotExpressionNode): void;
+
+	protected abstract walkOnConflictDoNothingNode(node: OnConflictDoNothingNode): void;
+
+	protected abstract walkOnConflictDoUpdateNode(node: OnConflictDoUpdateNode): void;
+
+	protected abstract walkOnConflictNode(node: OnConflictNode): void;
+
+	protected abstract walkOnConflictTargetIndexesNode(node: OnConflictTargetIndexesNode): void;
+
+	protected abstract walkOnConflictTargetIndexNode(node: OnConflictTargetIndexNode): void;
+
+	protected abstract walkOnConflictTargetOnConstraintNode(node: OnConflictTargetOnConstraintNode): void;
 
 	protected abstract walkOrderByExpressionNode(node: OrderByExpressionNode): void;
 
@@ -164,6 +182,24 @@ export abstract class BaseWalker {
 				break;
 			case "notExpressionNode":
 				this.walkNotExpressionNode(node);
+				break;
+			case "onConflictDoNothingNode":
+				this.walkOnConflictDoNothingNode(node);
+				break;
+			case "onConflictDoUpdateNode":
+				this.walkOnConflictDoUpdateNode(node);
+				break;
+			case "onConflictNode":
+				this.walkOnConflictNode(node);
+				break;
+			case "onConflictTargetIndexesNode":
+				this.walkOnConflictTargetIndexesNode(node);
+				break;
+			case "onConflictTargetIndexNode":
+				this.walkOnConflictTargetIndexNode(node);
+				break;
+			case "onConflictTargetOnConstraintNode":
+				this.walkOnConflictTargetOnConstraintNode(node);
 				break;
 			case "orderByExpressionNode":
 				this.walkOrderByExpressionNode(node);
