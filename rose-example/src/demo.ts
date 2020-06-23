@@ -1,7 +1,7 @@
 import { Client } from "pg";
 import { FilmRepository } from "./repositories/filmRepository";
 import { LanguageRepository } from "./repositories/languageRepository";
-import { transaction } from "rose";
+import { transaction } from "@rosepg/rose";
 
 const dbUrl = `postgresql://root:admin@localhost:5442/pagila`;
 

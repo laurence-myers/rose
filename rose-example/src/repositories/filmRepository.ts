@@ -1,9 +1,12 @@
 import {
     and,
-    col, constant,
+    col,
+    constant,
     initcap,
+    innerJoin,
     insert,
     ParamsWrapper,
+    Queryable,
     select,
     selectExpression,
     subSelect,
@@ -13,7 +16,6 @@ import {
 import { FilmDefaultQueries, FilmInsertRow, QFilm } from "../../generated/db/Film";
 import { QActor } from "../../generated/db/Actor";
 import { QFilmActor, TFilmActor } from "../../generated/db/FilmActor";
-import { Queryable } from "@rosepg/rose/execution/execution";
 
 export class FilmRepository {
     private readonly selectLongestFilmsByActorNameQuery = (function () {
@@ -31,11 +33,15 @@ export class FilmRepository {
         const P = new ParamsWrapper<Params>();
 
         return select(selector)
-            .join(QFilmActor).on(
-                QFilmActor.filmId.eq(QFilm.filmId)
-            )
-            .join(QActor).on(
-                QActor.actorId.eq(QFilmActor.actorId),
+            .join(
+                innerJoin(QFilmActor)
+                    .on(
+                        QFilmActor.filmId.eq(QFilm.filmId)
+                    ),
+                innerJoin(QActor)
+                    .on(
+                        QActor.actorId.eq(QFilmActor.actorId),
+                    )
             )
             .where(
                 and(

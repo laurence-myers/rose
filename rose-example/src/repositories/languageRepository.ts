@@ -1,6 +1,5 @@
-import { Queryable } from "rose/execution/execution";
+import { Queryable, select, withParams } from "@rosepg/rose";
 import { LanguageAllColumns, LanguageRow, QLanguage } from "../../generated/db/Language";
-import { ParamsWrapper, select } from "rose";
 
 export class LanguageRepository {
     protected readonly getOneByNameQuery = (function () {
@@ -8,10 +7,10 @@ export class LanguageRepository {
             name: string;
         }
 
-        const P = new ParamsWrapper<Params>();
-        return select(LanguageAllColumns)
-            .where(QLanguage.name.eq(P.get((p) => p.name)))
-            .finalise(P);
+        return withParams<Params>()((p) => select(LanguageAllColumns)
+            .where(QLanguage.name.eq(p.name))
+            .finalise(p)
+        );
     })();
 
     public async getOneByName(client: Queryable, name: string): Promise<LanguageRow | undefined> {
