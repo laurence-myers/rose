@@ -46,7 +46,7 @@ abstract class BaseInitialBuilder<TNextBuilder> {
 }
 
 export class OnConflictDoNothingBuilder extends BaseInitialBuilder<OnConflictDoNothingBuildable> {
-	public nextBuilder(target: OnConflictTargetNode): OnConflictDoNothingBuildable {
+	protected nextBuilder(target: OnConflictTargetNode): OnConflictDoNothingBuildable {
 		return new OnConflictDoNothingBuildable(target);
 	}
 }
@@ -67,7 +67,7 @@ export class OnConflictDoNothingBuildable {
 }
 
 export class OnConflictDoUpdateInitialBuilder extends BaseInitialBuilder<OnConflictDoUpdateSettingBuilder> {
-	public nextBuilder(target: OnConflictTargetNode): OnConflictDoUpdateSettingBuilder {
+	protected nextBuilder(target: OnConflictTargetNode): OnConflictDoUpdateSettingBuilder {
 		return new OnConflictDoUpdateSettingBuilder(target);
 	}
 }
