@@ -1,3 +1,12 @@
+/**
+ * To use:
+ * - Go to the PostgreSQL docs page containing the functions, e.g. https://www.postgresql.org/docs/12/functions-aggregate.html
+ * - In your browser, select and copy the rows of a table (excluding the header)
+ * - Paste it into a CSV file, e.g. "funcs.csv"
+ * - Run `yarn genFuncs funcs.csv`
+ * - Move the file into `src/query/postgresql/functions/...?`, massage the contents
+ */
+
 import * as fs from "fs";
 
 class ArgsError extends Error {
@@ -24,7 +33,7 @@ interface FunctionArg {
 
 function argsSignatureTemplate(args: FunctionArg[]) {
 	return args
-		.map((arg) => `${ arg.name }${ arg.isOptional ? '?' : '' } : ValueExpressionNode`)
+		.map((arg) => `${ arg.name }${ arg.isOptional ? '?' : '' }: ParameterOrValueExpressionNode`)
 		.join(', ');
 }
 
@@ -41,7 +50,7 @@ function functionTemplate(functionName: string, description: string, args: Funct
 	return `/**
  * ${ description }
  */
-export function ${ functionName }(${ argsSignatureTemplate(args) }) : FunctionExpressionNode {
+export function ${ functionName }(${ argsSignatureTemplate(args) }): FunctionExpressionNode {
 	return createFunctionNode('${ functionName }'${ argsPassthroughTemplate(args) });
 }
 `;
@@ -67,7 +76,7 @@ async function generateFromCsv(csvFile: string): Promise<void> {
 		if (!row) return;
 		const split = row.split('\t');
 		const funcSyntax = split[0];
-		const description = split[1];
+		const description = split[split.length - 1];
 		const functionName = funcSyntax.substring(0, funcSyntax.indexOf('('));
 		const argsBody = funcSyntax.substring(funcSyntax.indexOf('(') + 1, funcSyntax.indexOf(')'));
 		const startOptionals = argsBody.indexOf('[,');
