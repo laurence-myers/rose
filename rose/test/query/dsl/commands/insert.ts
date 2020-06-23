@@ -1,4 +1,4 @@
-import { QLocations, QUsers, TUsers, UsersInsertRow } from "../../../fixtures";
+import { QLocations, QUsers, QUsersSC, TUsers, UsersInsertRow } from "../../../fixtures";
 import { deepFreeze, OptionalNulls } from "../../../../src/lang";
 import { insert, insertFromObject } from "../../../../src/query/dsl/commands";
 import { subSelect } from "../../../../src/query/dsl/select";
@@ -397,7 +397,7 @@ describe(`INSERT commands`, () => {
 
 			it(`can pass indexes`, () => {
 				// Execute
-				const actual = insert(QUsers)
+				const actual = insert(QUsersSC)
 					.insert({
 						id: default_(),
 						locationId: constant(123),
@@ -411,8 +411,9 @@ describe(`INSERT commands`, () => {
 								char_length(QUsers.name.scol()),
 								constant(10)
 							)
-						).set(QUsers, {
-							name: constant('Fred 2')
+						).set(QUsersSC, {
+							name: constant('Fred 2'),
+							deletedAt: constant('2020-06-23T19:46:00Z')
 						}).where(
 							greaterThanOrEqual(char_length(QUsers.name.scol()), constant(5))
 						)
@@ -420,8 +421,8 @@ describe(`INSERT commands`, () => {
 
 				// Verify
 				const expected = {
-					sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT (upper("name") COLLATE 'en_US' "text_pattern_ops") WHERE char_length("name") <= $3 DO UPDATE SET "name" = $4 WHERE char_length("name") >= $5`,
-					parameters: [123, 'Fred', 10, 'Fred 2', 5]
+					sql: `INSERT INTO "Users" as "t1" ("id", "location_id", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT (upper("name") COLLATE 'en_US' "text_pattern_ops") WHERE char_length("name") <= $3 DO UPDATE SET "deleted_at" = $4, "name" = $5 WHERE char_length("name") >= $6`,
+					parameters: [123, 'Fred', 10, '2020-06-23T19:46:00Z', 'Fred 2', 5]
 				};
 				assert.deepEqual(actual, expected);
 			});

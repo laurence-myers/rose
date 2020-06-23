@@ -310,7 +310,7 @@ export class SqlAstWalker extends BaseWalker {
 	protected walkOnConflictDoUpdateNode(node: OnConflictDoUpdateNode): void {
 		this.walk(node.target);
 		this.sb += ` DO UPDATE SET `;
-		this.walkNodes(node.setItems);
+		node.setItems.forEach(this.doListWalk());
 		if (node.where) {
 			this.sb += ` WHERE `;
 			this.walk(node.where);
