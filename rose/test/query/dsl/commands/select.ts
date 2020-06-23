@@ -6,7 +6,8 @@ import { select } from "../../../../src/query/dsl/commands";
 import { selectExpression, selectNestedMany, subSelect } from "../../../../src/query/dsl/select";
 import { and, col, constant, not, or } from "../../../../src/query/dsl/core";
 import { params, ParamsProxy, withParams } from "../../../../src/query/params";
-import { FinalisedQueryWithParams } from "../../../../src/query";
+import { crossJoin, FinalisedQueryWithParams, fullJoin, innerJoin } from "../../../../src/query";
+import { leftJoin, rightJoin } from "../../../../src/query/dsl/join";
 import assert = require('assert');
 
 describe(`SELECT commands`, () => {
@@ -214,13 +215,17 @@ describe(`SELECT commands`, () => {
 		// TODO: see if we can fix the generated alias ordering. Although, does it matter?
 
 		it("can perform an inner join", function () {
-			const actual = select(querySelect).join(QUsers).on(QUsers.locationId.eq(QLocations.id)).finalise({}).toSql({}).sql;
+			const actual = select(querySelect).join(innerJoin(QUsers).on(QUsers.locationId.eq(QLocations.id))).finalise({}).toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" INNER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can perform multiple inner joins", function () {
-			const actual = select(querySelect).join(QUsers).on(QUsers.locationId.eq(QLocations.id)).join(QAgencies).on(QAgencies.id.eq(QLocations.agencyId)).finalise({}).toSql({}).sql;
+			const actual = select(querySelect)
+				.join(
+					innerJoin(QUsers).on(QUsers.locationId.eq(QLocations.id)),
+					innerJoin(QAgencies).on(QAgencies.id.eq(QLocations.agencyId))
+				).finalise({}).toSql({}).sql;
 			const expected = `SELECT "t3"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t3" INNER JOIN "Users" as "t1" ON "t1"."locationId" = "t3"."id" INNER JOIN "Agencies" as "t2" ON "t2"."id" = "t3"."agencyId"`;
 			assert.deepEqual(actual, expected);
 		});
@@ -230,10 +235,12 @@ describe(`SELECT commands`, () => {
 				parentName: QParent.name,
 				childName: QChild.name,
 				otherChildName: QOtherChild.name,
-			}).join(QChild)
-				.using(QChild.parentId)
-				.join(QOtherChild)
-				.using(QOtherChild.parentId)
+			}).join(
+				innerJoin(QChild)
+					.using(QChild.parentId),
+				innerJoin(QOtherChild)
+					.using(QOtherChild.parentId)
+			)
 				.finalise({})
 				.toSql({}).sql;
 			const expected = `SELECT "t3"."name" as "parentName", "t1"."name" as "childName", "t2"."name" as "otherChildName" FROM "Parent" as "t3" INNER JOIN "Child" as "t1" USING ("parentId") INNER JOIN "OtherChild" as "t2" USING ("parentId")`;
@@ -241,32 +248,69 @@ describe(`SELECT commands`, () => {
 		});
 
 		it("can perform a left outer join", function () {
-			const actual = select(querySelect).join(QUsers).left().on(QUsers.locationId.eq(QLocations.id)).finalise({}).toSql({}).sql;
+			const actual = select(querySelect)
+				.join(
+					leftJoin(QUsers)
+						.on(QUsers.locationId.eq(QLocations.id))
+				).finalise({}).toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" LEFT OUTER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can perform a right outer join", function () {
-			const actual = select(querySelect).join(QUsers).right().on(QUsers.locationId.eq(QLocations.id)).finalise({}).toSql({}).sql;
+			const actual = select(querySelect)
+				.join(
+					rightJoin(QUsers)
+						.on(QUsers.locationId.eq(QLocations.id))
+				).finalise({}).toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" RIGHT OUTER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can perform a full outer join", function () {
-			const actual = select(querySelect).join(QUsers).full().on(QUsers.locationId.eq(QLocations.id)).finalise({}).toSql({}).sql;
+			const actual = select(querySelect)
+				.join(
+					fullJoin(QUsers)
+						.on(QUsers.locationId.eq(QLocations.id))
+				).finalise({}).toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" FULL OUTER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can perform a left outer join with 'using'", function () {
-			const actual = select(querySelect).join(QUsers).left().using(QLocations.id).finalise({}).toSql({}).sql;
+			const actual = select(querySelect)
+				.join(
+					leftJoin(QUsers)
+						.using(QLocations.id)
+				).finalise({}).toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" LEFT OUTER JOIN "Users" as "t1" USING ("id")`;
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can perform a cross join", function () {
-			const actual = select(querySelect).join(QUsers).cross().finalise({}).toSql({}).sql;
+			const actual = select(querySelect)
+				.join(crossJoin(QUsers))
+				.finalise({}).toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" CROSS JOIN "Users" as "t1"`;
+			assert.deepEqual(actual, expected);
+		});
+
+		it("can perform multiple pre-defined joins using `joins()`", function () {
+			const joins = [
+				innerJoin(QChild)
+					.using(QChild.parentId),
+				innerJoin(QOtherChild)
+					.using(QOtherChild.parentId)
+			];
+
+			const actual = select({
+				parentName: QParent.name,
+				childName: QChild.name,
+				otherChildName: QOtherChild.name,
+			}).joins(joins)
+				.finalise({})
+				.toSql({}).sql;
+			const expected = `SELECT "t3"."name" as "parentName", "t1"."name" as "childName", "t2"."name" as "otherChildName" FROM "Parent" as "t3" INNER JOIN "Child" as "t1" USING ("parentId") INNER JOIN "OtherChild" as "t2" USING ("parentId")`;
 			assert.deepEqual(actual, expected);
 		});
 	});
@@ -598,7 +642,7 @@ describe(`SELECT commands`, () => {
 		const builder3 = builder2.from(QUsers);
 		assert.notStrictEqual(builder2, builder3, "from() should create a new QueryBuilder");
 		assert.ok((builder3 as any).tableMap.size > 0, "from() should populate the tableMap");
-		const builder4 = builder3.join(QUsers).cross();
+		const builder4 = builder3.join(crossJoin(QUsers));
 		assert.notStrictEqual(builder3, builder4, "join() should create a new QueryBuilder");
 		// assert.ok((builder4 as any).tableMap.size > 0, "join() should populate the tableMap");
 		const builder5 = builder4.distinct();

@@ -4,12 +4,10 @@ import {
 	BooleanExpression,
 	ConstantNode,
 	GroupByExpressionNode,
-	JoinNode,
 	OrderByExpressionNode,
 	ParameterOrValueExpressionNode,
 	SelectCommandNode,
 	SelectOutputExpression,
-	SimpleColumnReferenceNode,
 	SubSelectNode
 } from "../ast";
 import { QuerySelectorProcessor } from "../metadata";
@@ -21,86 +19,9 @@ import { aliasTable, constant } from "../dsl/core";
 import { RectifyingWalker } from "../walkers/rectifyingWalker";
 import { ParamsProxy, ParamsWrapper } from "../params";
 import { TableMap } from "../../data";
+import { BuildableJoin } from "./join";
 
 export type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<any>;
-
-class JoinBuilder<TResult> {
-	protected joinType: 'inner' | 'left' | 'right' | 'full' | 'cross' = 'inner';
-	protected onNode?: BooleanExpression;
-	protected usingNodes?: SimpleColumnReferenceNode[];
-
-	constructor(
-		protected tableMap: TableMap,
-		protected qtable: QueryTable,
-		protected callback: (joinNode: JoinNode) => TResult) {
-	}
-
-	inner(): this {
-		this.joinType = 'inner';
-		return this;
-	}
-
-	left(): this {
-		this.joinType = 'left';
-		return this;
-	}
-
-	right(): this {
-		this.joinType = 'right';
-		return this;
-	}
-
-	full(): this {
-		this.joinType = 'full';
-		return this;
-	}
-
-	cross() {
-		this.joinType = 'cross';
-		return this.build();
-	}
-
-	on(expression: BooleanExpression) {
-		this.onNode = expression;
-		return this.build();
-	}
-
-	using(...columns: ColumnMetamodel<any>[]) {
-		if (columns && columns.length > 0) {
-			this.usingNodes = columns.map((column) => ({
-				type: "simpleColumnReferenceNode",
-				columnName: column.name
-			}));
-		}
-		return this.build();
-	}
-
-	protected build(): TResult {
-		if (this.onNode && this.usingNodes) {
-			throw new UnsupportedOperationError(`Cannot join tables with both "on" and "using" criteria.`);
-		} else if (this.joinType == 'cross' && (this.onNode || this.usingNodes)) {
-			throw new UnsupportedOperationError(`Cannot make a cross join with "on" or "using" criteria.`);
-		}
-		const tableName = this.qtable.$table.name;
-		const alias = this.tableMap.get(tableName);
-		const joinNode: JoinNode = {
-			type: 'joinNode',
-			joinType: this.joinType,
-			fromItem: {
-				type: 'aliasedExpressionNode',
-				alias,
-				aliasPath: [alias],
-				expression: {
-					type: 'tableReferenceNode',
-					tableName: tableName,
-				}
-			},
-			on: this.onNode,
-			using: this.usingNodes
-		};
-		return this.callback(joinNode);
-	}
-}
 
 abstract class BaseSelectQueryBuilder {
 	protected tableMap = new TableMap();
@@ -156,11 +77,21 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	join(queryTable: QueryTable): JoinBuilder<this> {
-		return new JoinBuilder(this.tableMap, queryTable, (joinNode) => {
+	join(joinBuilder: BuildableJoin, ...otherJoins: BuildableJoin[]): this {
+		for (const builder of [joinBuilder].concat(otherJoins)) {
+			const joinNode = builder.build(this.tableMap);
 			this.queryAst.joins.push(joinNode);
-			return this;
-		});
+		}
+		return this;
+	}
+
+	@Clone()
+	joins(joinBuilders: Array<BuildableJoin>): this {
+		for (const builder of joinBuilders) {
+			const joinNode = builder.build(this.tableMap);
+			this.queryAst.joins.push(joinNode);
+		}
+		return this;
 	}
 
 	@Clone()
