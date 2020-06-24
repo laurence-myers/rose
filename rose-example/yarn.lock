@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@rosepg/rose-cli@0.0.10":
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/@rosepg/rose-cli/-/rose-cli-0.0.10.tgz#d7b38527e5f302a98a5905dc059cc465e63ffff0"
-  integrity sha512-vqKON2QOtp1dDmV5uey6sLHrCNTaJwyZPYTA6Q6JCt/GL8df76Fi/fhkC8zCq/CV9Tzzhwyioa68DlPaU1cgvA==
+"@rosepg/rose-cli@0.0.11":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@rosepg/rose-cli/-/rose-cli-0.0.11.tgz#761dfac90ad9c25442cb0348f3a8c6d551fc5017"
+  integrity sha512-0gIdml8PdsntWbVpbgmcJK/zYqiga1Z+C9bf/UrOnzmVvL37k6ooB5lHmcurC1RBSq7aEWo70IgOFUhRo0zVYg==
   dependencies:
     "@sinclair/typebox" "0.9.13"
     ajv "6.12.0"
@@ -13,10 +13,10 @@
     pg "8.0.2"
     tscodegendsl "0.0.1"
 
-"@rosepg/rose@0.0.10":
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/@rosepg/rose/-/rose-0.0.10.tgz#9802e9cdf4806f482ffb62c4da37b32e5ce0be60"
-  integrity sha512-LJT4cd0qoIJvKNavGGfsCQG0RPxIOPYqnGLucPu58gND2c0itC0jHNG3UTcdw/U/fzkdcoqpyoUD0U6Wa4yRBA==
+"@rosepg/rose@0.0.11":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@rosepg/rose/-/rose-0.0.11.tgz#9373fe12a6ec340a0b8232c9fc953a834ee7c1be"
+  integrity sha512-gJFUMFSbd56jlZrKKc0Z5ZkSQdoYO3LGDOiV2Cjh19Obla/1f/+zYaalN++9911x33ZEbQnhAtDGBgxJIFu9Fw==
   dependencies:
     lodash.clonedeep "4.5.0"
     metrohash "2.6.0"

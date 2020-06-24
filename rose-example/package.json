@@ -20,8 +20,8 @@
     "typescript": "3.8.3"
   },
   "dependencies": {
-    "@rosepg/rose": "0.0.10",
-    "@rosepg/rose-cli": "0.0.10",
+    "@rosepg/rose": "0.0.11",
+    "@rosepg/rose-cli": "0.0.11",
     "pg": "8.0.0"
   }
 }
