@@ -315,7 +315,7 @@ describe(`Example queries`, function () {
 				product_units: selectExpression(sum(QOrders.quantity.col())),
 				product_sales: selectExpression(sum(QOrders.amount.col()))
 			})
-				.with(regionalSales.toNode(), topRegions.toNode())
+				.with(regionalSales, topRegions)
 				.where(QOrders.region.in(
 					subSelect(topRegions.toMetamodel().region)
 						.toSubQuery()

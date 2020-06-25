@@ -23,6 +23,8 @@ import { BuildableJoin } from "./join";
 
 export type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<any>;
 
+type WithCteArg = AliasedExpressionNode<SubSelectNode> | CommonTableExpressionBuilder<QuerySelector>;
+
 abstract class BaseSelectQueryBuilder {
 	protected tableMap = new TableMap();
 	protected queryAst: SelectCommandNode = {
@@ -45,10 +47,18 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	with(first: AliasedExpressionNode<SubSelectNode>, ...rest: AliasedExpressionNode<SubSelectNode>[]): this {
+	with(first: WithCteArg, ...rest: WithCteArg[]): this {
+		const selectNodes = [first].concat(rest).map((item) => {
+			if (item instanceof CommonTableExpressionBuilder) {
+				return item.toNode();
+			} else {
+				 return item;
+			}
+		});
+
 		this.queryAst.with = {
 			type: "withNode",
-			selectNodes: [first].concat(rest)
+			selectNodes
 		};
 		return this;
 	}
