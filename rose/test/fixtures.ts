@@ -57,6 +57,7 @@ export class TRecurringPayments extends QueryTable {
 	endDate = new ColumnMetamodel<Date>(this.$table, "endDate");
 	nextDate = new ColumnMetamodel<Date>(this.$table, "nextDate");
 	locationId = new ColumnMetamodel<number>(this.$table, "locationId");
+	amount = new ColumnMetamodel<string>(this.$table, "amount");
 }
 
 export const QRecurringPayments = deepFreeze(new TRecurringPayments);

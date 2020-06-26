@@ -7,7 +7,7 @@ import { TableMap } from "../../data";
 import { ParamsProxy, ParamsWrapper } from "../params";
 
 export class DeleteQueryBuilder<TParams> {
-	protected tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
+	protected tableMap = new TableMap();
 	protected queryAst: DeleteCommandNode;
 
 	constructor(

@@ -161,9 +161,9 @@ export interface JoinNode {
 	// TODO: support natural
 }
 
-export type FromExpressionNode = TableReferenceNode;
+export type FromExpressionNode = TableReferenceNode | SubSelectNode;
 
-export type AliasedFromExpressionNode = AliasedExpressionNode<TableReferenceNode>;
+export type AliasedFromExpressionNode = AliasedExpressionNode<TableReferenceNode> | AliasedExpressionNode<SubSelectNode>;
 
 export type FromItemNode = AliasedFromExpressionNode | FromExpressionNode;
 

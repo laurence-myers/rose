@@ -21,8 +21,10 @@ import { ParamsProxy, ParamsWrapper } from "../params";
 import { TableMap } from "../../data";
 import { BuildableJoin } from "./join";
 
-export type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<any>;
+export type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<unknown>;
 
+type FromArg = QueryTable | AliasedSubQueryBuilder<QuerySelector>;
+type GroupByArg = GroupByExpressionNode | ColumnMetamodel<unknown>;
 type WithCteArg = AliasedExpressionNode<SubSelectNode> | CommonTableExpressionBuilder<QuerySelector>;
 
 abstract class BaseSelectQueryBuilder {
@@ -77,11 +79,15 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	from(first: QueryTable, ...rest: QueryTable[]): this {
-		for (const qtable of [first].concat(rest)) {
-			const tableName = qtable.$table.name;
-			const alias = qtable.$table.alias || this.tableMap.get(tableName);
-			this.queryAst.fromItems.push(aliasTable(tableName, alias));
+	from(first: FromArg, ...rest: FromArg[]): this {
+		for (const item of [first].concat(rest)) {
+			if (item instanceof AliasedSubQueryBuilder) {
+				this.queryAst.fromItems.push(item.toNode());
+			} else {
+				const tableName = item.$table.name;
+				const alias = item.$table.alias || this.tableMap.get(tableName);
+				this.queryAst.fromItems.push(aliasTable(tableName, alias));
+			}
 		}
 		return this;
 	}
@@ -111,7 +117,7 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	groupBy(first: GroupByExpressionNode | ColumnMetamodel<unknown>, ...rest: Array<GroupByExpressionNode | ColumnMetamodel<unknown>>): this {
+	groupBy(first: GroupByArg, ...rest: Array<GroupByArg>): this {
 		const all = [first].concat(rest).map((columnOrNode): GroupByExpressionNode => {
 			if (columnOrNode instanceof ColumnMetamodel) {
 				return { // TODO: Support strings to reference aliased columns/expressions
@@ -224,11 +230,11 @@ export class SubQueryBuilder<TParams> extends BaseSelectQueryBuilder {
 	}
 }
 
-export type CommonTableExpressionMetamodel<T extends QuerySelector> = {
+export type AliasedSubQueryMetamodel<T extends QuerySelector> = {
 	[K in keyof T]: ColumnMetamodel<any>;
 };
 
-export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector> extends BaseSelectQueryBuilder {
+export class AliasedSubQueryBuilder<TQuerySelector extends QuerySelector> extends BaseSelectQueryBuilder {
 	constructor(
 		protected readonly alias: string,
 		protected readonly querySelector: TQuerySelector
@@ -242,7 +248,7 @@ export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector> 
 		return processor.process();
 	}
 
-	toMetamodel(): CommonTableExpressionMetamodel<TQuerySelector> {
+	toMetamodel(): AliasedSubQueryMetamodel<TQuerySelector> {
 		this.rectifyTableReferences();
 		const output: { [key: string]: ColumnMetamodel<unknown> } = {};
 		const table = new TableMetamodel(this.alias, undefined);
@@ -255,10 +261,10 @@ export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector> 
 					);
 					break;
 				default:
-					throw new UnsupportedOperationError("Only aliased expressions can be used in CTEs");
+					throw new UnsupportedOperationError("Only aliased expressions can be used in aliased sub-queries");
 			}
 		}
-		return output as CommonTableExpressionMetamodel<TQuerySelector>;
+		return output as AliasedSubQueryMetamodel<TQuerySelector>;
 	}
 
 	toNode(): AliasedExpressionNode<SubSelectNode> {
@@ -273,4 +279,8 @@ export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector> 
 			}
 		};
 	}
+}
+
+export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector> extends AliasedSubQueryBuilder<TQuerySelector> {
+
 }

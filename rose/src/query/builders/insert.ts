@@ -160,7 +160,7 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 export class InsertReturningQueryBuilder<TQTable extends QueryTable, TQuerySelector extends QuerySelector> {
 	constructor(
 		protected readonly qtable: TQTable,
-		protected readonly tableMap: DefaultMap<string, string>,
+		protected readonly tableMap: TableMap,
 		protected readonly queryAst: InsertCommandNode,
 		protected readonly querySelector: TQuerySelector,
 	) {

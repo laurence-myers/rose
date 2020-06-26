@@ -103,7 +103,7 @@ export class UpdateQueryBuilder<TQTable extends QueryTable> {
 export class UpdateReturningQueryBuilder<TQTable extends QueryTable, TQuerySelector extends QuerySelector> {
 	constructor(
 		protected readonly qtable: TQTable,
-		protected readonly tableMap: DefaultMap<string, string>,
+		protected readonly tableMap: TableMap,
 		protected readonly queryAst: UpdateCommandNode,
 		protected readonly querySelector: TQuerySelector,
 	) {

@@ -1,10 +1,19 @@
-import { QAgencies, QChild, QLocations, QOtherChild, QParent, QUsers, TLocations } from "../../../fixtures";
+import {
+	QAgencies,
+	QChild,
+	QLocations,
+	QOtherChild,
+	QParent,
+	QRecurringPayments,
+	QUsers,
+	TLocations
+} from "../../../fixtures";
 import { lower } from "../../../../src/query/postgresql/functions/string/sql";
-import { count } from "../../../../src/query/postgresql/functions/aggregate/general";
+import { count, sum } from "../../../../src/query/postgresql/functions/aggregate/general";
 import { deepFreeze } from "../../../../src/lang";
 import { select } from "../../../../src/query/dsl/commands";
-import { selectExpression, selectNestedMany, subSelect } from "../../../../src/query/dsl/select";
-import { and, col, constant, not, or } from "../../../../src/query/dsl/core";
+import { selectCte, selectExpression, selectNestedMany, selectSubQuery, subSelect } from "../../../../src/query/dsl/select";
+import { alias, and, col, constant, not, or } from "../../../../src/query/dsl/core";
 import { params, ParamsProxy, withParams } from "../../../../src/query/params";
 import { crossJoin, FinalisedQueryWithParams, fullJoin, innerJoin } from "../../../../src/query";
 import { leftJoin, rightJoin } from "../../../../src/query/dsl/join";
@@ -607,7 +616,7 @@ describe(`SELECT commands`, () => {
 			assert.deepEqual(actual, expected);
 		});
 
-		it("sub-queries can reference aliased columns from the outer table", function () {
+		it("sub-queries can reference aliased columns from the outer table, same table", function () {
 			const QOuterLocations = deepFreeze(new TLocations("outerLocations"));
 			const querySelect = {
 				id: QOuterLocations.id,
@@ -623,6 +632,50 @@ describe(`SELECT commands`, () => {
 			const expected = {
 				sql: `SELECT "outerLocations"."id" as "id" FROM "Locations" as "outerLocations" WHERE "outerLocations"."id" IN (SELECT "t1"."id" FROM "Locations" as "t1" WHERE "t1"."agencyId" = "outerLocations"."agencyId")`,
 				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it("sub-queries can reference aliased columns from the outer table, different table", function () {
+			const QOuterLocations = deepFreeze(new TLocations("outerLocations"));
+			const querySelect = {
+				id: QOuterLocations.id,
+			};
+
+			const actual = select(querySelect)
+				.from(QOuterLocations)
+				.where(QOuterLocations.agencyId.in(
+					subSelect(QAgencies.id)
+						.where(QOuterLocations.agencyId.eq(QAgencies.id))
+						.toSubQuery()
+				)).finalise({}).toSql({});
+			const expected = {
+				sql: `SELECT "outerLocations"."id" as "id" FROM "Locations" as "outerLocations" WHERE "outerLocations"."agencyId" IN (SELECT "t1"."id" FROM "Agencies" as "t1" WHERE "outerLocations"."agencyId" = "t1"."id")`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`can use sub-queries in the "from" clause`, function () {
+			// Setup
+			const locations = new TLocations('locations');
+			const amountSubQuery = selectSubQuery('amountSumT', {
+				amountSum: selectExpression(sum(QRecurringPayments.amount.col()))
+			}).where(QRecurringPayments.locationId.eq(locations.id));
+
+			// Execute
+			const actual = select({
+					name: locations.name,
+					amount: amountSubQuery.toMetamodel().amountSum
+				}).from(locations, amountSubQuery)
+				.where(locations.id.eq(constant(123)))
+				.finalise({})
+				.toSql({});
+
+			// Verify
+			const expected = {
+				sql: `SELECT "locations"."name" as "name", "amountSumT"."amountSum" as "amount" FROM "Locations" as "locations", (SELECT sum("t1"."amount") as "amountSum" FROM "RecurringPayments" as "t1" WHERE "t1"."locationId" = "locations"."id") as "amountSumT" WHERE "locations"."id" = $1`,
+				parameters: [123],
 			};
 			assert.deepEqual(actual, expected);
 		});

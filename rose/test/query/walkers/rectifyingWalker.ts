@@ -1,7 +1,17 @@
-import { AliasedFromExpressionNode, FromItemNode, SelectCommandNode, SubSelectNode } from "../../../src/query/ast";
-import { DefaultMap } from "../../../src/lang";
+import {
+	AliasedFromExpressionNode,
+	FromItemNode,
+	SelectCommandNode,
+	SubSelectNode,
+	TableReferenceNode
+} from "../../../src/query/ast";
 import { RectifyingWalker } from "../../../src/query/walkers/rectifyingWalker";
 import { deepEqual, equal, fail } from "assert";
+import { select } from "../../../src/query/dsl/commands";
+import { constant, selectExpression, selectSubQuery } from "../../../src/query/dsl";
+import { sum } from "../../../src/query/postgresql/functions/aggregate";
+import { QRecurringPayments, TLocations } from "../../fixtures";
+import { TableMap } from "../../../src/data";
 
 function getFromItem(fromItem: FromItemNode): AliasedFromExpressionNode | never {
 	if (fromItem.type == "aliasedExpressionNode") {
@@ -29,12 +39,12 @@ describe("Rectifying Walker", function () {
 			ordering: [],
 			grouping: []
 		};
-		const tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
+		const tableMap = new TableMap();
 		const walker = new RectifyingWalker(ast, tableMap);
 		walker.rectify();
 		equal(ast.fromItems.length, 1);
 		const fromItem = getFromItem(ast.fromItems[0]);
-		equal(fromItem.expression.tableName, "Users");
+		equal((fromItem.expression as TableReferenceNode).tableName, "Users");
 		equal(fromItem.alias, "t1");
 	});
 
@@ -65,14 +75,14 @@ describe("Rectifying Walker", function () {
 			ordering: [],
 			grouping: []
 		};
-		const tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
+		const tableMap = new TableMap();
 		const walker = new RectifyingWalker(ast, tableMap);
 		walker.rectify();
 		equal(ast.fromItems.length, 1);
 		const fromItem = getFromItem(ast.fromItems[0]);
-		equal(fromItem.expression.tableName, "Users");
+		equal((fromItem.expression as TableReferenceNode).tableName, "Users");
 		equal(fromItem.alias, "t1");
-		equal(fromItem.expression.tableName, "Users");
+		equal((fromItem.expression as TableReferenceNode).tableName, "Users");
 		equal(fromItem.alias, "t1");
 	});
 
@@ -138,18 +148,49 @@ describe("Rectifying Walker", function () {
 			ordering: [],
 			grouping: []
 		};
-		const tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
+		const tableMap = new TableMap();
 		const walker = new RectifyingWalker(ast, tableMap);
 		walker.rectify();
 		equal(ast.fromItems.length, 1);
 		const fromItem = getFromItem(ast.fromItems[0]);
-		equal(fromItem.expression.tableName, "Users");
+		equal((fromItem.expression as TableReferenceNode).tableName, "Users");
 		equal(fromItem.alias, "t2");
 		equal(ast.conditions.length, 1);
 		equal(subSelectNode.query.fromItems.length, 1);
 		const nestedFromItem = getFromItem(subSelectNode.query.fromItems[0]);
-		equal(nestedFromItem.expression.tableName, "Locations");
+		equal((nestedFromItem.expression as TableReferenceNode).tableName, "Locations");
 		equal(nestedFromItem.alias, "t1");
+	});
+
+	it("Rectifies nested sub-queries individually, retaining aliased tables referenced from the outer query", function () {
+		// Setup
+		const locations = new TLocations('locations');
+		const amountSubQuery = selectSubQuery('amountSumT', {
+			amountSum: selectExpression(sum(QRecurringPayments.amount.col()))
+		}).where(QRecurringPayments.locationId.eq(locations.id));
+
+		const actual = select({
+			name: locations.name,
+			amount: amountSubQuery.toMetamodel().amountSum
+		}).from(locations, amountSubQuery)
+			.where(locations.id.eq(constant(123)));
+
+		const ast = (actual as unknown as { queryAst: SelectCommandNode }).queryAst;
+
+		// Execute
+		const walker = new RectifyingWalker(ast);
+		walker.rectify();
+
+		// Verify
+		equal(ast.fromItems.length, 2);
+		const firstFromItem = getFromItem(ast.fromItems[0]);
+		equal(firstFromItem.alias, "locations");
+		const secondFromItem = getFromItem(ast.fromItems[1]);
+		equal(secondFromItem.alias, "amountSumT");
+		const subQueryNode = (secondFromItem.expression as SubSelectNode).query;
+		equal(subQueryNode.fromItems.length, 1, 'The inner query should not add "Locations" to its "from" clause');
+		const firstNestedFromItem = getFromItem(subQueryNode.fromItems[0]);
+		equal(firstNestedFromItem.alias, 't1');
 	});
 
 	it("Rectifies unaliased FROM locations", function () {
@@ -219,7 +260,7 @@ describe("Rectifying Walker", function () {
 				}
 			]
 		};
-		const tableMap = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`);
+		const tableMap = new TableMap();
 		const walker = new RectifyingWalker(ast, tableMap);
 		walker.rectify();
 

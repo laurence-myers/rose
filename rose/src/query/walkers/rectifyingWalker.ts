@@ -1,6 +1,14 @@
-import { ColumnReferenceNode, SelectCommandNode, SubSelectNode, TableReferenceNode, WithNode } from "../ast";
+import {
+	AnyAliasedExpressionNode,
+	ColumnReferenceNode,
+	SelectCommandNode,
+	SubSelectNode,
+	TableReferenceNode,
+	WithNode
+} from "../ast";
 import { DefaultMap, difference } from "../../lang";
 import { SkippingWalker } from "./skippingWalker";
+import { TableMap } from "../../data";
 
 /**
  * Rectifies column references so they are always fully qualified, and all tables are aliased and also specified in a
@@ -13,13 +21,24 @@ export class RectifyingWalker extends SkippingWalker {
 
 	constructor(
 		protected ast: SelectCommandNode,
-		protected tableMap: DefaultMap<string, string> = new DefaultMap<string, string>((key, map) => `t${ map.size + 1 }`)
+		protected tableMap: DefaultMap<string, string> = new TableMap()
 	) {
 		super();
 	}
 
+	protected walkAliasedExpressionNode(node: AnyAliasedExpressionNode) {
+		if (node.expression.type === "subSelectNode" || node.expression.type === 'tableReferenceNode') {
+			this.tableMap.set(node.alias, node.alias);
+			this.specifiedTables.add(node.alias);
+		}
+		super.walkAliasedExpressionNode(node);
+	}
+
 	protected walkColumnReferenceNode(node: ColumnReferenceNode): void {
-		this.referencedTables.add(node.tableName);
+		if (!node.tableAlias) {
+			// Assume any un-aliased table needs to be rectified.
+			this.referencedTables.add(node.tableName);
+		}
 		this.columnReferences.add(node);
 		super.walkColumnReferenceNode(node);
 	}

@@ -6,6 +6,7 @@ import { DefaultMap } from "../lang";
 import { SqlAstWalker } from "./walkers/sqlAstWalker";
 import { QuerySelectorProcessor } from "./metadata";
 import { ParamsProxy, ParamsWrapper } from "./params";
+import { TableMap } from "../data";
 
 export interface GeneratedQuery {
 	sql: string;
@@ -20,7 +21,7 @@ export abstract class FinalisedQuery<TQuerySelector extends QuerySelector> {
 	constructor(
 		protected readonly querySelector: TQuerySelector,
 		protected readonly queryAst: AnyCommandNode,
-		protected readonly tableMap: DefaultMap<string, string>
+		protected readonly tableMap: TableMap
 	) {
 		this.outputExpressions = this.processQuerySelector(querySelector); // must occur before rectifying
 		// TODO: clone queryAst and tableMap so that we don't mutate the original values here.
@@ -73,7 +74,7 @@ export class FinalisedQueryWithParams<TQuerySelector extends QuerySelector, TPar
 	constructor(
 		querySelector: TQuerySelector,
 		queryAst: AnyCommandNode,
-		tableMap: DefaultMap<string, string>,
+		tableMap: TableMap,
 		paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams> // just used for inferring TParams
 	) {
 		super(querySelector, queryAst, tableMap);
@@ -98,7 +99,7 @@ export class FinalisedQueryWithParams<TQuerySelector extends QuerySelector, TPar
 export class FinalisedQueryNonReturningWithParams<TParams> extends FinalisedQuery<{}> {
 	constructor(
 		queryAst: AnyCommandNode,
-		tableMap: DefaultMap<string, string>,
+		tableMap: TableMap,
 		paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams> // just used for inferring TParams
 	) {
 		super({}, queryAst, tableMap);

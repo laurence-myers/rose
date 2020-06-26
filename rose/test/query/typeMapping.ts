@@ -1,8 +1,7 @@
 import { QUsers } from "../fixtures";
 import { QueryOutput } from "../../src/query/typeMapping";
 import { concat } from "../../src/query/postgresql/functions/string/sql";
-import { selectExpression, selectNestedMany, selectNestedOne } from "../../src/query/dsl/select";
-import { constant } from "../../src/query/dsl/core";
+import { constant, selectExpression, selectNestedMany, selectNestedOne } from "../../src/query/dsl";
 
 describe(`Type mapping`, function () {
 	it(`can derive column output types from a query selector object`, function () {

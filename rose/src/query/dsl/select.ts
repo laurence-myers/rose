@@ -1,5 +1,10 @@
 import { QuerySelector, SelectorExpression, SelectorNestedMany, SelectorNestedOne } from "../querySelector";
-import { CommonTableExpressionBuilder, SubQueryBuilder, SubSelectExpression } from "../builders/select";
+import {
+	AliasedSubQueryBuilder,
+	CommonTableExpressionBuilder,
+	SubQueryBuilder,
+	SubSelectExpression
+} from "../builders/select";
 import { ParameterOrValueExpressionNode } from "../ast";
 
 export function selectCte<TQuerySelector extends QuerySelector>(alias: string, querySelector: TQuerySelector) {
@@ -33,4 +38,8 @@ export function selectNestedOne<T extends QuerySelector>(querySelector: T): Sele
 
 export function subSelect<TParams>(...outputExpressions: SubSelectExpression[]) {
 	return new SubQueryBuilder<TParams>(outputExpressions);
+}
+
+export function selectSubQuery<TQuerySelector extends QuerySelector>(alias: string, querySelector: TQuerySelector) {
+	return new AliasedSubQueryBuilder(alias, querySelector);
 }
