@@ -1,4 +1,5 @@
 = Rose
+:toc: left
 
 == Basic Usage
 
@@ -34,3 +35,9 @@ The metamodel serves two purposes:
 
 You can select "nested" objects. Parent/child relationships are worked out by hashing all of the parent's column values
 together.
+
+include::./QuickStart.adoc[]
+
+include::./Justification.adoc[]
+
+include::./AlternateProjects.adoc[]
