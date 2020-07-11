@@ -13,6 +13,12 @@
     "start": "ts-node src/index.ts",
     "test": "mocha"
   },
+  "dependencies": {
+    "@rosepg/rose": "../rose/package",
+    "@rosepg/rose-cli": "../rose-cli/package",
+    "app-root-path": "3.0.0",
+    "asciidoctor": "2.2.0"
+  },
   "devDependencies": {
     "@types/app-root-path": "1.2.4",
     "@types/mocha": "7.0.2",
@@ -20,7 +26,6 @@
     "@types/pg": "7.14.3",
     "@typescript-eslint/eslint-plugin": "2.27.0",
     "@typescript-eslint/parser": "2.27.0",
-    "asciidoctor": "2.1.1",
     "eslint": "6.8.0",
     "eslint-config-prettier": "6.10.1",
     "mocha": "7.1.1",
@@ -28,10 +33,5 @@
     "rimraf": "3.0.2",
     "ts-node": "8.8.2",
     "typescript": "3.8.3"
-  },
-  "dependencies": {
-    "@rosepg/rose": "../rose/package",
-    "@rosepg/rose-cli": "../rose-cli/package",
-    "app-root-path": "3.0.0"
   }
 }
