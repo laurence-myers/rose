@@ -14,8 +14,6 @@
     "test": "mocha"
   },
   "dependencies": {
-    "@rosepg/rose": "../rose/package",
-    "@rosepg/rose-cli": "../rose-cli/package",
     "app-root-path": "3.0.0",
     "asciidoctor": "2.2.0"
   },

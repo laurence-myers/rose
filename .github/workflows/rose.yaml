@@ -28,6 +28,8 @@ jobs:
           yarn lint
           yarn test
           yarn package
+          cd package
+          yarn link
       - name: Build and package rose-cli
         run: |
           cd rose-cli
@@ -36,10 +38,13 @@ jobs:
           yarn lint
           yarn test
           yarn package
+          cd package
+          yarn link
       - name: Build rose-docs
         run: |
           cd rose-docs
-          yarn install ../rose/package ../rose-cli/package
+          yarn link @rosepg/rose @rosepg/rose-cli
+          yarn install
           yarn lint
           yarn test
           yarn start
