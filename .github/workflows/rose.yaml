@@ -49,6 +49,6 @@ jobs:
           yarn test
           yarn start
       - name: Publish docs to GitHub Pages
-        if: ${{ github.ref == 'ci-publish-docs' }}
+        if: ${{ github.ref == 'refs/heads/ci-publish-docs' }}
         run: |
           echo "Publishing would occur here"
