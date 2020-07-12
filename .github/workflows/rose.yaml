@@ -20,15 +20,30 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: |
+      - name: Build and package rose
+        run: |
           cd rose
           yarn install --frozen-lockfile
           yarn compile --noEmit
           yarn lint
           yarn test
-      - run: |
+          yarn package
+      - name: Build and package rose-cli
+        run: |
           cd rose-cli
           yarn install --frozen-lockfile
           yarn compile --noEmit
           yarn lint
           yarn test
+          yarn package
+      - name: Build rose-docs
+        run: |
+          cd rose-docs
+          yarn install ../rose/package ../rose-cli/package
+          yarn lint
+          yarn test
+          yarn start
+      - name: Publish docs to GitHub Pages
+        if: ${{ github.ref == 'ci-publish-docs' }}
+        run: |
+          echo "Publishing would occur here"
