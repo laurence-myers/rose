@@ -38,6 +38,8 @@ together.
 
 include::./QuickStart.adoc[]
 
+include::./ConstructingAndExecutingAQuery.adoc[]
+
 include::./Justification.adoc[]
 
 include::./AlternateProjects.adoc[]
