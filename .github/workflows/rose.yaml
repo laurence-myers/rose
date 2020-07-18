@@ -49,7 +49,7 @@ jobs:
           yarn test
           yarn start
       - name: Publish docs to GitHub Pages
-        if: ${{ github.ref == 'refs/heads/ci-publish-docs' }}
+        if: ${{ github.ref == 'refs/heads/master' }}
         uses: JamesIves/github-pages-deploy-action@3.5.8
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
