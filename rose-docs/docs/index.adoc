@@ -1,5 +1,6 @@
 = Rose
 :toc: left
+:source-highlighter: highlightjs
 
 == Basic Usage
 
