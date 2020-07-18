@@ -48,6 +48,13 @@ jobs:
           yarn lint
           yarn test
           yarn start
+      - name: Upload test coverage reports
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-reports
+          path: |
+            rose/coverage/
+            rose-cli/coverage
       - name: Publish docs to GitHub Pages
         if: ${{ github.ref == 'refs/heads/master' }}
         uses: JamesIves/github-pages-deploy-action@3.5.8

@@ -9,7 +9,7 @@
     "lint": "eslint . --ext .ts",
     "package": "rimraf ./package && tsc -p tsconfig_package.json && ts-node tools/package.ts",
     "publish:npm": "yarn package && cd package && yarn publish --non-interactive --access public",
-    "test": "mocha",
+    "test": "nyc mocha",
     "watch": "tsc -w --pretty"
   },
   "keywords": [],
@@ -23,6 +23,7 @@
     "metrohash": "2.6.0"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "1.0.1",
     "@types/app-root-path": "1.2.4",
     "@types/lodash.clonedeep": "4.5.3",
     "@types/mocha": "7.0.1",
@@ -33,7 +34,9 @@
     "eslint": "6.8.0",
     "eslint-plugin-unused-imports": "0.1.2",
     "mocha": "7.0.1",
+    "nyc": "15.1.0",
     "rimraf": "3.0.2",
+    "source-map-support": "0.5.19",
     "ts-node": "8.8.1",
     "typescript": "3.8.3"
   }

@@ -9,3 +9,5 @@ build/
 package/
 *.log
 *.csv
+coverage/
+.nyc_output/
