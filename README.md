@@ -3,8 +3,15 @@
 ![](https://github.com/laurence-myers/rose/workflows/Rose%20CI/badge.svg)
 [![codecov](https://codecov.io/gh/laurence-myers/rose/branch/master/graph/badge.svg)](https://codecov.io/gh/laurence-myers/rose)
 
+`rose` is a PostgreSQL query builder and row mapper for TypeScript.
+ 
+To get started, please read the online documentation:
 
-`rose` is a PostgreSQL query builder and row mapper for TypeScript. It has the following goals:
+https://laurence-myers.github.io/rose/
+
+## Goals
+
+`rose` has the following goals:
 
 - To provide a type-safe interface between your TypeScript application and the PostgreSQL query language.
 - To mimic the SQL syntax as closely as possible using a Domain Specific Language (DSL)
@@ -17,9 +24,6 @@
 - To treat your database as the source of truth for your data schema.
 - Avoid concatenating strings at all costs.
 
-To get started, please read the online documentation:
-
-https://laurence-myers.github.io/rose/
 
 ## Project structure
 
