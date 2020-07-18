@@ -1,4 +1,4 @@
-import { AtLeastOne, Clone, DefaultMap, sortedPopulatedKeys } from "../../lang";
+import { AtLeastOne, Clone, sortedPopulatedKeys } from "../../lang";
 import {
 	AliasedExpressionNode,
 	BooleanExpression,

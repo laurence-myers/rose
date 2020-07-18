@@ -1,4 +1,4 @@
-import { Clone, DefaultMap } from "../../lang";
+import { Clone } from "../../lang";
 import { AliasedExpressionNode, BooleanExpression, DeleteCommandNode, TableReferenceNode } from "../ast";
 import { QueryTable } from "../metamodel";
 import { FinalisedQueryNonReturningWithParams } from "../finalisedQuery";

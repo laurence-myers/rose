@@ -1,4 +1,4 @@
-import { Clone, DefaultMap, sortedPopulatedKeys } from "../../lang";
+import { Clone, sortedPopulatedKeys } from "../../lang";
 import {
 	AliasedExpressionNode,
 	InsertCommandNode,
