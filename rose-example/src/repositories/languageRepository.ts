@@ -2,6 +2,10 @@ import { Queryable, select, withParams } from "@rosepg/rose";
 import { LanguageAllColumns, LanguageRow, QLanguage } from "../../generated/db/Language";
 
 export class LanguageRepository {
+    constructor(protected readonly client: Queryable) {
+
+    }
+
     protected readonly getOneByNameQuery = (function () {
         interface Params {
             name: string;
@@ -13,8 +17,8 @@ export class LanguageRepository {
         );
     })();
 
-    public async getOneByName(client: Queryable, name: string): Promise<LanguageRow | undefined> {
-        return (await this.getOneByNameQuery.execute(client, {
+    public async getOneByName(name: string): Promise<LanguageRow | undefined> {
+        return (await this.getOneByNameQuery.execute(this.client, {
             name
         }))[0];
     }

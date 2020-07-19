@@ -18,6 +18,10 @@ import { QActor } from "../../generated/db/Actor";
 import { QFilmActor, TFilmActor } from "../../generated/db/FilmActor";
 
 export class FilmRepository {
+    constructor(protected readonly client: Queryable) {
+
+    }
+
     private readonly selectLongestFilmsByActorNameQuery = (function () {
         const selector = {
             name: selectExpression(
@@ -57,8 +61,8 @@ export class FilmRepository {
             .finalise(P);
     })();
 
-    public async selectLongestFilmsByActorName(client: Queryable, firstName: string, lastName: string): Promise<{ name: string; length: number; }[]> {
-        return (await this.selectLongestFilmsByActorNameQuery.execute(client, {
+    public async selectLongestFilmsByActorName(firstName: string, lastName: string): Promise<{ name: string; length: number; }[]> {
+        return (await this.selectLongestFilmsByActorNameQuery.execute(this.client, {
             firstName,
             lastName
         })) as { name: string; length: number; }[];
@@ -66,8 +70,8 @@ export class FilmRepository {
         //  using a type assertion that "length" is "number" to assert that it's never null?
     }
 
-    public insertOne(client: Queryable, row: FilmInsertRow) {
-        return FilmDefaultQueries.insertOne(row).execute(client, {});
+    public insertOne(row: FilmInsertRow) {
+        return FilmDefaultQueries.insertOne(row).execute(this.client, {});
     }
 
     private readonly addActorToFilmQuery = (function () {
@@ -97,8 +101,8 @@ export class FilmRepository {
             ).finalise(P)
     })();
 
-    public async addActorToFilm(client: Queryable, actorName: { firstName: string; lastName: string; }, filmName: string): Promise<void> {
-        return this.addActorToFilmQuery.execute(client, {
+    public async addActorToFilm(actorName: { firstName: string; lastName: string; }, filmName: string): Promise<void> {
+        return this.addActorToFilmQuery.execute(this.client, {
             actorName,
             filmName
         });
