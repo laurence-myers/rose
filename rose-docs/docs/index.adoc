@@ -42,6 +42,8 @@ together.
 
 include::./QuickStart.adoc[]
 
+include::./SchemaIntrospection.adoc[]
+
 include::./ConstructingAndExecutingAQuery.adoc[]
 
 include::./Justification.adoc[]

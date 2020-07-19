@@ -20,6 +20,7 @@ https://laurence-myers.github.io/rose/
   - Common table expressions
   - "Upserts" (`INSERT ... ON CONFLICT ...`)
   - Transactions
+  - Composite primary keys
 - To allow dynamically composing queries, _or_ pre-compiled queries.
 - To treat your database as the source of truth for your data schema.
 - Avoid concatenating strings at all costs.

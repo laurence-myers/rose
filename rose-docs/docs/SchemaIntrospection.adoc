@@ -1,0 +1,147 @@
+== Schema Introspection
+
+`rose` depends on code generated from your database schema. `rose-cli` introspects your database to generate the code.
+
+=== Generated code
+
+Given a table `customer`, the following code is generated:
+
+* `CustomerRow`, representing an object with all columns.
+* `CustomerInsertRow`, as above, but marks properties as optional if they are:
+ ** nullable, or
+ ** have a default value.
+* `TCustomer`, the table "metamodel", implemented as a class extending `QueryTable`.
+* `QCustomer`, a default instance of `TCustomer`.
+* `QCustomerAllColumns`, an object that can be used to select all columns from the table.
+* `CustomerDefaultQueries`, containing queries for simple Create/Read/Update/Delete (CRUD) operations.
+
+[INFO]
+====
+`getOne()` and `deleteOne()` accept all the data they need when the query is executed. The queries are only generated
+once.
+
+`insertOne()` and `updateOne()` will dynamically generate their queries each time they are called. This is to support
+optional properties.
+
+If you always know what columns are provided when inserting/updating rows, you will probably want to implement your own
+insert/update queries.
+====
+
+[INFO]
+====
+If the table had no primary key, then some queries would be omitted. Only `insertOne()` would be generated.
+====
+
+=== Configuration via `rose.json`
+
+==== Overriding types
+
+`rose-cli` attempts to map PostgreSQL column types to TypeScript types, based on what the `pg` library returns.
+
+You may wish to override these types, if:
+
+* A text column uses check constraints to restrict the allowed values
+* The column uses a custom column type
+* You override `pg`'s type parser for a column type (e.g. to allow 64-bit integer columns to return BigInt instead of
+  a string)
+
+You can override the types globally for all tables, or per table column.
+
+[INFO]
+====
+PostgreSQL enum types are automatically identified, and typed as a union of string literals.
+====
+
+===== Global override
+
+[source,json]
+----
+{
+    "types": {
+        "global": {
+            "int8": "BigInt"
+        }
+    }
+}
+----
+
+===== Column override
+
+To specify the new type in the JSON config:
+
+[source,json]
+----
+{
+    "types": {
+        "columns": {
+            "film.rating": "'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null"
+        }
+    }
+}
+----
+
+To import the type from another file:
+
+[source,json]
+----
+{
+    "types": {
+        "columns": {
+            "film.rating": {
+                "from": "../src/film/rating.ts",
+                "type": "Rating"
+            }
+        }
+    }
+}
+----
+
+==== Ignoring tables
+
+Add the property `ignored`, with an array of table names.
+
+[source,json]
+----
+{
+    "ignored": [
+        "audit_log",
+        "statement_stats"
+    ]
+}
+----
+
+The following table names are always ignored:
+
+* `__MigrationHistory`, from Entity Framework
+* `alembic_version`, from SQLAlchemy Alembic
+* `DATABASECHANGELOG`, from Liquibase
+* `django_migrations`, from Django
+* `flyway_schema_history`, from Flyway
+* `knex_migrations`, from Knex.js
+* `migrations`, from db-migrations, TypeORM
+* `mikro_orm_migrations`, from MikroORM
+* `schema_migrations`, from ActiveRecord (Ruby on Rails)
+* `SequelizeMeta`, from umzug (Sequelize)
+
+=== Integrating `rose-cli` into your build process
+
+You'll need to decide how to incorporate `rose-cli` into your application's build process. The exact implementation
+depends on your application's structure, when database migrations are applied, and continuous integration setup.
+
+Here's one approach to consider:
+
+1. Apply any database migrations to your local database.
+2. Run `rose-cli`.
+3. Commit the generated code to Git.
+4. In your CI, repeat steps 1 and 2 (using a Docker container for the database).
+5. Check for any uncommitted change to the generated code, and if found, fail the build. For example, assuming your
+   generated code lives in the director `generated/`, you can call Git like this: `git diff --exit-code generated/`.
+
+=== Generated code style conventions
+
+All generated code uses the following style conventions:
+
+* File names, interfaces and type aliases use PascalCase
+* Properties, methods, function parameters, and local variables use camelCase
+
+Generated files contain a special comment to disable eslint.
