@@ -9,6 +9,7 @@
     "docker:start": "docker run --name rose-docs-db -p 5443:5432 -d mujz/pagila",
     "docker:stop": "docker stop rose-docs-db && docker rm rose-docs-db",
     "introspect": "rimraf ./generated/ && rose --url postgresql://root:admin@localhost:5443/pagila --out generated\\db",
+    "link:rose": "yarn link @rosepg/rose @rosepg/rose-cli",
     "lint": "eslint ./src/ ./test/ --ext .ts --max-warnings 0",
     "start": "ts-node src/index.ts",
     "test": "mocha"

@@ -43,11 +43,17 @@ jobs:
       - name: Build rose-docs
         run: |
           cd rose-docs
-          yarn link @rosepg/rose @rosepg/rose-cli
+          yarn link:rose
           yarn install
           yarn lint
           yarn test
           yarn start
+      - name: Build rose-example
+        run: |
+          cd rose-example
+          yarn link:rose
+          yarn install
+          yarn check:tsc
       - name: Upload test coverage report artifacts
         uses: actions/upload-artifact@v2
         with:
