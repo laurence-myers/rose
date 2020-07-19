@@ -451,6 +451,14 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </li>
 <li><a href="#_quick_start">Quick Start</a></li>
+<li><a href="#_schema_introspection">Schema Introspection</a>
+<ul class="sectlevel2">
+<li><a href="#_generated_code">Generated code</a></li>
+<li><a href="#_configuration_via_rose_json">Configuration via <code>rose.json</code></a></li>
+<li><a href="#_integrating_rose_cli_into_your_build_process">Integrating <code>rose-cli</code> into your build process</a></li>
+<li><a href="#_generated_code_style_conventions">Generated code style conventions</a></li>
+</ul>
+</li>
 <li><a href="#_constructing_and_executing_a_query">Constructing and Executing a Query</a></li>
 <li><a href="#_why_rose">Why Rose?</a>
 <ul class="sectlevel2">
@@ -608,6 +616,261 @@ if (rows.length &gt; 0) {
 </div>
 <div class="paragraph">
 <p>(Don&#8217;t forget to close the connection once you&#8217;re done!)</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_schema_introspection">Schema Introspection</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>rose</code> depends on code generated from your database schema. <code>rose-cli</code> introspects your database to generate the code.</p>
+</div>
+<div class="sect2">
+<h3 id="_generated_code">Generated code</h3>
+<div class="paragraph">
+<p>Given a table <code>customer</code>, the following code is generated:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>CustomerRow</code>, representing an object with all columns.</p>
+</li>
+<li>
+<p><code>CustomerInsertRow</code>, as above, but marks properties as optional if they are:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>nullable, or</p>
+</li>
+<li>
+<p>have a default value.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><code>TCustomer</code>, the table "metamodel", implemented as a class extending <code>QueryTable</code>.</p>
+</li>
+<li>
+<p><code>QCustomer</code>, a default instance of <code>TCustomer</code>.</p>
+</li>
+<li>
+<p><code>QCustomerAllColumns</code>, an object that can be used to select all columns from the table.</p>
+</li>
+<li>
+<p><code>CustomerDefaultQueries</code>, containing queries for simple Create/Read/Update/Delete (CRUD) operations.</p>
+</li>
+</ul>
+</div>
+<div class="exampleblock">
+<div class="content">
+<div class="paragraph">
+<p><code>getOne()</code> and <code>deleteOne()</code> accept all the data they need when the query is executed. The queries are only generated
+once.</p>
+</div>
+<div class="paragraph">
+<p><code>insertOne()</code> and <code>updateOne()</code> will dynamically generate their queries each time they are called. This is to support
+optional properties.</p>
+</div>
+<div class="paragraph">
+<p>If you always know what columns are provided when inserting/updating rows, you will probably want to implement your own
+insert/update queries.</p>
+</div>
+</div>
+</div>
+<div class="exampleblock">
+<div class="content">
+<div class="paragraph">
+<p>If the table had no primary key, then some queries would be omitted. Only <code>insertOne()</code> would be generated.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_configuration_via_rose_json">Configuration via <code>rose.json</code></h3>
+<div class="sect3">
+<h4 id="_overriding_types">Overriding types</h4>
+<div class="paragraph">
+<p><code>rose-cli</code> attempts to map PostgreSQL column types to TypeScript types, based on what the <code>pg</code> library returns.</p>
+</div>
+<div class="paragraph">
+<p>You may wish to override these types, if:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A text column uses check constraints to restrict the allowed values</p>
+</li>
+<li>
+<p>The column uses a custom column type</p>
+</li>
+<li>
+<p>You override `pg&#8217;s type parser for a column type (e.g. to allow 64-bit integer columns to return BigInt instead of
+a string)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You can override the types globally for all tables, or per table column.</p>
+</div>
+<div class="exampleblock">
+<div class="content">
+<div class="paragraph">
+<p>PostgreSQL enum types are automatically identified, and typed as a union of string literals.</p>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_global_override">Global override</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">{
+    "types": {
+        "global": {
+            "int8": "BigInt"
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_column_override">Column override</h5>
+<div class="paragraph">
+<p>To specify the new type in the JSON config:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">{
+    "types": {
+        "columns": {
+            "film.rating": "'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null"
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To import the type from another file:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">{
+    "types": {
+        "columns": {
+            "film.rating": {
+                "from": "../src/film/rating.ts",
+                "type": "Rating"
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_ignoring_tables">Ignoring tables</h4>
+<div class="paragraph">
+<p>Add the property <code>ignored</code>, with an array of table names.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code data-lang="json" class="language-json hljs">{
+    "ignored": [
+        "audit_log",
+        "statement_stats"
+    ]
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The following table names are always ignored:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>__MigrationHistory</code>, from Entity Framework</p>
+</li>
+<li>
+<p><code>alembic_version</code>, from SQLAlchemy Alembic</p>
+</li>
+<li>
+<p><code>DATABASECHANGELOG</code>, from Liquibase</p>
+</li>
+<li>
+<p><code>django_migrations</code>, from Django</p>
+</li>
+<li>
+<p><code>flyway_schema_history</code>, from Flyway</p>
+</li>
+<li>
+<p><code>knex_migrations</code>, from Knex.js</p>
+</li>
+<li>
+<p><code>migrations</code>, from db-migrations, TypeORM</p>
+</li>
+<li>
+<p><code>mikro_orm_migrations</code>, from MikroORM</p>
+</li>
+<li>
+<p><code>schema_migrations</code>, from ActiveRecord (Ruby on Rails)</p>
+</li>
+<li>
+<p><code>SequelizeMeta</code>, from umzug (Sequelize)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integrating_rose_cli_into_your_build_process">Integrating <code>rose-cli</code> into your build process</h3>
+<div class="paragraph">
+<p>You&#8217;ll need to decide how to incorporate <code>rose-cli</code> into your application&#8217;s build process. The exact implementation
+depends on your application&#8217;s structure, when database migrations are applied, and continuous integration setup.</p>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s one approach to consider:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Apply any database migrations to your local database.</p>
+</li>
+<li>
+<p>Run <code>rose-cli</code>.</p>
+</li>
+<li>
+<p>Commit the generated code to Git.</p>
+</li>
+<li>
+<p>In your CI, repeat steps 1 and 2 (using a Docker container for the database).</p>
+</li>
+<li>
+<p>Check for any uncommitted change to the generated code, and if found, fail the build. For example, assuming your
+generated code lives in the director <code>generated/</code>, you can call Git like this: <code>git diff --exit-code generated/</code>.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_generated_code_style_conventions">Generated code style conventions</h3>
+<div class="paragraph">
+<p>All generated code uses the following style conventions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>File names, interfaces and type aliases use PascalCase</p>
+</li>
+<li>
+<p>Properties, methods, function parameters, and local variables use camelCase</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Generated files contain a special comment to disable eslint.</p>
+</div>
 </div>
 </div>
 </div>
@@ -908,7 +1171,7 @@ works in more programming paradigms than an Object-Oriented approach.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-07-18 08:45:26 UTC
+Last updated 2020-07-19 04:38:11 UTC
 </div>
 </div>
 <link rel="stylesheet" href="../resources/highlight/styles/srcery.min.css">
