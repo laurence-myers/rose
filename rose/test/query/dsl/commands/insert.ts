@@ -360,14 +360,14 @@ describe(`INSERT commands`, () => {
 						name: constant('Fred')
 					})
 					.onConflict(
-						doUpdate().onColumns([QUsers.name]).set(QUsers, {
+						doUpdate().onColumns([QUsers.name, QUsers.locationId]).set(QUsers, {
 							name: constant('Fred 2')
 						})
 					).finalise({}).toSql({});
 
 				// Verify
 				const expected = {
-					sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT ("name") DO UPDATE SET "name" = $3`,
+					sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT ("name", "locationId") DO UPDATE SET "name" = $3`,
 					parameters: [123, 'Fred', 'Fred 2']
 				};
 				assert.deepEqual(actual, expected);

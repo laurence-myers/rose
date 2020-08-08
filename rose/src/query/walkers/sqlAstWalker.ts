@@ -322,7 +322,9 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkOnConflictTargetIndexesNode(node: OnConflictTargetIndexesNode): void {
-		this.walkNodes(node.indexes);
+		this.sb += `(`;
+		node.indexes.forEach(this.doListWalk());
+		this.sb += `)`;
 		if (node.where) {
 			this.sb += ` WHERE `;
 			this.walk(node.where);
@@ -330,7 +332,6 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkOnConflictTargetIndexNode(node: OnConflictTargetIndexNode): void {
-		this.sb += `(`;
 		this.walk(node.identifier);
 		if (node.collation) {
 			this.sb += ` COLLATE '`;
@@ -342,7 +343,6 @@ export class SqlAstWalker extends BaseWalker {
 			this.sb += node.opclass;
 			this.sb += `"`
 		}
-		this.sb += `)`;
 	}
 
 	protected walkOnConflictTargetOnConstraintNode(node: OnConflictTargetOnConstraintNode): void {
