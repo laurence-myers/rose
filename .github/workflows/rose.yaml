@@ -24,32 +24,32 @@ jobs:
         run: |
           cd rose
           yarn install --frozen-lockfile
-          yarn check
-          yarn package
+          yarn run check:all
+          yarn run package
           cd package
           yarn link
       - name: Build and package rose-cli
         run: |
           cd rose-cli
           yarn install --frozen-lockfile
-          yarn check
-          yarn package
+          yarn run check:all
+          yarn run package
           cd package
           yarn link
       - name: Build rose-docs
         run: |
           cd rose-docs
-          yarn link:rose
+          yarn run link:rose
           yarn install
-          yarn lint
-          yarn test
-          yarn start
+          yarn run lint
+          yarn run test
+          yarn run start
       - name: Build rose-example
         run: |
           cd rose-example
-          yarn link:rose
+          yarn run link:rose
           yarn install
-          yarn check:tsc
+          yarn run check:tsc
       - name: Upload test coverage report artifacts
         uses: actions/upload-artifact@v2
         with:
