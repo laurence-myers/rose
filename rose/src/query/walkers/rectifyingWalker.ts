@@ -1,5 +1,6 @@
 import {
 	AnyAliasedExpressionNode,
+	AstNode,
 	ColumnReferenceNode,
 	SelectCommandNode,
 	SubSelectNode,
@@ -14,7 +15,7 @@ import { TableMap } from "../../data";
  * Rectifies column references so they are always fully qualified, and all tables are aliased and also specified in a
  * "FROM" condition.
  */
-export class RectifyingWalker extends SkippingWalker {
+class SelectRectifyingWalker extends SkippingWalker {
 	protected referencedTables: Set<string> = new Set<string>();
 	protected specifiedTables: Set<string> = new Set<string>();
 	protected columnReferences: Set<ColumnReferenceNode> = new Set<ColumnReferenceNode>();
@@ -44,7 +45,7 @@ export class RectifyingWalker extends SkippingWalker {
 	}
 
 	protected walkSubSelectNode(node: SubSelectNode): void {
-		const subWalker = new RectifyingWalker(node.query, this.tableMap);
+		const subWalker = new SelectRectifyingWalker(node.query, this.tableMap);
 		subWalker.rectify();
 	}
 
@@ -79,5 +80,23 @@ export class RectifyingWalker extends SkippingWalker {
 				column.tableAlias = tableAlias;
 			}
 		}
+	}
+}
+
+export class RectifyingWalker extends SkippingWalker {
+	constructor(
+		protected ast: AstNode,
+		protected tableMap: DefaultMap<string, string> = new TableMap()
+	) {
+		super();
+	}
+
+	protected walkSelectCommandNode(node: SelectCommandNode) {
+		const subWalker = new SelectRectifyingWalker(node, this.tableMap);
+		subWalker.rectify();
+	}
+
+	rectify(): void {
+		this.walk(this.ast);
 	}
 }

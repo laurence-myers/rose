@@ -1,6 +1,6 @@
 import { execute, executeNonReturning, Queryable } from "../execution";
 import { QuerySelector } from "./querySelector";
-import { AnyCommandNode, SelectCommandNode, SelectOutputExpression } from "./ast";
+import { AnyCommandNode, DeleteCommandNode, SelectCommandNode, SelectOutputExpression } from "./ast";
 import { RectifyingWalker } from "./walkers/rectifyingWalker";
 import { DefaultMap } from "../lang";
 import { SqlAstWalker } from "./walkers/sqlAstWalker";
@@ -39,6 +39,8 @@ export abstract class FinalisedQuery<TQuerySelector extends QuerySelector> {
 			if (this.outputExpressions.length > 0) {
 				queryAst.returning = this.outputExpressions;
 			}
+		} else if (queryAst.type === 'deleteCommandNode') {
+			this.rectifyTableReferences(queryAst, tableMap);
 		}
 		const walker = new SqlAstWalker(queryAst, tableMap);
 		const data = walker.toSql();
@@ -51,7 +53,7 @@ export abstract class FinalisedQuery<TQuerySelector extends QuerySelector> {
 		return processor.process();
 	}
 
-	protected rectifyTableReferences(queryAst: SelectCommandNode, tableMap: DefaultMap<string, string>) {
+	protected rectifyTableReferences(queryAst: SelectCommandNode | DeleteCommandNode, tableMap: DefaultMap<string, string>) {
 		const rectifier = new RectifyingWalker(queryAst, tableMap);
 		rectifier.rectify();
 	}
