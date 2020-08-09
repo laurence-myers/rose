@@ -56,7 +56,9 @@ export interface UnaryOperationNode {
 }
 
 export interface BooleanUnaryOperationNode extends UnaryOperationNode {
-	operator: 'IS NULL'
+	operator:
+		| 'EXISTS'
+		| 'IS NULL'
 		| 'IS NOT NULL'
 		| 'IS TRUE'
 		| 'IS NOT TRUE'

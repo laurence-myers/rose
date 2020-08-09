@@ -15,7 +15,7 @@ import { select } from "../../../../src/query/dsl/commands";
 import { selectExpression, selectNestedMany, selectSubQuery, subSelect } from "../../../../src/query/dsl/select";
 import { and, col, constant, not, or } from "../../../../src/query/dsl/core";
 import { params, ParamsProxy, withParams } from "../../../../src/query/params";
-import { crossJoin, FinalisedQueryWithParams, fullJoin, innerJoin } from "../../../../src/query";
+import { crossJoin, FinalisedQueryWithParams, fullJoin, innerJoin, exists } from "../../../../src/query";
 import { leftJoin, rightJoin } from "../../../../src/query/dsl/join";
 import assert = require('assert');
 
@@ -585,6 +585,30 @@ describe(`SELECT commands`, () => {
 		const expected = {
 			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE NOT ("t1"."id" = $1)`,
 			parameters: [123]
+		};
+		assert.deepEqual(actual, expected);
+	});
+
+	it("can negate an 'exists' sub-query", function () {
+		const querySelect = {
+			id: QUsers.id,
+		};
+
+		const actual = wrapQuery(
+			(p) => select(querySelect).where(
+				not(exists(
+					subSelect(constant(1))
+						.from(QUsers)
+						.where(QUsers.id.eq(p.userId))
+						.toSubQuery()
+				)),
+			), {
+				userId: 123
+			}
+		);
+		const expected = {
+			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE NOT (EXISTS (SELECT $1 FROM "Users" as "t1" WHERE "t1"."id" = $2))`,
+			parameters: [1, 123]
 		};
 		assert.deepEqual(actual, expected);
 	});

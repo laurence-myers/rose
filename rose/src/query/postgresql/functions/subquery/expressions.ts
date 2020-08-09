@@ -1,6 +1,6 @@
-import { SubSelectNode, UnaryOperationNode } from "../../../ast";
-import { createUnaryOperatorNode } from "../common/helpers";
+import { BooleanUnaryOperationNode, SubSelectNode } from "../../../ast";
+import { createBooleanUnaryOperatorNode } from "../common/helpers";
 
-export function exists(subquery: SubSelectNode): UnaryOperationNode {
-	return createUnaryOperatorNode("EXISTS", "left", subquery);
+export function exists(subquery: SubSelectNode): BooleanUnaryOperationNode {
+	return createBooleanUnaryOperatorNode("EXISTS", "left", subquery);
 }
