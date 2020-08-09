@@ -1,17 +1,10 @@
 import { Clone } from "../../lang";
-import {
-	AliasedExpressionNode,
-	BooleanExpression,
-	DeleteCommandNode,
-	SelectCommandNode,
-	TableReferenceNode
-} from "../ast";
+import { AliasedExpressionNode, BooleanExpression, DeleteCommandNode, TableReferenceNode } from "../ast";
 import { QueryTable } from "../metamodel";
 import { FinalisedQueryNonReturningWithParams } from "../finalisedQuery";
 import { aliasTable } from "../dsl/core";
 import { TableMap } from "../../data";
 import { ParamsProxy, ParamsWrapper } from "../params";
-import { RectifyingWalker } from "../walkers/rectifyingWalker";
 
 export class DeleteQueryBuilder<TParams> {
 	protected tableMap = new TableMap();
