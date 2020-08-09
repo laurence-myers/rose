@@ -4,11 +4,12 @@
   "description": "Type-safe query builder DSL, data mapper, and mini ORM for PostgreSQL",
   "main": "index.js",
   "scripts": {
+    "check": "yarn compile --noEmit && yarn lint && yarn test",
     "compile": "tsc",
     "genFuncs": "ts-node tools/pgDocsParsing.ts",
     "lint": "eslint . --ext .ts --max-warnings=0",
     "package": "rimraf ./package && tsc -p tsconfig_package.json && ts-node tools/package.ts",
-    "publish:npm": "yarn package && cd package && yarn publish --non-interactive --access public",
+    "publish:npm": "yarn check && yarn package && cd package && yarn publish --non-interactive --access public",
     "test": "nyc mocha",
     "watch": "tsc -w --pretty"
   },
