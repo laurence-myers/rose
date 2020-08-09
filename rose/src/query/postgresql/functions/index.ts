@@ -2,6 +2,7 @@ export * from './aggregate';
 export * from './array';
 export * from './common';
 export * from './comparison';
+export * from './conditional';
 export * from './dateTime';
 export * from './mathematical';
 export * from './string';
