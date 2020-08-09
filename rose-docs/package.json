@@ -1,6 +1,6 @@
 {
   "name": "@rosepg/rose-docs",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "Documentation for rose",
   "main": "index.js",
   "author": "Laurence Dougal Myers <laurencedougalmyers@gmail.com>",
