@@ -1,9 +1,9 @@
-import { QUsers, QUsersSC, TUsers } from "../../../fixtures";
+import { QLocations, QUsers, QUsersSC, TUsers } from "../../../fixtures";
 import { upper } from "../../../../src/query/postgresql/functions/string/sql";
 import { update, updateFromObject } from "../../../../src/query/dsl/commands";
 import { constant } from "../../../../src/query/dsl/core";
 import { PartialTableColumns, TableColumns } from "../../../../src/query/metamodel";
-import { ParamsWrapper } from "../../../../src/query/params";
+import { ParamsWrapper, withParams } from "../../../../src/query/params";
 import assert = require('assert');
 import { now } from "../../../../src/query/postgresql/functions/dateTime";
 
@@ -61,6 +61,27 @@ describe(`UPDATE commands`, function () {
 		const expected = {
 			sql: `UPDATE "Users" as "t1" SET "deletedAt" = $1, "name" = $2 WHERE "t1"."id" = $3`,
 			parameters: [now, 'fred', 123]
+		};
+		assert.deepEqual(actual, expected);
+	});
+
+	it(`supports updating from another table`, function () {
+		const query = withParams()((p) => update(QUsers)
+			.set({
+				deletedAt: now()
+			})
+			.from(QLocations)
+			.where(QUsers.locationId.eq(QLocations.id))
+			.finalise(p)
+		);
+
+		// Execute
+		const actual = query.toSql({});
+
+		// Verify
+		const expected = {
+			sql: `UPDATE "Users" as "t1" SET "deletedAt" = now() FROM "Locations" as "t2" WHERE "t1"."locationId" = "t2"."id"`,
+			parameters: []
 		};
 		assert.deepEqual(actual, expected);
 	});

@@ -524,10 +524,11 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += ` SET `;
 		node.setItems.forEach(this.doListWalk());
 		if (node.fromItems.length > 0) {
+			this.sb += ` FROM `;
 			node.fromItems.forEach(this.doListWalk());
 		}
 		if (node.conditions.length > 0) {
-			this.sb += " WHERE ";
+			this.sb += ` WHERE `;
 			node.conditions.forEach(this.doListWalk());
 		}
 		if (node.returning) {
