@@ -189,7 +189,6 @@ export class SelectQueryBuilder<TQuerySelector extends QuerySelector> extends Ba
 	}
 }
 
-// TODO: how to reference expressions defined outside of this sub-query?
 export class SubQueryBuilder<TParams> extends BaseSelectQueryBuilder {
 	constructor(subSelectExpressions: SubSelectExpression[]) {
 		super();
@@ -222,10 +221,10 @@ export class SubQueryBuilder<TParams> extends BaseSelectQueryBuilder {
 	}
 
 	toSubQuery(): SubSelectNode {
-		// TODO: merge the tableMaps so sub-queries can refer to outer tables.
 		return {
 			type: 'subSelectNode',
-			query: this.queryAst
+			query: this.queryAst,
+			tableMap: this.tableMap
 		};
 	}
 }
@@ -275,7 +274,8 @@ export class AliasedSubQueryBuilder<TQuerySelector extends QuerySelector> extend
 			aliasPath: [this.alias],
 			expression: {
 				type: 'subSelectNode',
-				query: this.queryAst
+				query: this.queryAst,
+				tableMap: this.tableMap
 			}
 		};
 	}

@@ -53,7 +53,7 @@ export abstract class FinalisedQuery<TQuerySelector extends QuerySelector> {
 		return processor.process();
 	}
 
-	protected rectifyTableReferences(queryAst: SelectCommandNode | DeleteCommandNode, tableMap: DefaultMap<string, string>) {
+	protected rectifyTableReferences(queryAst: SelectCommandNode | DeleteCommandNode, tableMap: TableMap) {
 		const rectifier = new RectifyingWalker(queryAst, tableMap);
 		rectifier.rectify();
 	}

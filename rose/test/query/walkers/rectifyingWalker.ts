@@ -118,7 +118,8 @@ describe("Rectifying Walker", function () {
 				],
 				ordering: [],
 				grouping: []
-			}
+			},
+			tableMap: new TableMap()
 		};
 
 		const ast: SelectCommandNode = {
@@ -154,7 +155,7 @@ describe("Rectifying Walker", function () {
 		equal(ast.fromItems.length, 1);
 		const fromItem = getFromItem(ast.fromItems[0]);
 		equal((fromItem.expression as TableReferenceNode).tableName, "Users");
-		equal(fromItem.alias, "t2");
+		equal(fromItem.alias, "t1");
 		equal(ast.conditions.length, 1);
 		equal(subSelectNode.query.fromItems.length, 1);
 		const nestedFromItem = getFromItem(subSelectNode.query.fromItems[0]);

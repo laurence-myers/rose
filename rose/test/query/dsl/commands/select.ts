@@ -634,7 +634,7 @@ describe(`SELECT commands`, () => {
 			);
 			// NOTE: generated aliases are back-to-front, since the deepest tables are aliased first.
 			const expected = {
-				sql: `SELECT "t2"."id" as "id" FROM "Users" as "t2" WHERE "t2"."locationId" = (SELECT "t1"."id" FROM "Locations" as "t1" WHERE "t1"."agencyId" = $1)`,
+				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE "t1"."locationId" = (SELECT "t1"."id" FROM "Locations" as "t1" WHERE "t1"."agencyId" = $1)`,
 				parameters: [123]
 			};
 			assert.deepEqual(actual, expected);
@@ -700,6 +700,35 @@ describe(`SELECT commands`, () => {
 			const expected = {
 				sql: `SELECT "locations"."name" as "name", "amountSumT"."amountSum" as "amount" FROM "Locations" as "locations", (SELECT sum("t1"."amount") as "amountSum" FROM "RecurringPayments" as "t1" WHERE "t1"."locationId" = "locations"."id") as "amountSumT" WHERE "locations"."id" = $1`,
 				parameters: [123],
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`correctly aliases inferred tables in subselect`, function () {
+			// Setup
+			const query = withParams()((p) =>
+				select({
+					exists: selectExpression(
+						exists(
+							subSelect(
+								constant(1)
+							).from(QUsers)
+								.where(QLocations.id.eq(QUsers.locationId))
+								.toSubQuery()
+						)
+					)
+				}).finalise(p)
+			);
+
+			// Execute
+			const actual = query.toSql({});
+
+			// Verify
+			const expected = {
+				parameters: [
+					1
+				],
+				sql: `SELECT EXISTS (SELECT $1 FROM "Users" as "t1", "Locations" as "t2" WHERE "t2"."id" = "t1"."locationId") as "exists"`
 			};
 			assert.deepEqual(actual, expected);
 		});

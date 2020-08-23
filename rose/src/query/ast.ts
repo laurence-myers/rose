@@ -1,3 +1,5 @@
+import { TableMap } from "../data";
+
 /**
  A value expression is one of the following:
 
@@ -260,6 +262,7 @@ export interface SelectCommandNode {
 export interface SubSelectNode {
 	type: 'subSelectNode';
 	query: SelectCommandNode;
+	tableMap: TableMap;
 }
 
 /*

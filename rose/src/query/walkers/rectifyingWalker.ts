@@ -7,7 +7,7 @@ import {
 	TableReferenceNode,
 	WithNode
 } from "../ast";
-import { DefaultMap, difference } from "../../lang";
+import { difference } from "../../lang";
 import { SkippingWalker } from "./skippingWalker";
 import { TableMap } from "../../data";
 
@@ -16,13 +16,13 @@ import { TableMap } from "../../data";
  * "FROM" condition.
  */
 class SelectRectifyingWalker extends SkippingWalker {
-	protected referencedTables: Set<string> = new Set<string>();
-	protected specifiedTables: Set<string> = new Set<string>();
-	protected columnReferences: Set<ColumnReferenceNode> = new Set<ColumnReferenceNode>();
+	protected readonly referencedTables: Set<string> = new Set<string>();
+	protected readonly specifiedTables: Set<string> = new Set<string>();
+	protected readonly columnReferences: Set<ColumnReferenceNode> = new Set<ColumnReferenceNode>();
 
 	constructor(
-		protected ast: SelectCommandNode,
-		protected tableMap: DefaultMap<string, string> = new TableMap()
+		protected readonly ast: SelectCommandNode,
+		protected readonly tableMap: TableMap = new TableMap()
 	) {
 		super();
 	}
@@ -45,7 +45,7 @@ class SelectRectifyingWalker extends SkippingWalker {
 	}
 
 	protected walkSubSelectNode(node: SubSelectNode): void {
-		const subWalker = new SelectRectifyingWalker(node.query, this.tableMap);
+		const subWalker = new SelectRectifyingWalker(node.query, node.tableMap);
 		subWalker.rectify();
 	}
 
@@ -60,6 +60,8 @@ class SelectRectifyingWalker extends SkippingWalker {
 
 	rectify(): void {
 		this.walk(this.ast);
+
+		// Automatically add any unspecified tables to the "from" clause
 		const unspecifiedTables = difference(this.referencedTables, this.specifiedTables);
 		unspecifiedTables.forEach((tableName) => {
 			const tableAlias = this.tableMap.get(tableName);
@@ -85,8 +87,8 @@ class SelectRectifyingWalker extends SkippingWalker {
 
 export class RectifyingWalker extends SkippingWalker {
 	constructor(
-		protected ast: AstNode,
-		protected tableMap: DefaultMap<string, string> = new TableMap()
+		protected readonly ast: AstNode,
+		protected readonly tableMap: TableMap = new TableMap()
 	) {
 		super();
 	}
