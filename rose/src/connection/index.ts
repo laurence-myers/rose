@@ -75,7 +75,7 @@ export abstract class AbstractConnectionManager<TContext extends AbstractDatabas
 
     protected abstract get pool(): Pool;
 
-    public abstract createDatabaseContext(poolClient: PoolClient): TContext;
+    protected abstract createDatabaseContext(poolClient: PoolClient): TContext;
 
     protected async getConnection(): Promise<TContext> {
         const poolClient: PoolClient = await this.pool.connect();
