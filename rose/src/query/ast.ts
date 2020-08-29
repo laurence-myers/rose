@@ -84,7 +84,7 @@ export interface NotExpressionNode {
 export type BooleanExpression = BooleanBinaryOperationNode | BooleanUnaryOperationNode | BooleanExpressionGroupNode | NotExpressionNode;
 
 /**
- * Should generally NOT be used by consuming code, due security and syntax risks.
+ * Should generally NOT be used by consuming code, due to security and syntax risks.
  */
 export interface LiteralNode {
 	type: 'literalNode';
@@ -94,17 +94,18 @@ export interface LiteralNode {
 export interface FunctionExpressionNode {
 	type: 'functionExpressionNode';
 	name: string;
-	arguments: (ParameterOrValueExpressionNode | LiteralNode)[];
+	arguments: (ParameterOrValueExpressionNode | LiteralNode | BooleanExpression)[];
 }
 
 export interface NaturalSyntaxFunctionExpressionNodeArgument {
 	key? : string;
-	value: ParameterOrValueExpressionNode | LiteralNode;
+	value: ParameterOrValueExpressionNode | LiteralNode | BooleanExpression;
 }
 
 export interface NaturalSyntaxFunctionExpressionNode {
 	type: 'naturalSyntaxFunctionExpressionNode';
 	name: string;
+	omitParentheses?: boolean;
 	arguments: NaturalSyntaxFunctionExpressionNodeArgument[];
 }
 

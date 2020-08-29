@@ -1,6 +1,5 @@
 import {
 	AnyAliasedExpressionNode,
-	AnyCommandNode,
 	AstNode,
 	BeginCommandNode,
 	BinaryOperationNode,
@@ -77,7 +76,7 @@ export class SqlAstWalker extends BaseWalker {
 	protected parameterGetters: Array<(p: unknown) => unknown> = [];
 
 	constructor(
-		protected queryAst: AnyCommandNode,
+		protected queryAst: AstNode,
 		protected tableMap: TableMap = new TableMap()
 	) {
 		super();
@@ -278,7 +277,11 @@ export class SqlAstWalker extends BaseWalker {
 
 	protected walkNaturalSyntaxFunctionExpressionNode(node: NaturalSyntaxFunctionExpressionNode): void {
 		this.sb += node.name;
-		this.sb += '(';
+		if (!node.omitParentheses) {
+			this.sb += '(';
+		} else {
+			this.sb += ' ';
+		}
 		if (node.arguments.length > 0) {
 			node.arguments.forEach((arg, index) => {
 				if (arg.key) {
@@ -291,7 +294,9 @@ export class SqlAstWalker extends BaseWalker {
 				}
 			});
 		}
-		this.sb += ')';
+		if (!node.omitParentheses) {
+			this.sb += ')';
+		}
 	}
 
 	protected walkNotExpressionNode(node: NotExpressionNode): void {

@@ -2,7 +2,6 @@ import { execute, executeNonReturning, Queryable } from "../execution";
 import { QuerySelector } from "./querySelector";
 import { AnyCommandNode, DeleteCommandNode, SelectCommandNode, SelectOutputExpression } from "./ast";
 import { RectifyingWalker } from "./walkers/rectifyingWalker";
-import { DefaultMap } from "../lang";
 import { SqlAstWalker } from "./walkers/sqlAstWalker";
 import { QuerySelectorProcessor } from "./metadata";
 import { ParamsProxy, ParamsWrapper } from "./params";

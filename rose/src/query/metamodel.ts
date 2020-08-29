@@ -26,6 +26,10 @@ function isParamGetter<R>(value: any): value is ParamGetter<any, R> {
 	return value && typeof value == 'function';
 }
 
+function isSimpleValue(value: any): value is string | number | boolean | Date {
+	return ['string', 'number', 'boolean'].indexOf(typeof value) > -1 || value instanceof Date;
+}
+
 export interface ColumnMetamodelOptions<R> {
 	references: R;
 }
@@ -39,7 +43,7 @@ type BooleanUnaryOperators = 'IS NULL'
 	| 'IS UNKNOWN'
 	| 'IS NOT UNKNOWN';
 type BooleanBinaryOperators = '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN';
-type ValueType<T> = ((params: unknown) => T) | ColumnMetamodel<T> | ParameterOrValueExpressionNode;
+type ValueType<T> = ((params: unknown) => T) | ColumnMetamodel<T> | ParameterOrValueExpressionNode | string | number | Date;
 
 export class ColumnMetamodel<T> {
 	public readonly $selectorKind: 'column' = 'column';
@@ -76,6 +80,11 @@ export class ColumnMetamodel<T> {
 			return <ConstantNode<T>> {
 				type: 'constantNode',
 				getter: value
+			};
+		} else if (isSimpleValue(value)) {
+			return {
+				type: 'constantNode',
+				getter: () => value
 			};
 		} else {
 			return value;
