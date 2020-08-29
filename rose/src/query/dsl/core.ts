@@ -81,6 +81,10 @@ export function not(expr: BooleanExpression): NotExpressionNode {
 	};
 }
 
+export function null_(): LiteralNode {
+	return literal('NULL');
+}
+
 export function or(first: BooleanExpression, second: BooleanExpression, ...rest: BooleanExpression[]): BooleanExpressionGroupNode {
 	return {
 		type: 'booleanExpressionGroupNode',

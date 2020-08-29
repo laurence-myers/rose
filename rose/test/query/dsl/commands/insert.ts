@@ -12,7 +12,7 @@ import {
 import { deepFreeze, OptionalNulls } from "../../../../src/lang";
 import { insert, insertFromObject } from "../../../../src/query/dsl/commands";
 import { subSelect } from "../../../../src/query/dsl/select";
-import { alias, aliasCol, and, col, constant, default_, not } from "../../../../src/query/dsl/core";
+import { alias, aliasCol, and, col, constant, default_, not, null_ } from "../../../../src/query/dsl/core";
 import {
 	ColumnMetamodel,
 	QueryTable,
@@ -347,7 +347,7 @@ describe(`INSERT commands`, () => {
 		      subSelect(
 		        now(),
 		        p.memberId,
-		        default_(),
+		        null_(),
 		        QProject.projectId,
 		        p.role
 		      )
@@ -384,7 +384,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "project_role" as "t1" ("active_at", "member_id", "inactive_at", "project_id", "role") (SELECT now(), $1, DEFAULT, "t1"."project_id", $2 FROM "project_role" as "t2" LEFT OUTER JOIN "project" as "t1" ON ("t1"."short_code" = $3 AND "t1"."project_id" = "t2"."project_id") WHERE NOT (EXISTS (SELECT $4 FROM "project_role" as "t1", "project" as "t2" WHERE ("t2"."short_code" = $5 AND "t1"."project_id" = "t2"."project_id" AND "t1"."member_id" = $6 AND "t1"."role" = $7 AND "t1"."inactive_at" IS NULL))))`,
+			sql: `INSERT INTO "project_role" as "t1" ("active_at", "member_id", "inactive_at", "project_id", "role") (SELECT now(), $1, NULL, "t1"."project_id", $2 FROM "project_role" as "t2" LEFT OUTER JOIN "project" as "t1" ON ("t1"."short_code" = $3 AND "t1"."project_id" = "t2"."project_id") WHERE NOT (EXISTS (SELECT $4 FROM "project_role" as "t1", "project" as "t2" WHERE ("t2"."short_code" = $5 AND "t1"."project_id" = "t2"."project_id" AND "t1"."member_id" = $6 AND "t1"."role" = $7 AND "t1"."inactive_at" IS NULL))))`,
 			parameters: [
 				'13a1faee-6613-4f24-9cb4-2abcf296abb8',
 				'Supporter',
