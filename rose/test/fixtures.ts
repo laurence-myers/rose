@@ -162,3 +162,61 @@ class TOtherChild extends QueryTable {
 }
 
 export const QOtherChild = deepFreeze(new TOtherChild());
+
+export interface ProjectRoleRow {
+	activeAt: Date;
+	inactiveAt: Date | null;
+	memberId: string;
+	projectId: string;
+	role: 'CommunityManager' | 'ProjectCreator' | 'ProjectManager' | 'Supporter';
+}
+
+export class TProjectRole extends QueryTable {
+	activeAt = new ColumnMetamodel<Date>(this.$table, 'active_at');
+	inactiveAt = new ColumnMetamodel<Date | null>(this.$table, 'inactive_at');
+	memberId = new ColumnMetamodel<string>(this.$table, 'member_id');
+	projectId = new ColumnMetamodel<string>(this.$table, 'project_id');
+	role = new ColumnMetamodel<'CommunityManager' | 'ProjectCreator' | 'ProjectManager' | 'Supporter'>(this.$table, 'role');
+
+	constructor ($tableAlias?: string) {
+		super(new TableMetamodel('project_role', $tableAlias));
+	}
+
+}
+
+export const QProjectRole = deepFreeze(new TProjectRole());
+
+export interface ProjectRow {
+	createdAt: Date;
+	deletedAt: Date | null;
+	description: string;
+	isClaimed: boolean;
+	name: string;
+	pledgeCurrency: string;
+	pledgeTotal: string;
+	projectId: string;
+	shortCode: string;
+	status: 'Active' | 'Completed' | 'Cancelled';
+	updatedAt: Date;
+}
+
+export class TProject extends QueryTable {
+	createdAt = new ColumnMetamodel<Date>(this.$table, 'created_at');
+	deletedAt = new ColumnMetamodel<Date | null>(this.$table, 'deleted_at');
+	description = new ColumnMetamodel<string>(this.$table, 'description');
+	isClaimed = new ColumnMetamodel<boolean>(this.$table, 'is_claimed');
+	name = new ColumnMetamodel<string>(this.$table, 'name');
+	pledgeCurrency = new ColumnMetamodel<string>(this.$table, 'pledge_currency');
+	pledgeTotal = new ColumnMetamodel<string>(this.$table, 'pledge_total');
+	projectId = new ColumnMetamodel<string>(this.$table, 'project_id');
+	shortCode = new ColumnMetamodel<string>(this.$table, 'short_code');
+	status = new ColumnMetamodel<'Active' | 'Completed' | 'Cancelled'>(this.$table, 'status');
+	updatedAt = new ColumnMetamodel<Date>(this.$table, 'updated_at');
+
+	constructor ($tableAlias?: string) {
+		super(new TableMetamodel('project', $tableAlias));
+	}
+
+}
+
+export const QProject = deepFreeze(new TProject());

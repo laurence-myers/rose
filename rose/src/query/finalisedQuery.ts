@@ -33,7 +33,7 @@ export abstract class FinalisedQuery<TQuerySelector extends QuerySelector> {
 				queryAst.returning = this.outputExpressions;
 			}
 			if (queryAst.query?.query) {
-				this.rectifyTableReferences(queryAst.query.query, tableMap);
+				this.rectifyTableReferences(queryAst.query.query, queryAst.query.tableMap);
 			}
 		} else if (queryAst.type === 'updateCommandNode') {
 			if (this.outputExpressions.length > 0) {

@@ -1,8 +1,18 @@
-import { QLocations, QUsers, QUsersSC, TUsers, UsersInsertRow } from "../../../fixtures";
+import {
+	QLocations,
+	QUsers,
+	QUsersSC,
+	TUsers,
+	UsersInsertRow,
+	QProjectRole,
+	ProjectRoleRow,
+	ProjectRow,
+    QProject
+} from "../../../fixtures";
 import { deepFreeze, OptionalNulls } from "../../../../src/lang";
 import { insert, insertFromObject } from "../../../../src/query/dsl/commands";
 import { subSelect } from "../../../../src/query/dsl/select";
-import { alias, aliasCol, col, constant, default_ } from "../../../../src/query/dsl/core";
+import { alias, aliasCol, and, col, constant, default_, not } from "../../../../src/query/dsl/core";
 import {
 	ColumnMetamodel,
 	QueryTable,
@@ -11,11 +21,14 @@ import {
 	TableColumnsForUpdateCommand,
 	TableMetamodel
 } from "../../../../src/query/metamodel";
-import { params, ParamsWrapper, withParams } from "../../../../src/query/params";
+import { params, ParamsWrapper, withParams, ParamsProxy } from "../../../../src/query/params";
 import { doNothing, doUpdate, targetIndex } from "../../../../src/query/dsl/onConflict";
 import { char_length, upper } from "../../../../src/query/postgresql/functions/string";
 import { greaterThanOrEqual, lessThanOrEqual } from "../../../../src/query/postgresql/functions/comparison";
 import assert = require('assert');
+import { now } from "../../../../src/query/postgresql/functions/dateTime";
+import { exists } from "../../../../src/query/postgresql/functions";
+import { leftJoin } from "../../../../src";
 
 describe(`INSERT commands`, () => {
 	it(`supports inserting a single row`, function () {
@@ -312,6 +325,75 @@ describe(`INSERT commands`, () => {
 		const expected = {
 			sql: `INSERT INTO "Users" as "t1" (SELECT "t2"."id" FROM "Locations" as "t2" WHERE "t2"."name" = $1)`,
 			parameters: ['Launceston']
+		};
+		assert.deepEqual(actual, expected);
+	});
+
+	it(`supports inserting from a sub-query with a nested sub-query`, function () {
+		// Setup
+		function projectRoleLookupCriteria(p: ParamsProxy<Pick<ProjectRoleRow, 'memberId' | 'role'> & Pick<ProjectRow, 'shortCode'>>) {
+			return and(
+				//
+				QProject.shortCode.eq(p.shortCode),
+				QProjectRole.projectId.eq(QProject.projectId),
+				QProjectRole.memberId.eq(p.memberId),
+				QProjectRole.role.eq(p.role),
+				QProjectRole.inactiveAt.isNull()
+			);
+		}
+		const query = withParams<Pick<ProjectRoleRow, 'memberId' | 'role'> & Pick<ProjectRow, 'shortCode'>>()((p) =>
+		  insert(QProjectRole)
+		    .insertFromQuery(
+		      subSelect(
+		        now(),
+		        p.memberId,
+		        default_(),
+		        QProject.projectId,
+		        p.role
+		      )
+				  .join(
+				  	leftJoin(
+					  QProject
+				  	).on(and(
+						QProject.shortCode.eq(p.shortCode),
+				  		QProject.projectId.eq(QProjectRole.projectId),
+					))
+				  )
+		        .where(
+		          not(
+		            exists(
+		              subSelect(constant(1))
+		                .from(QProjectRole)
+		                .where(projectRoleLookupCriteria(p))
+		                .toSubQuery()
+		            )
+		          )
+		        )
+		        .toSubQuery(),
+		      ['activeAt', 'memberId', 'inactiveAt', 'projectId', 'role']
+		    )
+		    .finalise(p)
+		);
+
+		// Execute
+		const actual = query.toSql({
+			memberId: '13a1faee-6613-4f24-9cb4-2abcf296abb8',
+			role: 'Supporter',
+			shortCode: 'SXJ6JE_8v'
+		});
+
+		// Verify
+		const expected = {
+			sql: `INSERT INTO "project_role" as "t1" ("active_at", "member_id", "inactive_at", "project_id", "role") (SELECT now(), $1, DEFAULT, "t1"."project_id", $2 FROM "project_role" as "t2" LEFT OUTER JOIN "project" as "t1" ON ("t1"."short_code" = $3 AND "t1"."project_id" = "t2"."project_id") WHERE NOT (EXISTS (SELECT $4 FROM "project_role" as "t1", "project" as "t2" WHERE ("t2"."short_code" = $5 AND "t1"."project_id" = "t2"."project_id" AND "t1"."member_id" = $6 AND "t1"."role" = $7 AND "t1"."inactive_at" IS NULL))))`,
+			parameters: [
+				'13a1faee-6613-4f24-9cb4-2abcf296abb8',
+				'Supporter',
+				'SXJ6JE_8v',
+				1,
+				'SXJ6JE_8v',
+				'13a1faee-6613-4f24-9cb4-2abcf296abb8',
+				'Supporter',
+			]
 		};
 		assert.deepEqual(actual, expected);
 	});

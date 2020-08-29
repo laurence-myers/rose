@@ -63,7 +63,7 @@ class SelectRectifyingWalker extends SkippingWalker {
 
 		// Automatically add any unspecified tables to the "from" clause
 		const unspecifiedTables = difference(this.referencedTables, this.specifiedTables);
-		unspecifiedTables.forEach((tableName) => {
+		for (const tableName of unspecifiedTables) {
 			const tableAlias = this.tableMap.get(tableName);
 			this.ast.fromItems.push({
 				type: "aliasedExpressionNode",
@@ -74,7 +74,7 @@ class SelectRectifyingWalker extends SkippingWalker {
 					tableName,
 				}
 			});
-		});
+		}
 		// Update all column references to use the aliases.
 		for (const column of this.columnReferences.values()) {
 			if (!column.tableAlias) {
