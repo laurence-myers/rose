@@ -235,7 +235,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" (SELECT "t2"."id" as "locationId" FROM "Locations" as "t2" WHERE "t2"."name" = $1)`,
+			sql: `INSERT INTO "Users" as "t1" (SELECT "t1"."id" as "locationId" FROM "Locations" as "t1" WHERE "t1"."name" = $1)`,
 			parameters: ['Launceston']
 		};
 		assert.deepEqual(actual, expected);
@@ -259,7 +259,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" ("locationId") (SELECT "t2"."id" FROM "Locations" as "t2" WHERE "t2"."name" = $1)`,
+			sql: `INSERT INTO "Users" as "t1" ("locationId") (SELECT "t1"."id" FROM "Locations" as "t1" WHERE "t1"."name" = $1)`,
 			parameters: ['Launceston']
 		};
 		assert.deepEqual(actual, expected);
@@ -280,7 +280,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" ("id") (SELECT "t2"."id" FROM "Locations" as "t2" WHERE "t2"."name" = $1)`,
+			sql: `INSERT INTO "Users" as "t1" ("id") (SELECT "t1"."id" FROM "Locations" as "t1" WHERE "t1"."name" = $1)`,
 			parameters: ['Launceston']
 		};
 		assert.deepEqual(actual, expected);
@@ -301,7 +301,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" ("locationId") (SELECT "t2"."id" as "locationId" FROM "Locations" as "t2" WHERE "t2"."name" = $1)`,
+			sql: `INSERT INTO "Users" as "t1" ("locationId") (SELECT "t1"."id" as "locationId" FROM "Locations" as "t1" WHERE "t1"."name" = $1)`,
 			parameters: ['Launceston']
 		};
 		assert.deepEqual(actual, expected);
@@ -323,7 +323,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" (SELECT "t2"."id" FROM "Locations" as "t2" WHERE "t2"."name" = $1)`,
+			sql: `INSERT INTO "Users" as "t1" (SELECT "t1"."id" FROM "Locations" as "t1" WHERE "t1"."name" = $1)`,
 			parameters: ['Launceston']
 		};
 		assert.deepEqual(actual, expected);
