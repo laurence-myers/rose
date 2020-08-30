@@ -14,7 +14,7 @@ export interface GeneratedQuery {
 
 export abstract class FinalisedQuery<TQuerySelector extends QuerySelector> {
 	protected readonly outputExpressions: SelectOutputExpression[];
-	protected readonly sql: string;
+	public readonly sql: string;
 	protected readonly paramGetters: Array<(params: unknown) => unknown>;
 
 	constructor(
