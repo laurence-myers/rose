@@ -12,7 +12,13 @@ import { lower } from "../../../../src/query/postgresql/functions/string/sql";
 import { count, sum } from "../../../../src/query/postgresql/functions/aggregate/general";
 import { deepFreeze } from "../../../../src/lang";
 import { select } from "../../../../src/query/dsl/commands";
-import { selectExpression, selectNestedMany, selectSubQuery, subSelect } from "../../../../src/query/dsl/select";
+import {
+	selectExists,
+	selectExpression,
+	selectNestedMany,
+	selectSubQuery,
+	subSelect
+} from "../../../../src/query/dsl/select";
 import { and, col, constant, not, or } from "../../../../src/query/dsl/core";
 import { params, ParamsProxy, withParams } from "../../../../src/query/params";
 import { crossJoin, FinalisedQueryWithParams, fullJoin, innerJoin, exists } from "../../../../src/query";
@@ -609,6 +615,34 @@ describe(`SELECT commands`, () => {
 		const expected = {
 			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE NOT (EXISTS (SELECT $1 FROM "Users" as "t1" WHERE "t1"."id" = $2))`,
 			parameters: [1, 123]
+		};
+		assert.deepEqual(actual, expected);
+	});
+
+	it(`can use convenience function for exists queries`, function () {
+		// Setup
+		const query = withParams<{ locationId: number }>()((p) =>
+			selectExists((q) =>
+				q.from(QUsers)
+					.where(and(
+						QLocations.id.eq(QUsers.locationId),
+						QLocations.id.eq(p.locationId)
+					))
+			).finalise(p)
+		);
+
+		// Execute
+		const actual = query.toSql({
+			locationId: 123
+		});
+
+		// Verify
+		const expected = {
+			parameters: [
+				1,
+				123
+			],
+			sql: `SELECT EXISTS (SELECT $1 FROM "Users" as "t1", "Locations" as "t2" WHERE ("t2"."id" = "t1"."locationId" AND "t2"."id" = $2)) as "exists"`
 		};
 		assert.deepEqual(actual, expected);
 	});

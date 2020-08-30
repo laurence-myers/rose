@@ -2,10 +2,13 @@ import { QuerySelector, SelectorExpression, SelectorNestedMany, SelectorNestedOn
 import {
 	AliasedSubQueryBuilder,
 	CommonTableExpressionBuilder,
+	SelectQueryBuilder,
 	SubQueryBuilder,
 	SubSelectExpression
 } from "../builders/select";
 import { ParameterOrValueExpressionNode } from "../ast";
+import { exists } from "../postgresql/functions";
+import { constant } from "./core";
 
 export function selectCte<TQuerySelector extends QuerySelector>(alias: string, querySelector: TQuerySelector) {
 	return new CommonTableExpressionBuilder(alias, querySelector);
@@ -16,6 +19,26 @@ export function selectExpression<T = never>(expression: ParameterOrValueExpressi
 		$selectorKind: 'expression',
 		expression
 	};
+}
+
+interface SelectExistsQuerySelector extends QuerySelector {
+	exists: {
+		readonly $selectorKind: 'expression';
+		readonly expression: ParameterOrValueExpressionNode;
+	}
+}
+
+export function selectExists(
+	subQueryBuilderCallback: <TParams>(builder: SubQueryBuilder<TParams>) => SubQueryBuilder<TParams>
+): SelectQueryBuilder<SelectExistsQuerySelector> {
+	return new SelectQueryBuilder<SelectExistsQuerySelector>({
+		exists: selectExpression(
+			exists(
+				subQueryBuilderCallback(subSelect(constant(1)))
+					.toSubQuery()
+			)
+		)
+	});
 }
 
 export function selectNestedMany<T extends QuerySelector>(querySelector: T): SelectorNestedMany<T> {
