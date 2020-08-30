@@ -215,10 +215,10 @@
   resolved "https://registry.yarnpkg.com/@istanbuljs/schema/-/schema-0.1.2.tgz#26520bf09abe4a5644cd5414e37125a8954241dd"
   integrity sha512-tsAQNx32a8CoFhjhijUIhI4kccIAgmGhy8LZMZgGfmXcpMbPRUqn5LWmgRttILi6yeGmBJd2xsPkFMs0PzgPCw==
 
-"@sinclair/typebox@0.9.13":
-  version "0.9.13"
-  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.9.13.tgz#1536ae77fe3980d84922d95b51168529efb17b0f"
-  integrity sha512-nHnhkXh77wDXKG3XiX6SN/IPCHXJFG6ppRyGXibfWDoMBGmv1GXTHWmCzgOokbpgAMZQ9uHJ95GO7qnQGk6ssQ==
+"@sinclair/typebox@0.10.1":
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.10.1.tgz#5239a7f3b3e51bab3c2838550639350126746079"
+  integrity sha512-IZK7ao3ef92oZ5TjTwjVm9Xx65P2rj3frp7Fc58qy+pN+EL5gtv9mJWSQ5lcUWOWKNIOeOdTYjMPhg86rWGq2Q==
 
 "@types/app-root-path@1.2.4":
   version "1.2.4"
