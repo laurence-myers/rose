@@ -36,7 +36,7 @@ export class TLocations extends QueryTable {
 	constructor($tableAlias? : string) { super(new TableMetamodel("Locations", $tableAlias)); }
 
 	id = new ColumnMetamodel<number>(this.$table, "id");
-	name = new ColumnMetamodel<number>(this.$table, "name");
+	name = new ColumnMetamodel<string>(this.$table, "name");
 	clientId = new ColumnMetamodel<number>(this.$table, "clientId");
 	agencyId = new ColumnMetamodel<number>(this.$table, "agencyId");
 }

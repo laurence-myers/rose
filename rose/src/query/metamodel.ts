@@ -39,7 +39,7 @@ type BooleanUnaryOperators = 'IS NULL'
 	| 'IS UNKNOWN'
 	| 'IS NOT UNKNOWN';
 type BooleanBinaryOperators = '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN';
-type ValueType<T> = ((params: unknown) => T) | ColumnMetamodel<T> | ParameterOrValueExpressionNode;
+type ValueType<T> = ((params: unknown) => T) | ColumnMetamodel<T> | ParameterOrValueExpressionNode<T>;
 
 export class ColumnMetamodel<T> {
 	public readonly $selectorKind: 'column' = 'column';
