@@ -9,7 +9,7 @@ describe(`Conditional Expressions`, function () {
 		it(`generates expected nodes`, () => {
 			// Execute
 			const node = caseMulti()
-				.when(QProject.status.eq('Active'), constant('Ready to Go'))
+				.when(QProject.status.eq(constant('Active')), constant('Ready to Go'))
 				.else(constant('Requires work'))
 				.end();
 			const actual = new SqlAstWalker(node).toSql();
