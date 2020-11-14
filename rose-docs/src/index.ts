@@ -13,7 +13,7 @@ async function processFile(file: string): Promise<void> {
     console.log(`Converting ${ file }...`);
     const output = asciidoctor()
         .convert(await fs.readFile(file), {
-            backend: 'html',
+            backend: 'html5',
             // eslint-disable-next-line @typescript-eslint/camelcase
             base_dir: path.dirname(file),
             safe: 'UNSAFE',
