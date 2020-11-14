@@ -2,6 +2,7 @@ import asciidoctor from 'asciidoctor';
 import * as path from 'path';
 import { promises as fs } from 'fs';
 import * as arp from 'app-root-path';
+import { mapP, walk } from "./utils";
 
 enum ExitCode {
     Okay,
@@ -25,6 +26,16 @@ async function processFile(file: string): Promise<void> {
     await fs.writeFile(outPath, output);
 }
 
+async function copyResourceFile(src: string): Promise<void> {
+    const relativePath = path.relative(arp.path, src);
+    const outputFile = arp.resolve(path.join('dist', relativePath));
+    const outputPath = path.dirname(outputFile);
+    await fs.mkdir(outputPath, {
+        recursive: true
+    });
+    await fs.copyFile(src, outputFile);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function main(_args: string[]): Promise<ExitCode> {
     const exitCode = ExitCode.Okay;
@@ -32,6 +43,9 @@ async function main(_args: string[]): Promise<ExitCode> {
     // const files = await walk(path.join(arp.path, 'docs'));
     // await mapP(files, processFile);
     await processFile(path.join(arp.path, 'docs', 'index.adoc'));
+
+    const resourceFiles = await walk(path.join(arp.path, 'resources'));
+    await mapP(resourceFiles, copyResourceFile);
 
     return exitCode;
 }

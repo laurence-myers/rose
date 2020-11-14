@@ -3,7 +3,7 @@
 :source-highlighter: highlightjs
 :source-language: typescript
 :highlightjs-theme: srcery
-:highlightjsdir: ../resources/highlight
+:highlightjsdir: ./resources/highlight
 
 == Basic Usage
 

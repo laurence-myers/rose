@@ -17,7 +17,7 @@ export async function walk(dir: string): Promise<string[]> {
 		const stats = await fs.stat(filePath);
 		if (stats.isDirectory()) {
 			return walk(filePath);
-		} else if (stats.isFile() && path.extname(filePath) === '.adoc') {
+		} else if (stats.isFile()) {
 			return filePath;
 		} else {
 			return;
