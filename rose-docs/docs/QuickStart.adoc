@@ -1,17 +1,17 @@
 == Quick Start
 
-Install `rose`.
+Install `rose` and `rose-cli`.
 
 [source,bash]
 ----
-yarn add rose --exact
+yarn add @rosepg/rose @rosepg/rose0cli --exact
 ----
 
 Run the CLI to generate code from your existing database.
 
 [source,bash]
 ----
-rose --url postgresql://postgres:password@localhost:5432/yourdb --out generated/db
+$(yarn bin)/rose --url postgresql://postgres:password@localhost:5432/yourdb --out generated/db
 ----
 
 Build your queries using the DSL.
