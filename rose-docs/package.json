@@ -11,7 +11,7 @@
     "introspect": "rimraf ./generated/ && rose --url postgresql://root:admin@localhost:5443/pagila --out generated\\db",
     "link:rose": "yarn link @rosepg/rose @rosepg/rose-cli",
     "lint": "eslint ./src/ ./test/ --ext .ts --max-warnings 0",
-    "start": "ts-node src/index.ts",
+    "start": "rimraf ./dist/ && ts-node src/index.ts",
     "test": "mocha"
   },
   "dependencies": {
