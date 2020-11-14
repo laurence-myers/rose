@@ -1,0 +1,13 @@
+site:
+  title: My Demo Site
+  url: https://laurence-myers.github.io/rose/
+  start_page: rose-docs::index.adoc
+content:
+  sources:
+  - url: ../
+    branches: HEAD
+    start_path: rose-docs/docs
+ui:
+  bundle:
+    url: https://gitlab.com/antora/antora-ui-default/-/jobs/artifacts/master/raw/build/ui-bundle.zip?job=bundle-stable
+    snapshot: true

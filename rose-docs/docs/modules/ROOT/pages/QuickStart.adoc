@@ -18,23 +18,23 @@ Build your queries using the DSL.
 
 [source,typescript]
 ----
-include::../test/QuickStart.ts[tag=first-import,indent=0]
-include::../test/QuickStart.ts[tag=first,indent=0]
+include::example$test/QuickStart.ts[tag=first-import,indent=0]
+include::example$test/QuickStart.ts[tag=first,indent=0]
 ----
 
 Create your node-pg client, and connect to the database.
 
 [source,typescript]
 ----
-include::../test/QuickStart.ts[tag=client-import,indent=0]
-include::../test/QuickStart.ts[tag=client,indent=0]
+include::example$test/QuickStart.ts[tag=client-import,indent=0]
+include::example$test/QuickStart.ts[tag=client,indent=0]
 ----
 
 Execute your query.
 
 [source,typescript]
 ----
-include::../test/QuickStart.ts[tag=execute,indent=0]
+include::example$test/QuickStart.ts[tag=execute,indent=0]
 ----
 
 (Don't forget to close the connection once you're done!)

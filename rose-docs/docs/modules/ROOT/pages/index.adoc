@@ -9,8 +9,8 @@
 
 [source,typescript]
 ----
-include::../test/index.ts[tag=first-import,indent=0]
-include::../test/index.ts[tag=first,indent=0]
+include::example$test/index.ts[tag=first-import,indent=0]
+include::example$test/index.ts[tag=first,indent=0]
 ----
 
 == Core Concepts
@@ -39,13 +39,3 @@ The metamodel serves two purposes:
 
 You can select "nested" objects. Parent/child relationships are worked out by hashing all of the parent's column values
 together.
-
-include::./QuickStart.adoc[]
-
-include::./SchemaIntrospection.adoc[]
-
-include::./ConstructingAndExecutingAQuery.adoc[]
-
-include::./Justification.adoc[]
-
-include::./AlternateProjects.adoc[]

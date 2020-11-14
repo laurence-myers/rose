@@ -3,5 +3,5 @@
         "ts"
     ],
     "require": "ts-node/register",
-    "spec": "test/**/*.ts"
+    "spec": "docs/modules/ROOTS/examples/test/**/*.ts"
 }

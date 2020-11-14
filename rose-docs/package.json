@@ -11,10 +11,12 @@
     "introspect": "rimraf ./generated/ && rose --url postgresql://root:admin@localhost:5443/pagila --out generated\\db",
     "link:rose": "yarn link @rosepg/rose @rosepg/rose-cli",
     "lint": "eslint ./src/ ./test/ --ext .ts --max-warnings 0",
-    "start": "rimraf ./dist/ && ts-node src/index.ts",
+    "start": "rimraf ./build/ && antora antora-playbook.yml",
     "test": "mocha"
   },
   "dependencies": {
+    "@antora/cli": "2.3.4",
+    "@antora/site-generator-default": "2.3.4",
     "app-root-path": "3.0.0",
     "asciidoctor": "2.2.0"
   },

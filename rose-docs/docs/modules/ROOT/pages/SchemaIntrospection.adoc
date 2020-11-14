@@ -15,7 +15,7 @@ Given a table `customer`, the following code is generated:
 * `QCustomerAllColumns`, an object that can be used to select all columns from the table.
 * `CustomerDefaultQueries`, containing queries for simple Create/Read/Update/Delete (CRUD) operations.
 
-[INFO]
+[NOTE]
 ====
 `getOne()` and `deleteOne()` accept all the data they need when the query is executed. The queries are only generated
 once.
@@ -27,7 +27,7 @@ If you always know what columns are provided when inserting/updating rows, you w
 insert/update queries.
 ====
 
-[INFO]
+[NOTE]
 ====
 If the table had no primary key, then some queries would be omitted. Only `insertOne()` would be generated.
 ====
@@ -47,7 +47,7 @@ You may wish to override these types, if:
 
 You can override the types globally for all tables, or per table column.
 
-[INFO]
+[NOTE]
 ====
 PostgreSQL enum types are automatically identified, and typed as a union of string literals.
 ====
