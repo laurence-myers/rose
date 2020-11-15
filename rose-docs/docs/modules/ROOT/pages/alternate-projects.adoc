@@ -1,5 +1,6 @@
 = Alternate Projects
 
+* https://github.com/Ff00ff/mammoth - a very similar idea to _rose_. It's currently lacking some features supported by _rose_, while offering some not yet supported by _rose_. Requires manually defining the schema in TS code.
 * https://github.com/adelsz/pgtyped - generates types from SQL query strings, stored in either SQL files or TS tagged template literals.
 * https://github.com/gajus/slonik - an alternative API to node-pg, with intentionally limited query building capabilities using tagged template literals.
 * https://jawj.github.io/zapatos/ - generates separate types for selecting, inserting, and updating rows. Builds queries using tagged template literals. Provides CRUD shortcut methods. Uses PostgreSQL's JSONB functions to returned nested joined results. Does not enforce that selected columns match the returned TS types.
