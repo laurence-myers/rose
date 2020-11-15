@@ -65,11 +65,11 @@ select({
 The above example will return an array of objects, each containing an `id` and `films`, the latter containing an array
 of objects containing `title`. (The rest of the query, to join and order the tables, has been left out.)
 
-[IMPORTANT]
-----
+[WARNING]
+====
 _rose_ does not know the relationships between selected columns. To work out the "parent"
 
 This is not foolproof - if your query has not selected enough unique columns from the "parent" table, you might find
 data is grouped unexpectedly - and although a fast hashing algorithm is used, you may find it easier & faster to instead
 perform a second query to retrieve nested data, and join it with the parent data within your application code.
-----
+====
