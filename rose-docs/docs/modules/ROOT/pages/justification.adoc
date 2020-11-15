@@ -2,7 +2,12 @@
 
 == Transaction Support
 
-TODO
+Transactions are critical to providing atomic operations against your data.
+
+__rose__ supports standard transaction commands like `BEGIN`, `COMMIT`, and `ROLLBACK`, as well as savepoints. It also
+provides a convenience class `Transaction` to execute standard transaction queries, and a convenience function
+`transaction()` to run a callback within a transaction. In addition, the `ConnectionManager` has a `inTransaction()`
+method, which executes a callback within a transaciton.
 
 == Complex Queries
 
