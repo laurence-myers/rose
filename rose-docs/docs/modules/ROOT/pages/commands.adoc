@@ -1,8 +1,48 @@
 = Commands
 
+Commands are the outermost part of a single query. You can
+https://www.postgresql.org/docs/current/sql-commands.html[refer to the list of the SQL commands supported by PostgreSQL].
+
+You can normally distinguish "command" functions from other kinds of DSL functions, because they often allow chaining
+methods, and provide a `finalise()` method, which converts xref:how-it-works.adoc[the intermediate AST] into a string.
+
+_rose_ does not currently provide any Data Definition Language (DDL) commands. For many applications, you will want to
+write your DDL queries directly in SQL, as they are often executed in database migrations, separate from your
+application's main code.
+
 == `select()`
 
 A `SELECT` query. Pass it a "xref:query-selectors.adoc[query selector]" object.
+
+=== Chained methods
+
+- `distinct()`: https://www.postgresql.org/docs/current/sql-select.html#SQL-DISTINCT[sets the "distinct" clause].
+- `distinctOn()`: https://www.postgresql.org/docs/current/sql-select.html#SQL-DISTINCT[sets the "distinct on" clause].
+- `from()`: explicitly https://www.postgresql.org/docs/current/sql-select.html#SQL-FROM[sets the "from" clause].
+   Note that for some queries, it's optional to specify this:  _rose_ can infer the selected tables from the column
+   metamodels.
+- `groupBy()`: https://www.postgresql.org/docs/current/sql-select.html#SQL-GROUPBY[sets the "group by" clause].
+- `join()`: join from one or more tables. Arguments should be constructed using the join DSL functions, described in
+  <<Join DSL>>.
+- `joins()`: same as `join()`, but accepts an array.
+- `limit()`: https://www.postgresql.org/docs/current/sql-select.html#SQL-LIMIT[sets the "limit" clause].
+- `orderBy()`: https://www.postgresql.org/docs/current/sql-select.html#SQL-ORDERBY[sets the "order by" clause]. You can
+  pass column metamodels by column their `asc()` or `desc()` methods, e.g. `select({...}).orderBy(QFilm.title.asc())`.
+- `where()`: https://www.postgresql.org/docs/current/sql-select.html#SQL-WHERE[sets the "where" clause].
+- `with()`: used for https://www.postgresql.org/docs/current/sql-select.html#SQL-WITH[common table expression queries].
+   Sub-queries can be created using the `selectCte()` DSL function.
+
+=== Join DSL
+
+You can construct a join clause using DSL functions.
+
+- `cross()`
+- `full()`
+- `inner()`
+- `left()`
+- `right()`
+
+You can also create any of the above joins by first calling `join()`, e.g. `join(QFilm).full()`
 
 === Other variations
 
