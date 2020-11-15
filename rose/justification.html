@@ -45,6 +45,15 @@
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="constructing-and-executing-a-query.html">Constructing and Executing a Query</a>
   </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="query-selectors.html">Query Selectors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="commands.html">Commands</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="connection-manager.html">Connection Manager and Database Context</a>
+  </li>
   <li class="nav-item is-current-page" data-depth="1">
     <a class="nav-link" href="justification.html">Why Rose?</a>
   </li>
@@ -93,7 +102,13 @@
 <h2 id="_transaction_support"><a class="anchor" href="#_transaction_support"></a>Transaction Support</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>TODO</p>
+<p>Transactions are critical to providing atomic operations against your data.</p>
+</div>
+<div class="paragraph">
+<p><em>rose</em> supports standard transaction commands like <code>BEGIN</code>, <code>COMMIT</code>, and <code>ROLLBACK</code>, as well as savepoints. It also
+provides a convenience class <code>Transaction</code> to execute standard transaction queries, and a convenience function
+<code>transaction()</code> to run a callback within a transaction. In addition, the <code>ConnectionManager</code> has a <code>inTransaction()</code>
+method, which executes a callback within a transaciton.</p>
 </div>
 </div>
 </div>

@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Alternate Projects :: rose</title>
-    <link rel="canonical" href="https://laurence-myers.github.io/rose/rose/alternate-projects.html">
+    <title>Commands :: rose</title>
+    <link rel="canonical" href="https://laurence-myers.github.io/rose/rose/commands.html">
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../_/css/site.css">
   </head>
@@ -48,7 +48,7 @@
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="query-selectors.html">Query Selectors</a>
   </li>
-  <li class="nav-item" data-depth="1">
+  <li class="nav-item is-current-page" data-depth="1">
     <a class="nav-link" href="commands.html">Commands</a>
   </li>
   <li class="nav-item" data-depth="1">
@@ -57,7 +57,7 @@
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="justification.html">Why Rose?</a>
   </li>
-  <li class="nav-item is-current-page" data-depth="1">
+  <li class="nav-item" data-depth="1">
     <a class="nav-link" href="alternate-projects.html">Alternate Projects</a>
   </li>
 </ul>
@@ -91,44 +91,104 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="index.html">rose</a></li>
-    <li><a href="alternate-projects.html">Alternate Projects</a></li>
+    <li><a href="commands.html">Commands</a></li>
   </ul>
 </nav>
 </div>
   <div class="content">
 <article class="doc">
-<h1 class="page">Alternate Projects</h1>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="https://github.com/Ff00ff/mammoth" class="bare">https://github.com/Ff00ff/mammoth</a> - a very similar idea to <em>rose</em>. It&#8217;s currently lacking some features supported by <em>rose</em>, while offering some not yet supported by <em>rose</em>. Requires manually defining the schema in TS code.</p>
-</li>
-<li>
-<p><a href="https://github.com/adelsz/pgtyped" class="bare">https://github.com/adelsz/pgtyped</a> - generates types from SQL query strings, stored in either SQL files or TS tagged template literals.</p>
-</li>
-<li>
-<p><a href="https://github.com/gajus/slonik" class="bare">https://github.com/gajus/slonik</a> - an alternative API to node-pg, with intentionally limited query building capabilities using tagged template literals.</p>
-</li>
-<li>
-<p><a href="https://jawj.github.io/zapatos/" class="bare">https://jawj.github.io/zapatos/</a> - generates separate types for selecting, inserting, and updating rows. Builds queries using tagged template literals. Provides CRUD shortcut methods. Uses PostgreSQL&#8217;s JSONB functions to returned nested joined results. Does not enforce that selected columns match the returned TS types.</p>
-</li>
-<li>
-<p><a href="https://github.com/hoeck/typesafe-query-builder" class="bare">https://github.com/hoeck/typesafe-query-builder</a> - similar API to rose but limited query building. Requires manually defining the schema in TS code.</p>
-</li>
-<li>
-<p><a href="https://github.com/kristiandupont/kanel" class="bare">https://github.com/kristiandupont/kanel</a> - only generates types for select and insert; no query building. Generates nominal types for primary keys (I&#8217;m not sure if composite keys are supported). Does not allow overriding types per column, only globally.</p>
-</li>
-</ul>
-</div>
+<h1 class="page">Commands</h1>
+<div class="sect1">
+<h2 id="_select"><a class="anchor" href="#_select"></a><code>select()</code></h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>Keep an eye on these:</p>
+<p>A <code>SELECT</code> query. Pass it a "<a href="query-selectors.html" class="page">query selector</a>" object.</p>
+</div>
+<div class="sect2">
+<h3 id="_other_variations"><a class="anchor" href="#_other_variations"></a>Other variations</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>selectCte()</code>: builds a common table expression</p>
+</li>
+<li>
+<p><code>selectExists()</code>: a convenience function for querying the existence of a result in a query</p>
+</li>
+<li>
+<p><code>subSelect()</code>: builds a sub-query node</p>
+</li>
+<li>
+<p><code>selectSubQuery()</code>: builds an aliased sub-query</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_transactions"><a class="anchor" href="#_transactions"></a>Transactions</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_begin"><a class="anchor" href="#_begin"></a><code>begin()</code></h3>
+<div class="paragraph">
+<p>Starts a transaction. You can set the transaction&#8217;s isolation level, read mode, and deferrable flag.</p>
+</div>
+<div class="sect3">
+<h4 id="_chained_methods"><a class="anchor" href="#_chained_methods"></a>Chained methods</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>isolationLevel()</code>: sets the isolation level</p>
+</li>
+<li>
+<p><code>readMode()</code>: sets the read mode</p>
+</li>
+<li>
+<p><code>deferrable()</code>: sets the deferrable flag</p>
+</li>
+<li>
+<p><code>finalise()</code>: prepares the query so that it can be executed</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_commit"><a class="anchor" href="#_commit"></a><code>commit()</code></h3>
+<div class="paragraph">
+<p>Ends a transaction, committing it.</p>
+</div>
+<div class="sect3">
+<h4 id="_chained_methods_2"><a class="anchor" href="#_chained_methods_2"></a>Chained methods</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><code>andChain()</code>: sets whether a new transaction is immediately started with the same characteristics.</p>
+</li>
+<li>
+<p><code>finalise()</code>: prepares the query so that it can be executed</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rollback"><a class="anchor" href="#_rollback"></a><code>rollback()</code></h3>
+<div class="paragraph">
+<p>Aborts a transction.</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><a href="https://github.com/kyleconroy/sqlc" class="bare">https://github.com/kyleconroy/sqlc</a> - for Go, but TypeScript support is in progress.</p>
+<p><code>andChain()</code>: sets whether a new transaction is immediately started with the same characteristics.</p>
+</li>
+<li>
+<p><code>finalise()</code>: prepares the query so that it can be executed</p>
 </li>
 </ul>
+</div>
+</div>
+</div>
 </div>
 </article>
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
