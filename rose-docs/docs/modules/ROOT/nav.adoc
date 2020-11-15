@@ -1,4 +1,5 @@
 * xref:quick-start.adoc[]
+* xref:how-it-works.adoc[]
 * xref:schema-introspection.adoc[]
 * xref:constructing-and-executing-a-query.adoc[]
 * xref:query-selectors.adoc[]

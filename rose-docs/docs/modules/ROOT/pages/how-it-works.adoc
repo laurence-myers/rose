@@ -1,0 +1,12 @@
+= How It Works
+
+Rather than constructing SQL queries by directly combining strings, _rose_ instead constructs an intermediate
+Abstract Syntax Tree (AST). Each node in the tree has a `type` property, and one or more other properties.
+
+Building an AST node by hand would be cumbersome, so _rose_ provides a Domain Specific Language (DSL) to construct ASTs.
+The DSL is made up of functions that return AST nodes. Sometimes, to preserve context or provide a fluent API, functions
+will return an instance of a "builder" class, which provides methods. These instances will often have a method to
+produce an AST node. "Command" builders will have a method to "finalise" the query.
+
+When a query is "finalised", a "walker" traverses the AST, producing a string containing the final SQL query. This is
+contained in a wrapper, which provides type safety for the query's expected parameters.
