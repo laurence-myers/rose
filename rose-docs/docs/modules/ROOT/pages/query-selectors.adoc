@@ -1,0 +1,75 @@
+= Query Selectors
+
+When you call `select()`, you must pass a "query selector".This is an object, whose keys are the aliases of the
+selected values.The values can be one of the following types.
+
+== Column selector
+
+You can pass a column metamodel as a selector. This is the simplest selector.
+
+[source,typescript]
+----
+select({
+    title: QFilm.title
+});
+----
+
+== Expression selector
+
+You can construct a SQL expression to use as a selector.
+
+[source,typescript]
+----
+select({
+    title: selectExpression(
+        initcap(QFilm.title.col())
+    )
+});
+----
+
+In the above example, we do the following:
+
+- Convert the column metamodel `QFilm.title` to a column reference node
+- Pass the column reference node to the DSL function `initcap()`, which returns a function expression node.
+- Pass the function expression node to `selectExpression()`
+
+== Nested one selector
+
+You can nest selected values into a single object. This is useful for converting a flat table into an object graph, or
+for including data from joined tables.
+
+[source,typescript]
+----
+select({
+    film: selectNestedOne({
+        title: QFilm.title
+    })
+});
+----
+
+== Nested many selector
+
+You can nest multiple values as objects in an array. This could be used for joining across tables, perhaps when
+grouping is desired.
+
+[source,typescript]
+----
+select({
+    id: QActor.actorId,
+    films: selectNestedMany({
+        title: QFilm.title
+    })
+});
+----
+
+The above example will return an array of objects, each containing an `id` and `films`, the latter containing an array
+of objects containing `title`. (The rest of the query, to join and order the tables, has been left out.)
+
+[IMPORTANT]
+----
+_rose_ does not know the relationships between selected columns. To work out the "parent"
+
+This is not foolproof - if your query has not selected enough unique columns from the "parent" table, you might find
+data is grouped unexpectedly - and although a fast hashing algorithm is used, you may find it easier & faster to instead
+perform a second query to retrieve nested data, and join it with the parent data within your application code.
+----

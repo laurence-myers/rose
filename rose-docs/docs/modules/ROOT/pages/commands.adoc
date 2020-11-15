@@ -1,0 +1,41 @@
+= Commands
+
+== `select()`
+
+A `SELECT` query. Pass it a "xref:query-selectors.adoc[query selector]" object.
+
+=== Other variations
+
+- `selectCte()`: builds a common table expression
+- `selectExists()`: a convenience function for querying the existence of a result in a query
+- `subSelect()`: builds a sub-query node
+- `selectSubQuery()`: builds an aliased sub-query
+
+== Transactions
+
+=== `begin()`
+
+Starts a transaction. You can set the transaction's isolation level, read mode, and deferrable flag.
+
+==== Chained methods
+
+- `isolationLevel()`: sets the isolation level
+- `readMode()`: sets the read mode
+- `deferrable()`: sets the deferrable flag
+- `finalise()`: prepares the query so that it can be executed
+
+=== `commit()`
+
+Ends a transaction, committing it.
+
+==== Chained methods
+
+- `andChain()`: sets whether a new transaction is immediately started with the same characteristics.
+- `finalise()`: prepares the query so that it can be executed
+
+=== `rollback()`
+
+Aborts a transction.
+
+- `andChain()`: sets whether a new transaction is immediately started with the same characteristics.
+- `finalise()`: prepares the query so that it can be executed

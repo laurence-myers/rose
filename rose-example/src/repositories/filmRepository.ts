@@ -1,6 +1,5 @@
 import {
     and,
-    col,
     constant,
     initcap,
     innerJoin,
@@ -25,7 +24,7 @@ export class FilmRepository {
     private readonly selectLongestFilmsByActorNameQuery = (function () {
         const selector = {
             name: selectExpression(
-                initcap(col(QFilm.title))
+                initcap(QFilm.title.col())
             ),
             length: QFilm.length,
         };
