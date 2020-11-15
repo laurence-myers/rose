@@ -1,2 +1,4 @@
-name: rose-docs
-version: 0.0.17
+name: rose
+version: master
+nav:
+  - modules/ROOT/nav.adoc

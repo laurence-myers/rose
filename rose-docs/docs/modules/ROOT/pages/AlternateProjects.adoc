@@ -1,4 +1,4 @@
-== Alternate Projects
+= Alternate Projects
 
 * https://github.com/adelsz/pgtyped - generates types from SQL query strings, stored in either SQL files or TS tagged template literals.
 * https://github.com/gajus/slonik - an alternative API to node-pg, with intentionally limited query building capabilities using tagged template literals.

@@ -1,8 +1,9 @@
 site:
-  title: My Demo Site
+  title: rose
   url: https://laurence-myers.github.io/rose/
-  start_page: rose-docs::index.adoc
+  start_page: rose::index.adoc
 content:
+  edit_url: false
   sources:
   - url: ../
     branches: HEAD

@@ -1,4 +1,4 @@
-== Constructing and Executing a Query
+= Constructing and Executing a Query
 
 To select all columns from all rows in the `Customer` table:
 

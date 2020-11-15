@@ -1,8 +1,8 @@
-== Schema Introspection
+= Schema Introspection
 
 `rose` depends on code generated from your database schema. `rose-cli` introspects your database to generate the code.
 
-=== Generated code
+== Generated code
 
 Given a table `customer`, the following code is generated:
 
@@ -32,9 +32,9 @@ insert/update queries.
 If the table had no primary key, then some queries would be omitted. Only `insertOne()` would be generated.
 ====
 
-=== Configuration via `rose.json`
+== Configuration via `rose.json`
 
-==== Overriding types
+=== Overriding types
 
 `rose-cli` attempts to map PostgreSQL column types to TypeScript types, based on what the `pg` library returns.
 
@@ -52,7 +52,7 @@ You can override the types globally for all tables, or per table column.
 PostgreSQL enum types are automatically identified, and typed as a union of string literals.
 ====
 
-===== Global override
+==== Global override
 
 [source,json]
 ----
@@ -65,7 +65,7 @@ PostgreSQL enum types are automatically identified, and typed as a union of stri
 }
 ----
 
-===== Column override
+==== Column override
 
 To specify the new type in the JSON config:
 
@@ -96,7 +96,7 @@ To import the type from another file:
 }
 ----
 
-==== Ignoring tables
+=== Ignoring tables
 
 Add the property `ignored`, with an array of table names.
 
@@ -123,7 +123,7 @@ The following table names are always ignored:
 * `schema_migrations`, from ActiveRecord (Ruby on Rails)
 * `SequelizeMeta`, from umzug (Sequelize)
 
-=== Integrating `rose-cli` into your build process
+== Integrating `rose-cli` into your build process
 
 You'll need to decide how to incorporate `rose-cli` into your application's build process. The exact implementation
 depends on your application's structure, when database migrations are applied, and continuous integration setup.
@@ -137,7 +137,7 @@ Here's one approach to consider:
 5. Check for any uncommitted change to the generated code, and if found, fail the build. For example, assuming your
    generated code lives in the director `generated/`, you can call Git like this: `git diff --exit-code generated/`.
 
-=== Generated code style conventions
+== Generated code style conventions
 
 All generated code uses the following style conventions:
 
