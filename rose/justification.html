@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Why Rose? :: rose</title>
+    <link rel="canonical" href="https://laurence-myers.github.io/rose/rose/justification.html">
+    <meta name="generator" content="Antora 2.3.4">
+    <link rel="stylesheet" href="../_/css/site.css">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://laurence-myers.github.io/rose">rose</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/laurence-myers/rose/">Code @ GitHub</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="rose" data-version="master">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html">rose</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="quick-start.html">Quick Start</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="schema-introspection.html">Schema Introspection</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="constructing-and-executing-a-query.html">Constructing and Executing a Query</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="justification.html">Why Rose?</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="alternate-projects.html">Alternate Projects</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">rose</span>
+    <span class="version">master</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <span class="title">rose</span>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">master</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">rose</a></li>
+    <li><a href="justification.html">Why Rose?</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<article class="doc">
+<h1 class="page">Why Rose?</h1>
+<div class="sect1">
+<h2 id="_transaction_support"><a class="anchor" href="#_transaction_support"></a>Transaction Support</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>TODO</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_complex_queries"><a class="anchor" href="#_complex_queries"></a>Complex Queries</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p>Selecting columns from multiple tables</p>
+</li>
+<li>
+<p>Selecting values from aggregate functions like <code>SUM</code> or <code>AVERAGE</code>.</p>
+</li>
+<li>
+<p>Common table expressions (CTE)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>TODO</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_dynamic_queries"><a class="anchor" href="#_dynamic_queries"></a>Dynamic Queries</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Consider a query to search a product table, filtered by criteria chosen by the user (price, brand).</p>
+</div>
+<div class="paragraph">
+<p><em>rose</em> allows you to dynamically compose queries using type-safe language features; no more concatenating strings!</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_synchronised_identifiers"><a class="anchor" href="#_synchronised_identifiers"></a>Synchronised Identifiers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We want to avoid runtime errors caused by renaming or deleting a table or column. Using code generated from the DB
+schema allows us to keep the identifiers in sync.</p>
+</div>
+<div class="paragraph">
+<p>TODO: reword</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_no_manual_table_definitions"><a class="anchor" href="#_no_manual_table_definitions"></a>No Manual Table Definitions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Many ORMs require manually writing mappings between your application code and the database schema. This is unnecessary
+boilerplate which has to be maintained with any schema changes.</p>
+</div>
+<div class="paragraph">
+<p><em>rose</em> avoids this issue by introspecting the DB schema and generating code from it.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_not_restricted_to_one_entity_type_per_table"><a class="anchor" href="#_not_restricted_to_one_entity_type_per_table"></a>Not Restricted to One Entity Type Per Table</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Due to the overhead of manually defining tables, some ORMs make it difficult to query tables through different contexts.
+Views can help with this, if the ORM supports them.</p>
+</div>
+<div class="paragraph">
+<p><em>rose</em> does not restrict you to querying a single table; any relationship you can express through SQL can be represented
+through TypeScript, without boilerplate.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_quoted_identifiers"><a class="anchor" href="#_quoted_identifiers"></a>Quoted Identifiers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>PostgreSQL is case-insensitive by default, but you can quote identifiers to explicitly case them. You could run into
+problems if you create a column liked <code>"userId"</code> and then try to query it as <code>userId</code> - it&#8217;ll be read as <code>userid</code>, which
+doesn&#8217;t exist.</p>
+</div>
+<div class="paragraph">
+<p><em>rose</em> always quotes all identifiers.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_synchronising_query_types_to_typescript"><a class="anchor" href="#_synchronising_query_types_to_typescript"></a>Synchronising Query Types to TypeScript</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you use a raw SQL query, you could add a wrapper function to enforce the input &amp; output types.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">function doQuery(input: { id: number;  }): { name: string; age: number } {
+    return pg.query(`SELECT name, age FROM users WHERE id = $1`, [input.id]);
+}
+
+doQuery({ id: 1 }); // The returned row has both `name` and `age`</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>However, changes to the table schema will not be automatically applied to the TypeScript types, and vice versa.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">function doQuery(input: { id: number;  }): { name: string; age: number } {
+    return pg.query(`SELECT name, date_of_birth FROM users WHERE id = $1`, [input.id]);
+}
+
+doQuery({ id: 1 }); // The returned row has `name`, is missing `age`, and unexpectedly has `date_of_birth`</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><em>rose</em> avoids this through its use of mapped selector objects, and encoding the input parameter retrieval in the
+query building phase.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_plain_old_javascript_objects_structs_vs_entities"><a class="anchor" href="#_plain_old_javascript_objects_structs_vs_entities"></a>Plain Old JavaScript Objects (Structs) vs Entities</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Some ORMs require you to set values on an instance of a DB entity, and then call a "save()" method. Any kind of stateful
+mutation can cause bugs and confusion; e.g. if an entity is modified but the SQL call fails, your application can end
+up in an unrecoverable inconsistent state.</p>
+</div>
+<div class="paragraph">
+<p>Using plain objects allows for simple APIs - a function can take an object, perform a query, and return an object. This
+works in more programming paradigms than an Object-Oriented approach.</p>
+</div>
+</div>
+</div>
+</article>
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the rose Antora UI theme.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script src="../_/js/site.js"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+  </body>
+</html>

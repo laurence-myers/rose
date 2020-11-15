@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Alternate Projects :: rose</title>
+    <link rel="canonical" href="https://laurence-myers.github.io/rose/rose/alternate-projects.html">
+    <meta name="generator" content="Antora 2.3.4">
+    <link rel="stylesheet" href="../_/css/site.css">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://laurence-myers.github.io/rose">rose</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/laurence-myers/rose/">Code @ GitHub</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="rose" data-version="master">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html">rose</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="quick-start.html">Quick Start</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="schema-introspection.html">Schema Introspection</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="constructing-and-executing-a-query.html">Constructing and Executing a Query</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="justification.html">Why Rose?</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="alternate-projects.html">Alternate Projects</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">rose</span>
+    <span class="version">master</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <span class="title">rose</span>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">master</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">rose</a></li>
+    <li><a href="alternate-projects.html">Alternate Projects</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<article class="doc">
+<h1 class="page">Alternate Projects</h1>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/adelsz/pgtyped" class="bare">https://github.com/adelsz/pgtyped</a> - generates types from SQL query strings, stored in either SQL files or TS tagged template literals.</p>
+</li>
+<li>
+<p><a href="https://github.com/gajus/slonik" class="bare">https://github.com/gajus/slonik</a> - an alternative API to node-pg, with intentionally limited query building capabilities using tagged template literals.</p>
+</li>
+<li>
+<p><a href="https://jawj.github.io/zapatos/" class="bare">https://jawj.github.io/zapatos/</a> - generates separate types for selecting, inserting, and updating rows. Builds queries using tagged template literals. Provides CRUD shortcut methods. Uses PostgreSQL&#8217;s JSONB functions to returned nested joined results. Does not enforce that selected columns match the returned TS types.</p>
+</li>
+<li>
+<p><a href="https://github.com/hoeck/typesafe-query-builder" class="bare">https://github.com/hoeck/typesafe-query-builder</a> - similar API to rose but limited query building. Requires manually defining the schema in TS code.</p>
+</li>
+<li>
+<p><a href="https://github.com/kristiandupont/kanel" class="bare">https://github.com/kristiandupont/kanel</a> - only generates types for select and insert; no query building. Generates nominal types for primary keys (I&#8217;m not sure if composite keys are supported). Does not allow overriding types per column, only globally.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Keep an eye on these:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/kyleconroy/sqlc" class="bare">https://github.com/kyleconroy/sqlc</a> - for Go, but TypeScript support is in progress.</p>
+</li>
+</ul>
+</div>
+</article>
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the rose Antora UI theme.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script src="../_/js/site.js"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+  </body>
+</html>
