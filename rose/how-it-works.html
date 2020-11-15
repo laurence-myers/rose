@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Connection Manager and Database Context :: rose</title>
-    <link rel="canonical" href="https://laurence-myers.github.io/rose/rose/connection-manager.html">
+    <title>How It Works :: rose</title>
+    <link rel="canonical" href="https://laurence-myers.github.io/rose/rose/how-it-works.html">
     <meta name="generator" content="Antora 2.3.4">
     <link rel="stylesheet" href="../_/css/site.css">
   </head>
@@ -39,7 +39,7 @@
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="quick-start.html">Quick Start</a>
   </li>
-  <li class="nav-item" data-depth="1">
+  <li class="nav-item is-current-page" data-depth="1">
     <a class="nav-link" href="how-it-works.html">How It Works</a>
   </li>
   <li class="nav-item" data-depth="1">
@@ -54,7 +54,7 @@
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="commands.html">Commands</a>
   </li>
-  <li class="nav-item is-current-page" data-depth="1">
+  <li class="nav-item" data-depth="1">
     <a class="nav-link" href="connection-manager.html">Connection Manager and Database Context</a>
   </li>
   <li class="nav-item" data-depth="1">
@@ -94,60 +94,26 @@
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
     <li><a href="index.html">rose</a></li>
-    <li><a href="connection-manager.html">Connection Manager and Database Context</a></li>
+    <li><a href="how-it-works.html">How It Works</a></li>
   </ul>
 </nav>
 </div>
   <div class="content">
 <article class="doc">
-<h1 class="page">Connection Manager and Database Context</h1>
+<h1 class="page">How It Works</h1>
 <div class="paragraph">
-<p>The AbstractConnectionManager and AbstractDatabaseContext are optional abstract classes that you may extend. In combination, they
-provide the following features:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Designed to work with connection pools.</p>
-</li>
-<li>
-<p>Automatically releases connections.</p>
-</li>
-<li>
-<p>Automatically handles committing or rolling back transactions.</p>
-</li>
-</ul>
+<p>Rather than constructing SQL queries by directly combining strings, <em>rose</em> instead constructs an intermediate
+Abstract Syntax Tree (AST). Each node in the tree has a <code>type</code> property, and one or more other properties.</p>
 </div>
 <div class="paragraph">
-<p>You do not need to use these classes to make use of <em>rose</em>'s other features.</p>
+<p>Building an AST node by hand would be cumbersome, so <em>rose</em> provides a Domain Specific Language (DSL) to construct ASTs.
+The DSL is made up of functions that return AST nodes. Sometimes, to preserve context or provide a fluent API, functions
+will return an instance of a "builder" class, which provides methods. These instances will often have a method to
+produce an AST node. "Command" builders will have a method to "finalise" the query.</p>
 </div>
 <div class="paragraph">
-<p>To make use of them:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Extends <code>AbstractDatabaseContext</code>.</p>
-</li>
-<li>
-<p>Add any properties that should be made available only when a database connection is available.</p>
-</li>
-<li>
-<p>As an example, if you use the repository pattern to access entities, you could have a property <code>public readonly filmRepository = new FilmRepository(this.client)</code>.</p>
-</li>
-<li>
-<p>Extend <code>AbstractConnectionManager</code></p>
-</li>
-<li>
-<p><code>createDatabaseContext()</code> should return an ew instance of your concrete <code>DatabaseContext</code> class.</p>
-</li>
-<li>
-<p><code>pool()</code> should initialise and/or return a singleton instance of your connection pool.</p>
-</li>
-<li>
-<p>You may also want to add a <code>dispose()</code> method, for cleanly closing the connection pool.</p>
-</li>
-</ul>
+<p>When a query is "finalised", a "walker" traverses the AST, producing a string containing the final SQL query. This is
+contained in a wrapper, which provides type safety for the query&#8217;s expected parameters.</p>
 </div>
 </article>
 <aside class="toc sidebar" data-title="Contents" data-levels="2">

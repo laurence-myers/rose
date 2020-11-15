@@ -40,6 +40,9 @@
     <a class="nav-link" href="quick-start.html">Quick Start</a>
   </li>
   <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="how-it-works.html">How It Works</a>
+  </li>
+  <li class="nav-item" data-depth="1">
     <a class="nav-link" href="schema-introspection.html">Schema Introspection</a>
   </li>
   <li class="nav-item" data-depth="1">
@@ -98,11 +101,98 @@
   <div class="content">
 <article class="doc">
 <h1 class="page">Commands</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Commands are the outermost part of a single query. You can
+<a href="https://www.postgresql.org/docs/current/sql-commands.html">refer to the list of the SQL commands supported by PostgreSQL</a>.</p>
+</div>
+<div class="paragraph">
+<p>You can normally distinguish "command" functions from other kinds of DSL functions, because they often allow chaining
+methods, and provide a <code>finalise()</code> method, which converts <a href="how-it-works.html" class="page">the intermediate AST</a> into a string.</p>
+</div>
+<div class="paragraph">
+<p><em>rose</em> does not currently provide any Data Definition Language (DDL) commands. For many applications, you will want to
+write your DDL queries directly in SQL, as they are often executed in database migrations, separate from your
+application&#8217;s main code.</p>
+</div>
+</div>
+</div>
 <div class="sect1">
 <h2 id="_select"><a class="anchor" href="#_select"></a><code>select()</code></h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>A <code>SELECT</code> query. Pass it a "<a href="query-selectors.html" class="page">query selector</a>" object.</p>
+</div>
+<div class="sect2">
+<h3 id="_chained_methods"><a class="anchor" href="#_chained_methods"></a>Chained methods</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>distinct()</code>: <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-DISTINCT">sets the "distinct" clause</a>.</p>
+</li>
+<li>
+<p><code>distinctOn()</code>: <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-DISTINCT">sets the "distinct on" clause</a>.</p>
+</li>
+<li>
+<p><code>from()</code>: explicitly <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-FROM">sets the "from" clause</a>.
+Note that for some queries, it&#8217;s optional to specify this:  <em>rose</em> can infer the selected tables from the column
+metamodels.</p>
+</li>
+<li>
+<p><code>groupBy()</code>: <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-GROUPBY">sets the "group by" clause</a>.</p>
+</li>
+<li>
+<p><code>join()</code>: join from one or more tables. Arguments should be constructed using the join DSL functions, described in
+<a href="#_join_dsl">Join DSL</a>.</p>
+</li>
+<li>
+<p><code>joins()</code>: same as <code>join()</code>, but accepts an array.</p>
+</li>
+<li>
+<p><code>limit()</code>: <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-LIMIT">sets the "limit" clause</a>.</p>
+</li>
+<li>
+<p><code>orderBy()</code>: <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-ORDERBY">sets the "order by" clause</a>. You can
+pass column metamodels by column their <code>asc()</code> or <code>desc()</code> methods, e.g. <code>select({&#8230;&#8203;}).orderBy(QFilm.title.asc())</code>.</p>
+</li>
+<li>
+<p><code>where()</code>: <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-WHERE">sets the "where" clause</a>.</p>
+</li>
+<li>
+<p><code>with()</code>: used for <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-WITH">common table expression queries</a>.
+Sub-queries can be created using the <code>selectCte()</code> DSL function.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_join_dsl"><a class="anchor" href="#_join_dsl"></a>Join DSL</h3>
+<div class="paragraph">
+<p>You can construct a join clause using DSL functions.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>cross()</code></p>
+</li>
+<li>
+<p><code>full()</code></p>
+</li>
+<li>
+<p><code>inner()</code></p>
+</li>
+<li>
+<p><code>left()</code></p>
+</li>
+<li>
+<p><code>right()</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You can also create any of the above joins by first calling <code>join()</code>, e.g. <code>join(QFilm).full()</code></p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_other_variations"><a class="anchor" href="#_other_variations"></a>Other variations</h3>
@@ -134,7 +224,7 @@
 <p>Starts a transaction. You can set the transaction&#8217;s isolation level, read mode, and deferrable flag.</p>
 </div>
 <div class="sect3">
-<h4 id="_chained_methods"><a class="anchor" href="#_chained_methods"></a>Chained methods</h4>
+<h4 id="_chained_methods_2"><a class="anchor" href="#_chained_methods_2"></a>Chained methods</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -159,7 +249,7 @@
 <p>Ends a transaction, committing it.</p>
 </div>
 <div class="sect3">
-<h4 id="_chained_methods_2"><a class="anchor" href="#_chained_methods_2"></a>Chained methods</h4>
+<h4 id="_chained_methods_3"><a class="anchor" href="#_chained_methods_3"></a>Chained methods</h4>
 <div class="ulist">
 <ul>
 <li>
