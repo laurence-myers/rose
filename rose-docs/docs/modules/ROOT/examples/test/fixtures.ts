@@ -1,7 +1,7 @@
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export function dummyClient<T>(rows: T[]) {
+import { Queryable } from '@rosepg/rose';
+
+export function dummyClient<T>(rows: T[]): Queryable {
     return {
-        // eslint-disable-next-line @typescript-eslint/explicit-function-return-type,@typescript-eslint/no-unused-vars
         async query(_queryText: string, _values: never[]) {
             return {
                 rows,
