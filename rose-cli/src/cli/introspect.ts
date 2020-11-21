@@ -96,7 +96,7 @@ async function main(rawArgs: string[]): Promise<ExitCode> {
 	let exitCode: ExitCode = ExitCode.Okay;
 	let client: Client | undefined;
 	const cleanup = () => {
-		return new Promise((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			try {
 				if (client) {
 					client.end();

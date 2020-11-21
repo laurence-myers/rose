@@ -8,7 +8,7 @@ export class ColumnSimplifyingWalker extends SkippingWalker {
 	protected walkColumnReferenceNode(node: ColumnReferenceNode) {
 		// Hack to replace the object's contents. Probably should think of a better way to do this.
 		delete node.tableAlias;
-		delete node.tableName;
+		delete (node as any).tableName;
 		(node as ColumnReferenceNode | SimpleColumnReferenceNode).type = 'simpleColumnReferenceNode';
 	}
 
