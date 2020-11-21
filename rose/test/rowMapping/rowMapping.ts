@@ -3,13 +3,9 @@ import { QAgencies, QLocations, QUsers } from "../fixtures";
 import { mapRowsToClass, mapRowToClass } from "../../src/rowMapping/rowMapping";
 import {
 	AliasedSelectExpressionNode,
-	BinaryOperationNode,
-	ColumnReferenceNode,
 	ConstantNode,
-	FunctionExpressionNode,
-	SelectOutputExpression,
-	UnaryOperationNode,
-	ParameterOrValueExpressionNode
+	ParameterOrValueExpressionNode,
+	SelectOutputExpression
 } from "../../src/query/ast";
 import { RowMappingError, UnsupportedOperationError } from "../../src/errors";
 import { count } from "../../src/query/postgresql/functions/aggregate/general";
