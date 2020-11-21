@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>PostgreSQL Functions :: rose</title>
+    <link rel="canonical" href="https://laurence-myers.github.io/rose/rose/postgresql-functions.html">
+    <meta name="generator" content="Antora 2.3.4">
+    <link rel="stylesheet" href="../_/css/site.css">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://laurence-myers.github.io/rose">rose</a>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <a class="navbar-item" href="https://github.com/laurence-myers/rose/">Code @ GitHub</a>
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="rose" data-version="master">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="index.html">rose</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="quick-start.html">Quick Start</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="how-it-works.html">How It Works</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="schema-introspection.html">Schema Introspection</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="constructing-and-executing-a-query.html">Constructing and Executing a Query</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="query-selectors.html">Query Selectors</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="commands.html">Commands</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="postgresql-functions.html">PostgreSQL Functions</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="connection-manager.html">Connection Manager and Database Context</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="justification.html">Why Rose?</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="alternate-projects.html">Alternate Projects</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">rose</span>
+    <span class="version">master</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <span class="title">rose</span>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">master</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">rose</a></li>
+    <li><a href="postgresql-functions.html">PostgreSQL Functions</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<article class="doc">
+<h1 class="page">PostgreSQL Functions</h1>
+<div class="sect1">
+<h2 id="_built_in_functions"><a class="anchor" href="#_built_in_functions"></a>Built-in functions</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_aggregate_functions"><a class="anchor" href="#_aggregate_functions"></a>Aggregate functions</h3>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. Aggregate functions</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">PostgreSQL function</th>
+<th class="tableblock halign-left valign-top">Rose DSL function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">array_agg</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">array_agg</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit_and</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit_and</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit_or</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit_or</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bool_and</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bool_and</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bool_or</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bool_or</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">count</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">count</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">every</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">every</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">json_agg</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">json_agg</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">jsonb_agg</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">jsonb_agg</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">json_object_agg</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">json_object_agg</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">jsonb_object_agg</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">jsonb_object_agg</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">max</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">max</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">min</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">min</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string_agg</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">string_agg</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sum</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sum</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">xmlagg</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">xmlagg</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_array_functions"><a class="anchor" href="#_array_functions"></a>Array functions</h3>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 2. Array functions</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">PostgreSQL function</th>
+<th class="tableblock halign-left valign-top">Rose DSL function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ALL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">all</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">any</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_array_functions_2"><a class="anchor" href="#_array_functions_2"></a>Array functions</h3>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 3. Array functions</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">PostgreSQL function</th>
+<th class="tableblock halign-left valign-top">Rose DSL function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ALL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">all</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">any</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_comparison_operators"><a class="anchor" href="#_comparison_operators"></a>Comparison operators</h3>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 4. Comparison operators</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">PostgreSQL operator</th>
+<th class="tableblock halign-left valign-top">Rose DSL function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">=</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p>eq</p>
+</li>
+<li>
+<p>equal</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&gt;</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p>greaterThan</p>
+</li>
+<li>
+<p>gt</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&gt;=</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p>greaterThanOrEqual</p>
+</li>
+<li>
+<p>gte</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p>lessThan</p>
+</li>
+<li>
+<p>lt</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&gt;</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p>lessThanOrEqual</p>
+</li>
+<li>
+<p>lte</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">!=</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p>notEqual</p>
+</li>
+<li>
+<p>neq</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_conditional_functions"><a class="anchor" href="#_conditional_functions"></a>Conditional functions</h3>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 5. Conditional functions</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">PostgreSQL function</th>
+<th class="tableblock halign-left valign-top">Rose DSL function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">COALESCE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">coalesce</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CASE</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="paragraph">
+<p>For the standard case syntax, where each condition is an expression:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>case_</p>
+</li>
+<li>
+<p>caseMulti</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For the "simple" case syntax, where a single value is compared against values or expressions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>caseSimple</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_date_functions"><a class="anchor" href="#_date_functions"></a>Date functions</h3>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 6. Date functions</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">PostgreSQL function</th>
+<th class="tableblock halign-left valign-top">Rose DSL function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">now</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">now</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OVERLAPS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">overlaps</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_mathematical_functions"><a class="anchor" href="#_mathematical_functions"></a>Mathematical functions</h3>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 7. Mathematical functions</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">PostgreSQL function</th>
+<th class="tableblock halign-left valign-top">Rose DSL function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">abs</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">abs</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cbrt</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cbrt</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ceil</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p>ceil</p>
+</li>
+<li>
+<p>ceiling</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">degrees</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">degrees</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">div</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">div</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">exp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">exp</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">floor</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">floor</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ln</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ln</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">log</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">log</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mod</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mod</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pi</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pi</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">power</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">power</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">radians</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">radians</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">round</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">round</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sign</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sign</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sqrt</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sqrt</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">trunc</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">trunc</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">width_bucket</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">width_bucket</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 8. Mathematical operators</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">PostgreSQL operator</th>
+<th class="tableblock halign-left valign-top">Rose DSL function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">+</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">add</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">subtract</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">*</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">multiply</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">divide</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">%</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">modulo</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">^</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">exponentiate</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">|/</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">squareRoot</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">||/</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cubeRoot</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">!</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">factorial</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">@</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">absolute</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&amp;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bitwiseAnd</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">|</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bitwiseOr</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">#</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bitwiseXor</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">~</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bitwiseNot</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bitwiseShiftLeft</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&gt;&gt;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bitwiseShiftRight</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 9. Random functions</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">PostgreSQL function</th>
+<th class="tableblock halign-left valign-top">Rose DSL function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">random</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">random</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">setseed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">setseed</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 10. Trigonometric functions</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">PostgreSQL function</th>
+<th class="tableblock halign-left valign-top">Rose DSL function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">acos</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">acos</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">asin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">asin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">atan</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">atan</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">atan2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">atan2</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cos</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cos</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cot</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">cot</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">sin</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">tan</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">tan</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_string_functions"><a class="anchor" href="#_string_functions"></a>String functions</h3>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 11. SQL string functions</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">PostgreSQL function/operator</th>
+<th class="tableblock halign-left valign-top">Rose DSL function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">||</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">concat</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit_length</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bit_length</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">char_length</p></td>
+<td class="tableblock halign-left valign-top"><div class="content"><div class="ulist">
+<ul>
+<li>
+<p>char_length</p>
+</li>
+<li>
+<p>character_length</p>
+</li>
+</ul>
+</div></div></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lower</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lower</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">octet_length</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">octet_length</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">overlay</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">overlay</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">position</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">position</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">substring</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">substring</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">trim</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">trim</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">upper</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">upper</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 12. Other string functions</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">PostgreSQL function</th>
+<th class="tableblock halign-left valign-top">Rose DSL function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ascii</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ascii</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">btrim</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">btrim</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">chr</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">chr</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">convert</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">convert</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">convert_from</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">convert_from</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">convert_to</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">convert_to</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">decode</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">decode</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">encode</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">encode</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">initcap</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">initcap</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">length</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">length</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lpad</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">lpad</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ltrim</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ltrim</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">md5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">md5</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pg_client_encoding</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pg_client_encoding</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">quote_ident</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">quote_ident</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">quote_literal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">quote_literal</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">quote_nullable</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">quote_nullable</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">regexp_matches</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">regexp_matches</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">regexp_replace</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">regexp_replace</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">regexp_split_to_array</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">regexp_split_to_array</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">regexp_split_to_table</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">regexp_split_to_table</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">repeat</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">repeat</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">replace</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">replace</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">rpad</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">rpad</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">rtrim</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">rtrim</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">split_part</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">split_part</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">strpos</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">strpos</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">substr</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">substr</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">to_ascii</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">to_ascii</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">to_hex</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">to_hex</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">translate</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">translate</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_subquery_functions"><a class="anchor" href="#_subquery_functions"></a>Subquery functions</h3>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 13. Trigonometric functions</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">PostgreSQL function</th>
+<th class="tableblock halign-left valign-top">Rose DSL function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EXISTS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">exists</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_custom_functions"><a class="anchor" href="#_custom_functions"></a>Custom functions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To support executing your own custom PostgreSQL functions, you can make use of some "helper functions" to generate the
+AST nodes.</p>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s how to define a DSL function to call the PostgreSQL function <code>foo</code>, which accepts one argument:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">function foo(arg: ParameterOrValueExpressionNode) {
+    return functionHelpers.createFunctionNode('foo', arg);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can then call it within your query:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">select({
+    bar: foo(QFilm.name)
+});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Your query will look something like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-postgresql hljs" data-lang="postgresql">SELECT foo("t1"."name") from "film" as "t1";</code></pre>
+</div>
+</div>
+</div>
+</div>
+</article>
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p>This page was built using the rose Antora UI theme.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+</footer>
+<script src="../_/js/site.js"></script>
+<script async src="../_/js/vendor/highlight.js"></script>
+  </body>
+</html>
