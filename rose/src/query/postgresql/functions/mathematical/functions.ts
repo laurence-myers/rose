@@ -111,7 +111,7 @@ export function radians(valueExpression: ParameterOrValueExpressionNode): Functi
  */
 export function round(v: ParameterOrValueExpressionNode, s? : ParameterOrValueExpressionNode): FunctionExpressionNode {
 	if (s !== undefined) {
-		return createFunctionNode('round', s);
+		return createFunctionNode('round', v, s);
 	} else {
 		return createFunctionNode('round', v);
 	}
@@ -138,7 +138,7 @@ export function sqrt(valueExpression: ParameterOrValueExpressionNode): FunctionE
  */
 export function trunc(v: ParameterOrValueExpressionNode, s: ParameterOrValueExpressionNode): FunctionExpressionNode {
 	if (s !== undefined) {
-		return createFunctionNode('trunc', s);
+		return createFunctionNode('trunc', v, s);
 	} else {
 		return createFunctionNode('trunc', v);
 	}
