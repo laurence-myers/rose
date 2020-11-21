@@ -8,6 +8,7 @@ import {
 import { ColumnMetamodel, QueryTable, TableColumnsForUpdateCommand } from "../metamodel";
 import { InvalidUpdateError } from "../../errors";
 import { AtLeastOne, Clone, sortedPopulatedKeys } from "../../lang";
+import { ColumnSimplifyingWalker } from "../walkers/columnSimplifyingWalker";
 
 abstract class BaseInitialBuilder<TNextBuilder> {
 	constructor() {
@@ -16,9 +17,22 @@ abstract class BaseInitialBuilder<TNextBuilder> {
 	protected abstract nextBuilder(target: OnConflictTargetNode): TNextBuilder;
 
 	/**
+	 * The "where" clause in the conflict target requires simple column references, but the column metamodel methods
+	 * produce qualified column references. We'll do a hack to fix them here.
+	 */
+	protected rectifyConflictTargetWhereClause(where: BooleanExpression | undefined): void {
+		if (!where) {
+			return;
+		}
+		const simplifier = new ColumnSimplifyingWalker();
+		simplifier.simplify(where);
+	}
+
+	/**
 	 * Convenience function for `onIndexes()`
 	 */
 	onColumns(columns: ColumnMetamodel<unknown>[], where?: BooleanExpression): TNextBuilder {
+		this.rectifyConflictTargetWhereClause(where);
 		const indexes = columns.map((column): OnConflictTargetIndexNode => ({
 			type: "onConflictTargetIndexNode",
 			identifier: {
@@ -37,10 +51,11 @@ abstract class BaseInitialBuilder<TNextBuilder> {
 	}
 
 	onIndexes(indexes: OnConflictTargetIndexNode[], where?: BooleanExpression): TNextBuilder {
+		this.rectifyConflictTargetWhereClause(where);
 		return this.nextBuilder({
 			type: "onConflictTargetIndexesNode",
 			indexes,
-			where
+			where: where
 		});
 	}
 }

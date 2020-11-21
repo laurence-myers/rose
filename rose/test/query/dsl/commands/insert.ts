@@ -508,6 +508,30 @@ describe(`INSERT commands`, () => {
 				};
 				assert.deepEqual(actual, expected);
 			});
+
+			it(`can pass "where" clause in the conflict target, converting ColumnReferenceNodes to SimpleColumnReferenceNodes`, () => {
+				// Execute
+				const actual = insert(QUsers)
+					.insert({
+						id: default_(),
+						locationId: constant(123),
+						name: constant('Fred')
+					})
+					.onConflict(
+						doUpdate()
+							.onColumns([QUsers.name, QUsers.locationId], QUsers.deletedAt.isNull())
+							.set(QUsers, {
+								name: constant('Fred 2')
+							})
+					).finalise({}).toSql({});
+
+				// Verify
+				const expected = {
+					sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT ("name", "locationId") WHERE "deletedAt" IS NULL DO UPDATE SET "name" = $3`,
+					parameters: [123, 'Fred', 'Fred 2']
+				};
+				assert.deepEqual(actual, expected);
+			});
 		});
 
 		describe(`do nothing`, () => {
