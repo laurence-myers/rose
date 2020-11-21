@@ -18,11 +18,11 @@ export function divide(left: ParameterOrValueExpressionNode, right: ParameterOrV
 }
 
 export function modulo(left: ParameterOrValueExpressionNode, right: ParameterOrValueExpressionNode): BinaryOperationNode {
-	return createBinaryOperatorNode('+', left, right);
+	return createBinaryOperatorNode('%', left, right);
 }
 
 export function exponentiate(left: ParameterOrValueExpressionNode, right: ParameterOrValueExpressionNode): BinaryOperationNode {
-	return createBinaryOperatorNode('+', left, right);
+	return createBinaryOperatorNode('^', left, right);
 }
 
 export function squareRoot(left: ParameterOrValueExpressionNode, right: ParameterOrValueExpressionNode): BinaryOperationNode {
