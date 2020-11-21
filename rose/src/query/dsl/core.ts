@@ -54,7 +54,7 @@ export function col(column: ColumnMetamodel<unknown>): ColumnReferenceNode {
 	return column.toColumnReferenceNode();
 }
 
-export function constant<T extends number | string>(value: T): ConstantNode<T> {
+export function constant<T extends number | string | boolean>(value: T): ConstantNode<T> {
 	return {
 		type: "constantNode",
 		getter: (): T => value
