@@ -4,6 +4,7 @@
 * xref:constructing-and-executing-a-query.adoc[]
 * xref:query-selectors.adoc[]
 * xref:commands.adoc[]
+* xref:postgresql-functions.adoc[]
 * xref:connection-manager.adoc[]
 * xref:justification.adoc[]
 * xref:alternate-projects.adoc[]

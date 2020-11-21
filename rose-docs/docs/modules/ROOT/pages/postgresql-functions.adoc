@@ -1,0 +1,491 @@
+= PostgreSQL Functions
+
+:toc:
+
+== Built-in functions
+
+=== Aggregate functions
+
+.Aggregate functions
+|===
+|PostgreSQL function |Rose DSL function
+
+|array_agg
+|array_agg
+
+|bit_and
+|bit_and
+
+|bit_or
+|bit_or
+
+|bool_and
+|bool_and
+
+|bool_or
+|bool_or
+
+|count
+|count
+
+|every
+|every
+
+|json_agg
+|json_agg
+
+|jsonb_agg
+|jsonb_agg
+
+|json_object_agg
+|json_object_agg
+
+|jsonb_object_agg
+|jsonb_object_agg
+
+|max
+|max
+
+|min
+|min
+
+|string_agg
+|string_agg
+
+|sum
+|sum
+
+|xmlagg
+|xmlagg
+
+|===
+
+=== Array functions
+
+.Array functions
+|===
+|PostgreSQL function |Rose DSL function
+
+|ALL
+|all
+
+|ANY
+|any
+|===
+
+=== Array functions
+
+.Array functions
+|===
+|PostgreSQL function |Rose DSL function
+
+|ALL
+|all
+
+|ANY
+|any
+|===
+
+=== Comparison operators
+
+.Comparison operators
+|===
+|PostgreSQL operator |Rose DSL function
+
+|=
+a|
+- eq
+- equal
+
+|>
+a|
+- greaterThan
+- gt
+
+|>=
+a|
+- greaterThanOrEqual
+- gte
+
+|<
+a|
+- lessThan
+- lt
+
+|>
+a|
+- lessThanOrEqual
+- lte
+
+|!=
+a|
+- notEqual
+- neq
+|===
+
+=== Conditional functions
+
+.Conditional functions
+|===
+|PostgreSQL function |Rose DSL function
+
+|COALESCE
+|coalesce
+
+|CASE
+a|
+For the standard case syntax, where each condition is an expression:
+
+- case_
+- caseMulti
+
+For the "simple" case syntax, where a single value is compared against values or expressions:
+
+- caseSimple
+|===
+
+=== Date functions
+
+.Date functions
+|===
+|PostgreSQL function |Rose DSL function
+
+|now
+|now
+
+|OVERLAPS
+|overlaps
+|===
+
+=== Mathematical functions
+
+.Mathematical functions
+|===
+|PostgreSQL function |Rose DSL function
+
+|abs
+|abs
+
+|cbrt
+|cbrt
+
+|ceil
+a|
+- ceil
+- ceiling
+
+|degrees
+|degrees
+
+|div
+|div
+
+|exp
+|exp
+
+|floor
+|floor
+
+|ln
+|ln
+
+|log
+|log
+
+|mod
+|mod
+
+|pi
+|pi
+
+|power
+|power
+
+|radians
+|radians
+
+|round
+|round
+
+|sign
+|sign
+
+|sqrt
+|sqrt
+
+|trunc
+|trunc
+
+|width_bucket
+|width_bucket
+|===
+
+.Mathematical operators
+|===
+|PostgreSQL operator |Rose DSL function
+
+|+
+|add
+
+|-
+|subtract
+
+|*
+|multiply
+
+|/
+|divide
+
+|%
+|modulo
+
+|^
+|exponentiate
+
+|\|/
+|squareRoot
+
+|\|\|/
+|cubeRoot
+
+|!
+|factorial
+
+|@
+|absolute
+
+|&
+|bitwiseAnd
+
+|\|
+|bitwiseOr
+
+|#
+|bitwiseXor
+
+|~
+|bitwiseNot
+
+|<<
+|bitwiseShiftLeft
+
+|>>
+|bitwiseShiftRight
+|===
+
+.Random functions
+|===
+|PostgreSQL function |Rose DSL function
+
+|random
+|random
+
+|setseed
+|setseed
+|===
+
+.Trigonometric functions
+|===
+|PostgreSQL function |Rose DSL function
+
+|acos
+|acos
+
+|asin
+|asin
+
+|atan
+|atan
+
+|atan2
+|atan2
+
+|cos
+|cos
+
+|cot
+|cot
+
+|sin
+|sin
+
+|tan
+|tan
+|===
+
+=== String functions
+
+.SQL string functions
+|===
+|PostgreSQL function/operator |Rose DSL function
+
+|\|\|
+|concat
+
+|bit_length
+|bit_length
+
+|char_length
+a|
+- char_length
+- character_length
+
+|lower
+|lower
+
+|octet_length
+|octet_length
+
+|overlay
+|overlay
+
+|position
+|position
+
+|substring
+|substring
+
+|trim
+|trim
+
+|upper
+|upper
+|===
+
+.Other string functions
+|===
+|PostgreSQL function |Rose DSL function
+
+|ascii
+|ascii
+
+|btrim
+|btrim
+
+|chr
+|chr
+
+|convert
+|convert
+
+|convert_from
+|convert_from
+
+|convert_to
+|convert_to
+
+|decode
+|decode
+
+|encode
+|encode
+
+|initcap
+|initcap
+
+|length
+|length
+
+|lpad
+|lpad
+
+|ltrim
+|ltrim
+
+|md5
+|md5
+
+|pg_client_encoding
+|pg_client_encoding
+
+|quote_ident
+|quote_ident
+
+|quote_literal
+|quote_literal
+
+|quote_nullable
+|quote_nullable
+
+|regexp_matches
+|regexp_matches
+
+|regexp_replace
+|regexp_replace
+
+|regexp_split_to_array
+|regexp_split_to_array
+
+|regexp_split_to_table
+|regexp_split_to_table
+
+|repeat
+|repeat
+
+|replace
+|replace
+
+|rpad
+|rpad
+
+|rtrim
+|rtrim
+
+|split_part
+|split_part
+
+|strpos
+|strpos
+
+|substr
+|substr
+
+|to_ascii
+|to_ascii
+
+|to_hex
+|to_hex
+
+|translate
+|translate
+|===
+
+=== Subquery functions
+
+.Trigonometric functions
+|===
+|PostgreSQL function |Rose DSL function
+
+|EXISTS
+|exists
+|===
+
+== Custom functions
+
+To support executing your own custom PostgreSQL functions, you can make use of some "helper functions" to generate the
+AST nodes.
+
+Here's how to define a DSL function to call the PostgreSQL function `foo`, which accepts one argument:
+
+[source,typescript]
+----
+function foo(arg: ParameterOrValueExpressionNode) {
+    return functionHelpers.createFunctionNode('foo', arg);
+}
+----
+
+You can then call it within your query:
+
+[source,typescript]
+----
+select({
+    bar: foo(QFilm.name)
+});
+----
+
+Your query will look something like this:
+
+[source,postgresql]
+----
+SELECT foo("t1"."name") from "film" as "t1";
+----
