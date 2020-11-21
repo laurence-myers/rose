@@ -4,6 +4,7 @@ export * from './common';
 export * from './comparison';
 export * from './conditional';
 export * from './dateTime';
+export * as functionHelpers from './common/helpers';
 export * from './mathematical';
 export * from './string';
 export * from './subquery';
