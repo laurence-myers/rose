@@ -2,7 +2,7 @@ import { CustomerAllColumns, CustomerRow, QCustomer } from "../../../../../gener
 import { ParamsWrapper, select, withParams } from "@rosepg/rose";
 import { dummyClient } from "./fixtures";
 
-describe(`Quick Start`, () => {
+describe(`Constructing and Executing a Query`, () => {
     const client = dummyClient([]);
 
     it(`examples`, async () => {
