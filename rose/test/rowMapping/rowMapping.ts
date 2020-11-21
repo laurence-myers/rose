@@ -15,6 +15,7 @@ import { RowMappingError, UnsupportedOperationError } from "../../src/errors";
 import { count } from "../../src/query/postgresql/functions/aggregate/general";
 import { QueryOutput } from "../../src/query/typeMapping";
 import { selectExpression, selectNestedMany } from "../../src/query/dsl/select";
+import { constant } from '../../src/query/dsl/core';
 
 function alias(aliasPath: string[], node: ParameterOrValueExpressionNode): AliasedSelectExpressionNode {
 	return {
@@ -28,7 +29,7 @@ function alias(aliasPath: string[], node: ParameterOrValueExpressionNode): Alias
 describe("Row mapping", function () {
 	it("Can map a single number column to a data class", function () {
 		const outputExpressions: SelectOutputExpression[] = [
-			alias(["id"], <ColumnReferenceNode> {
+			alias(["id"], {
 				type: "columnReferenceNode",
 				tableName: "Users",
 				columnName: "id",
@@ -48,7 +49,7 @@ describe("Row mapping", function () {
 
 	it("Dies attempting to map a non-existing alias", function () {
 		const outputExpressions: SelectOutputExpression[] = [
-			alias(["id"], <ColumnReferenceNode> {
+			alias(["id"], {
 				type: "columnReferenceNode",
 				tableName: "Users",
 				columnName: "id",
@@ -68,7 +69,7 @@ describe("Row mapping", function () {
 		};
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["userName"],
-				<ColumnReferenceNode> {
+				{
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "name",
@@ -96,14 +97,14 @@ describe("Row mapping", function () {
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
-			alias(["id"], <ColumnReferenceNode> {
+			alias(["id"], {
 					type: "columnReferenceNode",
 					tableName: "Locations",
 					columnName: "id",
 					tableAlias: "t2"
 			}),
 			alias(["users", "id"],
-				<ColumnReferenceNode> {
+				{
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
@@ -143,14 +144,14 @@ describe("Row mapping", function () {
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
-			alias(["id"], <ColumnReferenceNode> {
+			alias(["id"], {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
 				tableAlias: "t2"
 			}),
 			alias(["users", "id"],
-				<ColumnReferenceNode> {
+				{
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
@@ -158,7 +159,7 @@ describe("Row mapping", function () {
 				}
 			),
 			alias(["users", "userName"],
-				<ColumnReferenceNode> {
+				{
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
@@ -204,14 +205,14 @@ describe("Row mapping", function () {
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
-			alias(["id"], <ColumnReferenceNode> {
+			alias(["id"], {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
 				tableAlias: "t3"
 			}),
 			alias(["locations", "id"],
-				<ColumnReferenceNode> {
+				{
 					type: "columnReferenceNode",
 					tableName: "Locations",
 					columnName: "id",
@@ -219,7 +220,7 @@ describe("Row mapping", function () {
 				}
 			),
 			alias(["locations", "users", "id"],
-				<ColumnReferenceNode> {
+				{
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
@@ -268,28 +269,28 @@ describe("Row mapping", function () {
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
-			alias(["id"], <ColumnReferenceNode> {
+			alias(["id"], {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
 				tableAlias: "t3"
 			}),
-			<AliasedSelectExpressionNode> {
+			{
 				type: "aliasedExpressionNode",
 				alias: "locations.id",
 				aliasPath: ["locations", "id"],
-				expression: <ColumnReferenceNode> {
+				expression: {
 					type: "columnReferenceNode",
 					tableName: "Locations",
 					columnName: "id",
 					tableAlias: "t2"
 				}
 			},
-			<AliasedSelectExpressionNode> {
+			{
 				type: "aliasedExpressionNode",
 				alias: "locations.users.id",
 				aliasPath: ["locations", "users", "id"],
-				expression: <ColumnReferenceNode> {
+				expression: {
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
@@ -392,28 +393,28 @@ describe("Row mapping", function () {
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
-			alias(["id"], <ColumnReferenceNode> {
+			alias(["id"], {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
 				tableAlias: "t3"
 			}),
-			<AliasedSelectExpressionNode> {
+			{
 				type: "aliasedExpressionNode",
 				alias: "locations.id",
 				aliasPath: ["locations", "id"],
-				expression: <ColumnReferenceNode> {
+				expression: {
 					type: "columnReferenceNode",
 					tableName: "Locations",
 					columnName: "id",
 					tableAlias: "t2"
 				}
 			},
-			<AliasedSelectExpressionNode> {
+			{
 				type: "aliasedExpressionNode",
 				alias: "locations.users.id",
 				aliasPath: ["locations", "users", "id"],
-				expression: <ColumnReferenceNode> {
+				expression: {
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
@@ -510,14 +511,14 @@ describe("Row mapping", function () {
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
-			alias(["id"], <ColumnReferenceNode> {
+			alias(["id"], {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
 				tableAlias: "t2"
 			}),
 			alias(["users", "id"],
-				 <ColumnReferenceNode> {
+				 {
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
@@ -578,7 +579,7 @@ describe("Row mapping", function () {
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
-			alias(["id"], <ColumnReferenceNode> {
+			alias(["id"], {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
@@ -615,7 +616,7 @@ describe("Row mapping", function () {
 			id: QUsers.id,
 		};
 		const outputExpressions: SelectOutputExpression[] = [
-			alias(["id"], <ColumnReferenceNode> {
+			alias(["id"], {
 				type: "columnReferenceNode",
 				tableName: "Users",
 				columnName: "id",
@@ -664,14 +665,14 @@ describe("Row mapping", function () {
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
-			alias(["id"], <ColumnReferenceNode> {
+			alias(["id"], {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
 				tableAlias: "t2"
 			}),
 			alias(["users", "id"],
-				<ColumnReferenceNode> {
+				{
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
@@ -711,12 +712,14 @@ describe("Row mapping", function () {
 			countValue: selectExpression(count())
 		};
 		const outputExpressions: SelectOutputExpression[] = [
-			<AliasedSelectExpressionNode> {
+			{
 				type: "aliasedExpressionNode",
 				alias: "countValue",
-				expression: <FunctionExpressionNode> {
+				aliasPath: [],
+				expression: {
 					type: "functionExpressionNode",
-					name: "count"
+					name: "count",
+					arguments: []
 				}
 			},
 		];
@@ -734,9 +737,10 @@ describe("Row mapping", function () {
 			countValue: selectExpression(count())
 		};
 		const outputExpressions: SelectOutputExpression[] = [
-			<FunctionExpressionNode> {
+			{
 				type: "functionExpressionNode",
-				name: "count"
+				name: "count",
+				arguments: []
 			}
 		];
 		const row = {
@@ -770,16 +774,18 @@ describe("Row mapping", function () {
 		const querySelect = {
 		};
 		const outputExpressions: SelectOutputExpression[] = [
-			<BinaryOperationNode> {
+			{
 				type: "binaryOperationNode",
 				operator: "=",
-				left: <FunctionExpressionNode> {
+				left: {
 					type: "functionExpressionNode",
-					name: "count"
+					name: "count",
+					arguments: []
 				},
-				right: <FunctionExpressionNode> {
+				right: {
 					type: "functionExpressionNode",
-					name: "count"
+					name: "count",
+					arguments: []
 				}
 			}
 		];
@@ -796,10 +802,11 @@ describe("Row mapping", function () {
 		const querySelect = {
 		};
 		const outputExpressions: SelectOutputExpression[] = [
-			<UnaryOperationNode> {
+			{
 				type: "unaryOperationNode",
 				operator: "!",
-				position: 'left'
+				position: 'left',
+				expression: constant(true)
 			}
 		];
 		const row = {
