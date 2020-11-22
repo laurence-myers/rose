@@ -1,4 +1,4 @@
-import { CustomerAllColumns, CustomerRow, QCustomer } from "../../../../../generated/db/Customer";
+import { CustomerAllColumns, CustomerRow, QCustomer } from "../generated/db/Customer";
 import { ParamsWrapper, select, withParams } from "@rosepg/rose";
 import { dummyClient } from "./fixtures";
 
