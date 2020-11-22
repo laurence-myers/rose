@@ -34,6 +34,10 @@ export interface ColumnReferenceNode {
 	columnName: string;
 }
 
+/**
+ * TODO: distinguish between "table references" and "table inclusions". The latter is used in FROM clauses, the former
+ * are consumers of other definitions.
+ */
 export interface TableReferenceNode {
 	type: 'tableReferenceNode';
 	tableName: string;
@@ -218,10 +222,25 @@ export interface LimitOffsetNode {
 	offset: ConstantNode<number>;
 }
 
+export interface SelectLockingNode {
+	type: 'selectLockingNode';
+	strength: 'UPDATE' | 'NO KEY UPDATE' | 'SHARE' | 'KEY SHARE';
+	of: TableReferenceNode[];
+	wait?: 'NOWAIT' | 'SKIP LOCKED';
+}
+
 export interface WithNode {
 	type: 'withNode';
 	selectNodes: AliasedExpressionNode<SubSelectNode>[];
 }
+
+export type SelectNodes = (
+	| GroupByExpressionNode
+	| LimitOffsetNode
+	| OrderByExpressionNode
+	| SelectLockingNode
+	| WithNode
+);
 
 export type SelectOutputExpression = ParameterOrValueExpressionNode | AliasedSelectExpressionNode;
 
@@ -274,15 +293,16 @@ export type SelectOutputExpression = ParameterOrValueExpressionNode | AliasedSel
 export interface SelectCommandNode {
 	type: 'selectCommandNode';
 	distinction: 'distinct' | 'all' | 'on';
-	distinctOn? : ParameterOrValueExpressionNode;
+	distinctOn?: ParameterOrValueExpressionNode;
 	outputExpressions: Array<SelectOutputExpression>; // should we also support *?
 	fromItems: FromItemNode[];
 	joins: JoinNode[];
 	conditions: BooleanExpression[];
 	ordering: OrderByExpressionNode[];
 	grouping: GroupByExpressionNode[];
-	limit? : LimitOffsetNode;
-	with? : WithNode;
+	limit?: LimitOffsetNode;
+	with?: WithNode;
+	locking: SelectLockingNode[];
 }
 
 export interface SubSelectNode {
@@ -499,14 +519,11 @@ export type AstNode =
 	| ExpressionListNode
 	| FromItemNode
 	| FunctionExpressionNode
-	| GroupByExpressionNode
 	| JoinNode
-	| LimitOffsetNode
 	| NotExpressionNode
 	| OnConflictNodes
-	| OrderByExpressionNode
 	| ParameterOrValueExpressionNode
+	| SelectNodes
 	| SetItemNode
 	| SimpleColumnReferenceNode
-	| TransactionNodes
-	| WithNode;
+	| TransactionNodes;

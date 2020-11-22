@@ -3,6 +3,7 @@ import {
 	AstNode,
 	ColumnReferenceNode,
 	SelectCommandNode,
+	SelectLockingNode,
 	SubSelectNode,
 	TableReferenceNode,
 	WithNode
@@ -19,6 +20,7 @@ class SelectRectifyingWalker extends SkippingWalker {
 	protected readonly referencedTables: Set<string> = new Set<string>();
 	protected readonly specifiedTables: Set<string> = new Set<string>();
 	protected readonly columnReferences: Set<ColumnReferenceNode> = new Set<ColumnReferenceNode>();
+	protected readonly tableReferences: Set<TableReferenceNode> = new Set<TableReferenceNode>();
 
 	constructor(
 		protected readonly ast: SelectCommandNode,
@@ -42,6 +44,15 @@ class SelectRectifyingWalker extends SkippingWalker {
 		}
 		this.columnReferences.add(node);
 		super.walkColumnReferenceNode(node);
+	}
+
+	protected walkSelectLockingNode(node: SelectLockingNode) {
+		// TODO: better walking of referenced tables
+		for (const tableNode of node.of) {
+			// NOTE: we don't want to add it to FROM automatically; let it error at runtime.
+			// this.referencedTables.add(tableNode.tableName);
+			this.tableReferences.add(tableNode);
+		}
 	}
 
 	protected walkSubSelectNode(node: SubSelectNode): void {
@@ -80,6 +91,12 @@ class SelectRectifyingWalker extends SkippingWalker {
 			if (!column.tableAlias) {
 				const tableAlias = this.tableMap.get(column.tableName);
 				column.tableAlias = tableAlias;
+			}
+		}
+		// Update all table references to use the aliases.
+		for (const tableNode of this.tableReferences.values()) {
+			if (this.tableMap.has(tableNode.tableName)) {
+				tableNode.tableName = this.tableMap.get(tableNode.tableName);
 			}
 		}
 	}

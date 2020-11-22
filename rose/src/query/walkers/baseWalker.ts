@@ -29,6 +29,7 @@ import {
 	RollbackToSavepointCommandNode,
 	SavepointCommandNode,
 	SelectCommandNode,
+	SelectLockingNode,
 	SetItemNode,
 	SetSessionsCharacteristicsAsTransactionCommandNode,
 	SetTransactionCommandNode,
@@ -101,6 +102,8 @@ export abstract class BaseWalker {
 	protected abstract walkSavepointCommandNode(node: SavepointCommandNode): void;
 
 	protected abstract walkSelectCommandNode(node: SelectCommandNode): void;
+
+	protected abstract walkSelectLockingNode(node: SelectLockingNode): void;
 
 	protected abstract walkSetItemNode(node: SetItemNode): void;
 
@@ -221,6 +224,9 @@ export abstract class BaseWalker {
 				break;
 			case "setItemNode":
 				this.walkSetItemNode(node);
+				break;
+			case "selectLockingNode":
+				this.walkSelectLockingNode(node);
 				break;
 			case "setSessionsCharacteristicsAsTransactionCommandNode":
 				this.walkSetSessionsCharacteristicsAsTransactionCommandNode(node);

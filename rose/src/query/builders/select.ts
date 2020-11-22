@@ -7,8 +7,10 @@ import {
 	OrderByExpressionNode,
 	ParameterOrValueExpressionNode,
 	SelectCommandNode,
+	SelectLockingNode,
 	SelectOutputExpression,
-	SubSelectNode
+	SubSelectNode,
+	TableReferenceNode
 } from "../ast";
 import { QuerySelectorProcessor } from "../metadata";
 import { ColumnMetamodel, QueryTable, TableMetamodel } from "../metamodel";
@@ -37,7 +39,8 @@ abstract class BaseSelectQueryBuilder {
 		joins: [],
 		conditions: [],
 		ordering: [],
-		grouping: []
+		grouping: [],
+		locking: []
 	};
 
 	/**
@@ -152,6 +155,23 @@ abstract class BaseSelectQueryBuilder {
 		};
 		return this;
 	}
+
+	@Clone()
+	for(lockStrength: SelectLockingNode['strength'], options: {
+		of?: QueryTable[],
+		wait?: SelectLockingNode['wait']
+	} = {}): this {
+		this.queryAst.locking.push({
+			type: 'selectLockingNode',
+			strength: lockStrength,
+			of: options.of?.map((queryTable): TableReferenceNode => ({
+				type: 'tableReferenceNode',
+				tableName: queryTable.$table.name
+			})) ?? [],
+			wait: options.wait
+		});
+		return this;
+	}
 }
 
 export class SelectQueryBuilder<TQuerySelector extends QuerySelector> extends BaseSelectQueryBuilder {
@@ -174,7 +194,8 @@ export class SelectQueryBuilder<TQuerySelector extends QuerySelector> extends Ba
 			joins: [],
 			conditions: [],
 			ordering: [],
-			grouping: []
+			grouping: [],
+			locking: []
 		};
 		return this;
 	}
@@ -214,7 +235,8 @@ export class SubQueryBuilder<TParams> extends BaseSelectQueryBuilder {
 			joins: [],
 			conditions: [],
 			ordering: [],
-			grouping: []
+			grouping: [],
+			locking: []
 		};
 		this.processSubSelectExpressions(subSelectExpressions);
 		return this;

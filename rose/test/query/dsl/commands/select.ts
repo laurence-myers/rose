@@ -21,7 +21,7 @@ import {
 } from "../../../../src/query/dsl/select";
 import { and, col, constant, not, or } from "../../../../src/query/dsl/core";
 import { params, ParamsProxy, withParams } from "../../../../src/query/params";
-import { crossJoin, FinalisedQueryWithParams, fullJoin, innerJoin, exists } from "../../../../src/query";
+import { crossJoin, exists, FinalisedQueryWithParams, fullJoin, innerJoin } from "../../../../src/query";
 import { leftJoin, rightJoin } from "../../../../src/query/dsl/join";
 import assert = require('assert');
 
@@ -834,6 +834,140 @@ describe(`SELECT commands`, () => {
 			).toSql({
 				id: 123
 			});
+		});
+	});
+
+	describe(`Locking`, function () {
+		it(`Supports FOR UPDATE`, () => {
+			const actual = wrapQuery(
+				() => select({
+					id: QUsers.id
+				}).for('UPDATE'),
+				{}
+			);
+
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR UPDATE`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`Supports FOR SHARE`, () => {
+			const actual = wrapQuery(
+				() => select({
+					id: QUsers.id
+				}).for('SHARE'),
+				{}
+			);
+
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR SHARE`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`Supports FOR KEY SHARE`, () => {
+			const actual = wrapQuery(
+				() => select({
+					id: QUsers.id
+				}).for('KEY SHARE'),
+				{}
+			);
+
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR KEY SHARE`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`Supports FOR NO KEY UPDATE`, () => {
+			const actual = wrapQuery(
+				() => select({
+					id: QUsers.id
+				}).for('NO KEY UPDATE'),
+				{}
+			);
+
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR NO KEY UPDATE`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`Supports OF`, () => {
+			const actual = wrapQuery(
+				() => select({
+					id: QUsers.id
+				}).for('UPDATE', {
+					of: [QUsers, QLocations]
+				}),
+				{}
+			);
+
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR UPDATE OF "t1", "Locations"`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`Supports NOWAIT`, () => {
+			const actual = wrapQuery(
+				() => select({
+					id: QUsers.id
+				}).for('UPDATE', {
+					wait: "NOWAIT"
+				}),
+				{}
+			);
+
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR UPDATE NOWAIT`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`Supports SKIP LOCKED`, () => {
+			const actual = wrapQuery(
+				() => select({
+					id: QUsers.id
+				}).for('UPDATE', {
+					wait: "SKIP LOCKED"
+				}),
+				{}
+			);
+
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR UPDATE SKIP LOCKED`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`Supports multiple lock clauses`, () => {
+			const actual = wrapQuery(
+				() => select({
+					id: QUsers.id
+				}).for('NO KEY UPDATE', {
+					of: [QUsers],
+					wait: "SKIP LOCKED"
+				}).for('KEY SHARE', {
+					of: [QLocations],
+					wait: "NOWAIT"
+				}),
+				{}
+			);
+
+			const expected = {
+				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR NO KEY UPDATE OF "t1" SKIP LOCKED FOR KEY SHARE OF "Locations" NOWAIT`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
 		});
 	});
 });

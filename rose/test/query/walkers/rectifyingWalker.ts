@@ -37,7 +37,8 @@ describe("Rectifying Walker", function () {
 			joins: [],
 			conditions: [],
 			ordering: [],
-			grouping: []
+			grouping: [],
+			locking: []
 		};
 		const tableMap = new TableMap();
 		const walker = new RectifyingWalker(ast, tableMap);
@@ -73,7 +74,8 @@ describe("Rectifying Walker", function () {
 			joins: [],
 			conditions: [],
 			ordering: [],
-			grouping: []
+			grouping: [],
+			locking: []
 		};
 		const tableMap = new TableMap();
 		const walker = new RectifyingWalker(ast, tableMap);
@@ -117,7 +119,8 @@ describe("Rectifying Walker", function () {
 					}
 				],
 				ordering: [],
-				grouping: []
+				grouping: [],
+				locking: []
 			},
 			tableMap: new TableMap()
 		};
@@ -147,7 +150,8 @@ describe("Rectifying Walker", function () {
 				}
 			],
 			ordering: [],
-			grouping: []
+			grouping: [],
+			locking: []
 		};
 		const tableMap = new TableMap();
 		const walker = new RectifyingWalker(ast, tableMap);
@@ -259,7 +263,8 @@ describe("Rectifying Walker", function () {
 						"tableAlias": undefined
 					}
 				}
-			]
+			],
+			"locking": []
 		};
 		const tableMap = new TableMap();
 		const walker = new RectifyingWalker(ast, tableMap);
@@ -328,7 +333,8 @@ describe("Rectifying Walker", function () {
 						"tableAlias": "t1"
 					}
 				}
-			]
+			],
+			"locking": []
 		};
 		deepEqual(ast, expected);
 	});

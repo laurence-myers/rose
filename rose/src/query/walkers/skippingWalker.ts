@@ -20,13 +20,15 @@ import {
 	OnConflictDoUpdateNode,
 	OnConflictNode,
 	OnConflictTargetIndexesNode,
-	OnConflictTargetIndexNode, OnConflictTargetOnConstraintNode,
+	OnConflictTargetIndexNode,
+	OnConflictTargetOnConstraintNode,
 	OrderByExpressionNode,
 	ReleaseSavepointCommandNode,
 	RollbackCommandNode,
 	RollbackToSavepointCommandNode,
 	SavepointCommandNode,
 	SelectCommandNode,
+	SelectLockingNode,
 	SetItemNode,
 	SetSessionsCharacteristicsAsTransactionCommandNode,
 	SetTransactionCommandNode,
@@ -192,6 +194,11 @@ export class SkippingWalker extends BaseWalker {
 		this.walkNodes(node.conditions);
 		this.walkNodes(node.ordering);
 		this.walkNodes(node.grouping);
+		this.walkNodes(node.locking);
+	}
+
+	protected walkSelectLockingNode(node: SelectLockingNode): void {
+		this.walkNodes(node.of);
 	}
 
 	protected walkSetItemNode(node: SetItemNode): void {

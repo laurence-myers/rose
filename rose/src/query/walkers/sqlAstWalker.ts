@@ -22,13 +22,15 @@ import {
 	OnConflictDoUpdateNode,
 	OnConflictNode,
 	OnConflictTargetIndexesNode,
-	OnConflictTargetIndexNode, OnConflictTargetOnConstraintNode,
+	OnConflictTargetIndexNode,
+	OnConflictTargetOnConstraintNode,
 	OrderByExpressionNode,
 	ReleaseSavepointCommandNode,
 	RollbackCommandNode,
 	RollbackToSavepointCommandNode,
 	SavepointCommandNode,
 	SelectCommandNode,
+	SelectLockingNode,
 	SetItemNode,
 	SetSessionsCharacteristicsAsTransactionCommandNode,
 	SetTransactionCommandNode,
@@ -454,6 +456,22 @@ export class SqlAstWalker extends BaseWalker {
 		if (node.limit) {
 			this.sb += " ";
 			this.walk(node.limit);
+		}
+		if (node.locking.length > 0) {
+			this.walkNodes(node.locking);
+		}
+	}
+
+	protected walkSelectLockingNode(node: SelectLockingNode): void {
+		this.sb += " FOR ";
+		this.sb += node.strength;
+		if (node.of.length > 0) {
+			this.sb += " OF ";
+			node.of.forEach(this.doListWalk());
+		}
+		if (node.wait) {
+			this.sb += " ";
+			this.sb += node.wait;
 		}
 	}
 
