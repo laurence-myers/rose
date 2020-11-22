@@ -26,10 +26,6 @@ function isParamGetter<R>(value: any): value is ParamGetter<any, R> {
 	return value && typeof value == 'function';
 }
 
-export interface ColumnMetamodelOptions<R> {
-	references: R;
-}
-
 type BooleanUnaryOperators = 'IS NULL'
 	| 'IS NOT NULL'
 	| 'IS TRUE'
@@ -43,12 +39,10 @@ type ValueType<T> = ((params: unknown) => T) | ColumnMetamodel<T> | ParameterOrV
 
 export class ColumnMetamodel<T> {
 	public readonly $selectorKind: 'column' = 'column';
-	protected readonly $resultType!: T; // type-only value
 
 	constructor(
 		readonly table: TableMetamodel,
 		readonly name: string,
-		private options? : ColumnMetamodelOptions<any>
 	) {
 
 	}
