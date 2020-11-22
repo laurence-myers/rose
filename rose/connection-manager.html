@@ -104,6 +104,8 @@
   <div class="content">
 <article class="doc">
 <h1 class="page">Connection Manager and Database Context</h1>
+<div id="preamble">
+<div class="sectionbody">
 <div class="paragraph">
 <p>The AbstractConnectionManager and AbstractDatabaseContext are optional abstract classes that you may extend. In combination, they
 provide the following features:</p>
@@ -130,7 +132,7 @@ provide the following features:</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Extends <code>AbstractDatabaseContext</code>.</p>
+<p>Extend <code>AbstractDatabaseContext</code>.</p>
 </li>
 <li>
 <p>Add any properties that should be made available only when a database connection is available.</p>
@@ -151,6 +153,72 @@ provide the following features:</p>
 <p>You may also want to add a <code>dispose()</code> method, for cleanly closing the connection pool.</p>
 </li>
 </ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_example_implementation"><a class="anchor" href="#_example_implementation"></a>Example implementation</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">// This is some sort of repository that provides an interface to your database.
+// The exact implementation is not important for this example.
+class FilmRepository {
+	protected static getFilmsByTitleQuery = withParams&lt;{ name: string }&gt;()((p) =&gt;
+		select(FilmAllColumns)
+			.where(
+				matchesRegexp(QFilm.title.col(), p.name)
+			)
+			.finalise(p)
+	)
+
+	constructor(
+		protected readonly client: Queryable
+	) {}
+
+	public getFilmsByName() {
+		return FilmRepository.getFilmsByTitleQuery.execute(this.client, {
+			name: 'red'
+		});
+	}
+}
+
+// This database context provides access to an instance of FilmRepository, only once a connection is acquired.
+class DatabaseContext extends AbstractDatabaseContext {
+	public readonly filmRepository = new FilmRepository(this.client);
+}
+
+// The ConnectionManager creates an instance of DatabaseContext, and creates/destroys the connection pool.
+class ConnectionManager extends AbstractConnectionManager&lt;DatabaseContext&gt; {
+	constructor(protected readonly databaseUrl: string) {
+		super();
+	}
+
+	protected _pool: Pool | undefined;
+
+	protected get pool(): Pool {
+		if (!this._pool) {
+			this._pool = new Pool({
+				connectionString: this.databaseUrl,
+				max: 20,
+				idleTimeoutMillis: 30000,
+				connectionTimeoutMillis: 2000,
+			});
+		}
+		return this._pool;
+	}
+
+	public createDatabaseContext(poolClient: PoolClient): DatabaseContext {
+		return new DatabaseContext(poolClient);
+	}
+
+	public async dispose(): Promise&lt;void&gt; {
+		return this._pool?.end();
+	}
+}</code></pre>
+</div>
+</div>
+</div>
 </div>
 </article>
 <aside class="toc sidebar" data-title="Contents" data-levels="2">
