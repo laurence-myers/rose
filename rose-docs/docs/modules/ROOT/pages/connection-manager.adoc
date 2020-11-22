@@ -11,10 +11,17 @@ You do not need to use these classes to make use of _rose_'s other features.
 
 To make use of them:
 
-- Extends `AbstractDatabaseContext`.
+- Extend `AbstractDatabaseContext`.
   - Add any properties that should be made available only when a database connection is available.
   - As an example, if you use the repository pattern to access entities, you could have a property `public readonly filmRepository = new FilmRepository(this.client)`.
 - Extend `AbstractConnectionManager`
   - `createDatabaseContext()` should return an ew instance of your concrete `DatabaseContext` class.
   - `pool()` should initialise and/or return a singleton instance of your connection pool.
   - You may also want to add a `dispose()` method, for cleanly closing the connection pool.
+
+== Example implementation
+
+[source,typescript]
+----
+include::example$/test/connection-manager.ts[tag=example1,indent=0]
+----
