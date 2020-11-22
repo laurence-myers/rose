@@ -46,8 +46,33 @@ export interface BinaryOperationNode {
 	right: ParameterOrValueExpressionNode | ExpressionListNode;
 }
 
+export type BooleanBinaryOperator =
+	// Equality
+	| '='
+	| '!='
+	// Comparison
+	| '<'
+	| '<='
+	| '>'
+	| '>='
+	// Regexp
+	| '~'
+	| '~*'
+	| '!~'
+	| '!~*'
+	// Misc
+	| 'IS DISTINCT FROM'
+	| 'IS NOT DISTINCT FROM'
+	| 'IN'
+	| 'OVERLAPS'
+	// Pattern matching
+	| 'LIKE'
+	| 'NOT LIKE'
+	| 'ILIKE'
+	| 'NOT ILIKE';
+
 export interface BooleanBinaryOperationNode extends BinaryOperationNode {
-	operator: '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN' | 'OVERLAPS';
+	operator: BooleanBinaryOperator;
 }
 
 export interface UnaryOperationNode {
@@ -104,7 +129,7 @@ export interface NaturalSyntaxFunctionExpressionNodeArgument {
 
 export interface NaturalSyntaxFunctionExpressionNode {
 	type: 'naturalSyntaxFunctionExpressionNode';
-	name: string;
+	name?: string;
 	omitParentheses?: boolean;
 	arguments: NaturalSyntaxFunctionExpressionNodeArgument[];
 }

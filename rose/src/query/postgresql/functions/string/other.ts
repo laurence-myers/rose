@@ -143,6 +143,17 @@ export function quote_nullable(stringOrValue: ParameterOrValueExpressionNode): F
 }
 
 /**
+ * Return captured substring(s) resulting from the first match of a POSIX regular expression to the string. See Section 9.7.3 for more information.
+ */
+export function regexp_match(string: ParameterOrValueExpressionNode, pattern: ParameterOrValueExpressionNode, flags? : ParameterOrValueExpressionNode): FunctionExpressionNode {
+	if (flags !== undefined) {
+		return createFunctionNode('regexp_match', string, pattern, flags);
+	} else {
+		return createFunctionNode('regexp_match', string, pattern);
+	}
+}
+
+/**
  * Return all captured substrings resulting from matching a POSIX regular expression against the string. See Section 9.7.3 for more information.
  */
 export function regexp_matches(string: ParameterOrValueExpressionNode, pattern: ParameterOrValueExpressionNode, flags? : ParameterOrValueExpressionNode): FunctionExpressionNode {

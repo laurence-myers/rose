@@ -54,7 +54,7 @@ export function createFunctionNode(name: string, ...args: ParameterOrValueExpres
 	};
 }
 
-export function createNaturalSyntaxFunctionNode(name: string, keywords: NaturalSyntaxFunctionExpressionNodeArgument[], omitParentheses?: boolean): NaturalSyntaxFunctionExpressionNode {
+export function createNaturalSyntaxFunctionNode(name: string | undefined, keywords: NaturalSyntaxFunctionExpressionNodeArgument[], omitParentheses?: boolean): NaturalSyntaxFunctionExpressionNode {
 	return {
 		type: 'naturalSyntaxFunctionExpressionNode',
 		name: name,

@@ -276,7 +276,9 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkNaturalSyntaxFunctionExpressionNode(node: NaturalSyntaxFunctionExpressionNode): void {
-		this.sb += node.name;
+		if (node.name !== undefined) {
+			this.sb += node.name;
+		}
 		if (!node.omitParentheses) {
 			this.sb += '(';
 		} else {
