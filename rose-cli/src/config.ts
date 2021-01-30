@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import { Static, Type } from '@sinclair/typebox';
 import { defaultPostgresTypeMap } from "./codegen/dbtypes";
 import { ConfigError } from "./errors";
-import ajv = require("ajv");
+import Ajv from "ajv";
 
 const stringSchema = Type.String({ minLength: 1 });
 
@@ -11,7 +11,7 @@ const typeMapEntrySchema = Type.Object({
 	from: Type.Optional(stringSchema)
 });
 
-const typeMapObjectSchema = Type.Map(Type.Union([
+const typeMapObjectSchema = Type.Dict(Type.Union([
 	typeMapEntrySchema,
 	stringSchema
 ]));
@@ -31,7 +31,7 @@ export const configSchema = Type.Object({
 export interface CliConfig extends Static<typeof configSchema> {
 }
 
-export interface PostgresTypeMap extends Map<string, Static<typeof typeMapEntrySchema>> {
+export interface PostgresTypeMap extends Map<string, TypeMapEntry> {
 }
 
 export interface TypeMapObject extends Static<typeof typeMapObjectSchema> {
@@ -63,7 +63,7 @@ const defaultIgnoredTables = [
 	'SequelizeMeta' // umzug (Sequelize)
 ].map((name) => name.toLowerCase());
 
-export function convertTypeMapObjectToMap(obj: Static<typeof typeMapObjectSchema>, outputMap: Map<string, Static<typeof typeMapEntrySchema>> = new Map()): Map<string, Static<typeof typeMapEntrySchema>> {
+export function convertTypeMapObjectToMap(obj: TypeMapObject, outputMap: Map<string, TypeMapEntry> = new Map()): Map<string, TypeMapEntry> {
 	for (const entry of Object.entries(obj)) {
 		let value = entry[1];
 		if (typeof value === 'string') {
@@ -78,7 +78,7 @@ export function convertTypeMapObjectToMap(obj: Static<typeof typeMapObjectSchema
 }
 
 export function mergeConfigWithDefaults(config: CliConfig = {}): IntrospectConfig {
-	let globalTypes: Map<string, Static<typeof typeMapEntrySchema>> = new Map(defaultPostgresTypeMap.entries());
+	let globalTypes: Map<string, TypeMapEntry> = new Map(defaultPostgresTypeMap.entries());
 	globalTypes = convertTypeMapObjectToMap(config?.types?.global || {}, globalTypes);
 	const columnTypes = convertTypeMapObjectToMap(config?.types?.columns || {});
 	return {
@@ -100,7 +100,9 @@ export async function parseConfig(configFileName: string): Promise<CliConfig> {
 		console.error(err);
 		throw new ConfigError(`Could not read from config file "${ configFileName }", make sure it is well-formed JSON.`);
 	}
-	const validator = ajv();
+	const validator = new Ajv({
+		strict: false
+	});
 	const isValid = validator.validate(configSchema, rawData);
 	if (!isValid) {
 		throw new ConfigError(`Invalid config: ${ validator.errorsText() }`);
