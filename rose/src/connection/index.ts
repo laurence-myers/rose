@@ -89,7 +89,8 @@ export abstract class AbstractConnectionManager<TContext extends AbstractDatabas
         let db;
         try {
             db = await this.getConnection();
-            return cb(db);
+            const result = await cb(db);
+            return result;
         } finally {
             if (db) {
                 db.dispose();
@@ -105,7 +106,8 @@ export abstract class AbstractConnectionManager<TContext extends AbstractDatabas
         let db;
         try {
             db = await this.getConnection();
-            return db.inTransaction(cb);
+            const result = await db.inTransaction(cb);
+            return result;
         } finally {
             if (db) {
                 db.dispose();
