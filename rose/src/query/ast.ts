@@ -138,6 +138,13 @@ export interface NaturalSyntaxFunctionExpressionNode {
 	arguments: NaturalSyntaxFunctionExpressionNodeArgument[];
 }
 
+export interface CastNode {
+	type: 'castNode';
+	castType: string;
+	expression: ParameterOrValueExpressionNode;
+	requiresParentheses?: boolean;
+}
+
 /**
  * https://www.postgresql.org/docs/9.6/static/sql-expressions.html
  *
@@ -159,6 +166,7 @@ export interface NaturalSyntaxFunctionExpressionNode {
  */
 export type ValueExpressionNode =
 	LiteralNode
+	| CastNode
 	| ColumnReferenceNode
 	| BinaryOperationNode
 	| UnaryOperationNode

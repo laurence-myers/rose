@@ -19,7 +19,7 @@ import {
 	selectSubQuery,
 	subSelect
 } from "../../../../src/query/dsl/select";
-import { and, col, constant, not, or } from "../../../../src/query/dsl/core";
+import { and, cast, col, constant, not, or } from "../../../../src/query/dsl/core";
 import { params, ParamsProxy, withParams } from "../../../../src/query/params";
 import { crossJoin, exists, FinalisedQueryWithParams, fullJoin, innerJoin } from "../../../../src/query";
 import { leftJoin, rightJoin } from "../../../../src/query/dsl/join";
@@ -965,6 +965,36 @@ describe(`SELECT commands`, () => {
 
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR NO KEY UPDATE OF "t1" SKIP LOCKED FOR KEY SHARE OF "Locations" NOWAIT`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+	});
+
+	describe(`casts`, () => {
+		it(`can cast a value`, () => {
+			const actual = wrapQuery(
+				() => select({
+					id: selectExpression(cast(QUsers.id.col(), 'TEXT'))
+				}), {}
+			);
+
+			const expected = {
+				sql: `SELECT "t1"."id"::TEXT as "id" FROM "Users" as "t1"`,
+				parameters: []
+			};
+			assert.deepEqual(actual, expected);
+		});
+
+		it(`can wrap a cast expression in parentheses`, () => {
+			const actual = wrapQuery(
+				() => select({
+					id: selectExpression(cast(QUsers.id.col(), 'TEXT', true))
+				}), {}
+			);
+
+			const expected = {
+				sql: `SELECT ("t1"."id")::TEXT as "id" FROM "Users" as "t1"`,
 				parameters: []
 			};
 			assert.deepEqual(actual, expected);

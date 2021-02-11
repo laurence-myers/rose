@@ -4,6 +4,7 @@ import {
 	BeginCommandNode,
 	BinaryOperationNode,
 	BooleanExpressionGroupNode,
+	CastNode,
 	ColumnReferenceNode,
 	CommitCommandNode,
 	ConstantNode,
@@ -52,6 +53,8 @@ export abstract class BaseWalker {
 	protected abstract walkBinaryOperationNode(node: BinaryOperationNode): void;
 
 	protected abstract walkBooleanExpressionGroupNode(node: BooleanExpressionGroupNode): void;
+
+	protected abstract walkCastNode(node: CastNode): void;
 
 	protected abstract walkColumnReferenceNode(node: ColumnReferenceNode): void;
 
@@ -146,6 +149,9 @@ export abstract class BaseWalker {
 				break;
 			case "booleanExpressionGroupNode":
 				this.walkBooleanExpressionGroupNode(node);
+				break;
+			case "castNode":
+				this.walkCastNode(node);
 				break;
 			case "columnReferenceNode":
 				this.walkColumnReferenceNode(node);

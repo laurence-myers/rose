@@ -3,6 +3,7 @@ import {
 	BeginCommandNode,
 	BinaryOperationNode,
 	BooleanExpressionGroupNode,
+	CastNode,
 	ColumnReferenceNode,
 	CommitCommandNode,
 	ConstantNode,
@@ -61,6 +62,10 @@ export class SkippingWalker extends BaseWalker {
 	protected walkBinaryOperationNode(node: BinaryOperationNode): void {
 		this.walk(node.left);
 		this.walk(node.right);
+	}
+
+	protected walkCastNode(node: CastNode): void {
+		this.walk(node.expression);
 	}
 
 	protected walkCommitCommandNode(node: CommitCommandNode): void {

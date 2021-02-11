@@ -59,6 +59,7 @@ function processOutputExpression(expr: SelectOutputExpression, row: any, output:
 			break;
 
 		case "binaryOperationNode":
+		case "castNode":
 		case "columnReferenceNode":
 		case "constantNode":
 		case "functionExpressionNode":

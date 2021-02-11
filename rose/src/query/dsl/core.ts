@@ -2,6 +2,7 @@ import {
 	AliasedExpressionNode,
 	BooleanExpression,
 	BooleanExpressionGroupNode,
+	CastNode,
 	ColumnReferenceNode,
 	ConstantNode,
 	ExpressionListNode,
@@ -47,6 +48,15 @@ export function and(first: BooleanExpression, second: BooleanExpression, ...rest
 		type: 'booleanExpressionGroupNode',
 		operator: 'and',
 		expressions: [first, second].concat(rest)
+	};
+}
+
+export function cast(expression: ParameterOrValueExpressionNode, castType: string, requiresParentheses: boolean = false): CastNode {
+	return {
+		type: "castNode",
+		castType,
+		expression,
+		requiresParentheses
 	};
 }
 

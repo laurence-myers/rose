@@ -5,6 +5,7 @@ import {
 	BinaryOperationNode,
 	BooleanExpression,
 	BooleanExpressionGroupNode,
+	CastNode,
 	ColumnReferenceNode,
 	CommitCommandNode,
 	ConstantNode,
@@ -139,6 +140,18 @@ export class SqlAstWalker extends BaseWalker {
 			this.walk(node);
 		});
 		this.sb += `)`;
+	}
+
+	protected walkCastNode(node: CastNode): void {
+		if (node.requiresParentheses) {
+			this.sb += `(`;
+		}
+		this.walk(node.expression);
+		if (node.requiresParentheses) {
+			this.sb += `)`;
+		}
+		this.sb += '::';
+		this.sb += node.castType;
 	}
 
 	protected walkColumnReferenceNode(node: ColumnReferenceNode): void {
