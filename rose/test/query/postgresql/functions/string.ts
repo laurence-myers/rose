@@ -1,11 +1,11 @@
 import * as assert from "assert";
-import { QUsers } from "../fixtures";
-import { select } from "../../src/query/dsl/commands";
-import { trim } from "../../src/query/postgresql/functions/string/sql";
-import { btrim, pg_client_encoding } from "../../src/query/postgresql/functions/string/other";
-import { selectExpression } from "../../src/query/dsl/select";
-import { col, constant } from "../../src/query/dsl/core";
-import { QuerySelector, withParams } from "../../src/query";
+import { QUsers } from "../../../fixtures";
+import { select } from "../../../../src/query/dsl/commands";
+import { trim } from "../../../../src/query/postgresql/functions/string/sql";
+import { btrim, pg_client_encoding } from "../../../../src/query/postgresql/functions/string/other";
+import { selectExpression } from "../../../../src/query/dsl/select";
+import { col, constant } from "../../../../src/query/dsl/core";
+import { QuerySelector, withParams } from "../../../../src/query";
 
 describe(`String functions`, function () {
 	function wrapQuery<T extends QuerySelector>(querySelect: T) {
