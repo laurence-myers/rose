@@ -13,6 +13,18 @@ import {
 } from "../ast";
 import { ColumnMetamodel } from "../metamodel";
 
+type SupportedConstant =
+	| number
+	| string
+	| boolean
+	| Buffer
+	| null
+	| ReadonlyArray<number>
+	| ReadonlyArray<string>
+	| ReadonlyArray<boolean>
+	| ReadonlyArray<Buffer>
+	| ReadonlyArray<null>;
+
 export function alias<TNode>(aliasedNode: TNode, alias: string): AliasedExpressionNode<TNode> {
 	return {
 		type: 'aliasedExpressionNode',
@@ -64,7 +76,7 @@ export function col(column: ColumnMetamodel<unknown>): ColumnReferenceNode {
 	return column.toColumnReferenceNode();
 }
 
-export function constant<T extends number | string | boolean>(value: T): ConstantNode<T> {
+export function constant<T extends SupportedConstant>(value: T): ConstantNode<T> {
 	return {
 		type: "constantNode",
 		getter: (): T => value
