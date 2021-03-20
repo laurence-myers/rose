@@ -1,6 +1,6 @@
 {
   "name": "@rosepg/rose",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "Type-safe query builder DSL, data mapper, and mini ORM for PostgreSQL",
   "main": "index.js",
   "scripts": {
