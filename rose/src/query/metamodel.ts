@@ -129,7 +129,7 @@ export class ColumnMetamodel<T> {
 		return this.createBooleanBinaryOperationNode('IN', value);
 	}
 
-	eqAny(value: ValueType<T | T[]>): BooleanBinaryOperationNode {
+	eqAny(value: ValueType<T | ReadonlyArray<T>>): BooleanBinaryOperationNode {
 		return this.eq(any(this.coerceToNode(value)));
 	}
 

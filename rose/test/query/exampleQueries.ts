@@ -158,10 +158,10 @@ describe(`Example queries`, function () {
 
 	describe(`Builder templates`, function () {
 		interface FindAllCriteria {
-			categories? : number[];
-			clients? : number[];
+			categories? : ReadonlyArray<number>;
+			clients? : ReadonlyArray<number>;
 			tags? : string;
-			platforms? : number[];
+			platforms? : ReadonlyArray<number>;
 		}
 
 		interface Page {
