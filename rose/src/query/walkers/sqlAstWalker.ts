@@ -455,7 +455,16 @@ export class SqlAstWalker extends BaseWalker {
 		}
 		if (node.conditions.length > 0) {
 			this.sb += " WHERE ";
-			this.walkNodes(node.conditions);
+			// If there's more than one "where" condition, wrap them in `and` by default
+			if (node.conditions.length > 1) {
+				this.walkBooleanExpressionGroupNode({
+					expressions: node.conditions,
+					operator: "and",
+					type: "booleanExpressionGroupNode"
+				});
+			} else {
+				this.walkNodes(node.conditions);
+			}
 		}
 		if (node.grouping.length > 0) {
 			this.sb += " GROUP BY (";

@@ -45,12 +45,61 @@ describe(`SELECT commands`, () => {
 			userId: 1
 		};
 		const actual = wrapQuery<QueryParams>(
-			(p) => select(querySelect).where(QUsers.id.eq(p.userId)),
+			(p) => select(querySelect)
+				.where(QUsers.id.eq(p.userId)),
 			parameterValues
 		);
 		const expected = {
 			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE "t1"."id" = $1`,
 			parameters: [1]
+		};
+		assert.deepEqual(actual, expected);
+	});
+
+	it("supports calling `where()` multiple times", function () {
+		const querySelect = {
+			id: QUsers.id
+		};
+
+		interface QueryParams {
+			userId: number;
+		}
+		const parameterValues = {
+			userId: 1
+		};
+		const actual = wrapQuery<QueryParams>(
+			(p) => select(querySelect)
+				.where(QUsers.id.eq(p.userId))
+				.where(QUsers.name.eq(constant("Phileas"))),
+			parameterValues
+		);
+		const expected = {
+			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE ("t1"."id" = $1 AND "t1"."name" = $2)`,
+			parameters: [1, "Phileas"]
+		};
+		assert.deepEqual(actual, expected);
+	});
+
+	it("can replace all existing `where()` clauses", function () {
+		const querySelect = {
+			id: QUsers.id
+		};
+
+		interface QueryParams {
+			userId: number;
+		}
+		const parameterValues = {
+			userId: 1
+		};
+		const actual = wrapQuery<QueryParams>(
+			(p) => select(querySelect)
+				.where(QUsers.id.eq(p.userId))
+				.where(QUsers.name.eq(constant("Phileas")), { replace: true }),
+			parameterValues
+		);
+		const expected = {
+			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE "t1"."name" = $1`,
+			parameters: ["Phileas"]
 		};
 		assert.deepEqual(actual, expected);
 	});

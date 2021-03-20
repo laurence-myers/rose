@@ -114,8 +114,12 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	where(whereExpression: BooleanExpression): this {
-		this.queryAst.conditions.push(whereExpression);
+	where(whereExpression: BooleanExpression, options: { replace?: boolean } = {}): this {
+		if (options?.replace) {
+			this.queryAst.conditions = [whereExpression];
+		} else {
+			this.queryAst.conditions.push(whereExpression);
+		}
 		return this;
 	}
 
