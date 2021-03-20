@@ -2204,10 +2204,10 @@ ts-node@9.0.0:
     source-map-support "^0.5.17"
     yn "3.1.1"
 
-tscodegendsl@0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/tscodegendsl/-/tscodegendsl-0.0.1.tgz#f8542a5f6585379ae2b4a8cdec2d25731c2f6589"
-  integrity sha512-DgKS/ByPKLIsiQ2djkfp/8wN/jVpiXitts+A45mODz0ijfgiKAsmRPKniLnU2V5/xhQ9XkvOxYIXje9qH/T8UQ==
+tscodegendsl@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/tscodegendsl/-/tscodegendsl-0.0.4.tgz#468aae17abf445089dc969f29825e646ecde95d6"
+  integrity sha512-bAI3pVmozPhsKs2OH6xh72GJPrvCSp/FZP9z8kioon7FKx9ZShAkgWEqxDff6xEZwGFTf04sAmP4n2nRWKNgrA==
 
 tslib@^1.8.1:
   version "1.10.0"

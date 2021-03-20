@@ -66,6 +66,7 @@ export class TFooTable extends rose.QueryTable {
 }
 
 export const QFooTable = rose.deepFreeze(new TFooTable());
+
 export const FooTableAllColumns = {
 	column1: QFooTable.column1,
 	column2: QFooTable.column2,
@@ -84,6 +85,7 @@ export const FooTableAllColumns = {
 	customType3: QFooTable.customType3,
 	enumType1: QFooTable.enumType1,
 };
+
 export const FooTableDefaultQueries = {
 	insertOne: function insertOne(row: FooTableInsertRow) {
 		return rose.insertFromObject<TFooTable, FooTableInsertRow>(QFooTable, row).finalise({});

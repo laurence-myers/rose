@@ -13,6 +13,7 @@ import {
 	lit,
 	modl,
 	ModuleNode,
+	newLine,
 	propLookup,
 	stmt,
 	varDecl
@@ -78,6 +79,7 @@ export function TableMetamodelTemplate(table: TableMetadata): ModuleNode {
 					]
 				),
 				true
-			))
+			)),
+			newLine()
 		]));
 }

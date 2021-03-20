@@ -20,9 +20,11 @@ export class TFooTable extends rose.QueryTable {
 }
 
 export const QFooTable = rose.deepFreeze(new TFooTable());
+
 export const FooTableAllColumns = {
 	id: QFooTable.id,
 };
+
 export const FooTableDefaultQueries = {
 	insertOne: function insertOne(row: FooTableInsertRow) {
 		return rose.insertFromObject<TFooTable, FooTableInsertRow>(QFooTable, row).finalise({});

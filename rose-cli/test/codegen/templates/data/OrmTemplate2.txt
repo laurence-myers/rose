@@ -4,6 +4,7 @@ export const FooTableAllColumns = {
 	name: QFooTable.name,
 	createdAt: QFooTable.createdAt,
 };
+
 export const FooTableDefaultQueries = {
 	getOne: (function getOne() {
 		interface Params {

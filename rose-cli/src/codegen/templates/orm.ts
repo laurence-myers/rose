@@ -16,6 +16,7 @@ import {
 	invokeMethodChain,
 	modl,
 	ModuleNode,
+	newLine,
 	obj,
 	ObjectPropertyNode,
 	objProp,
@@ -267,6 +268,7 @@ export function OrmTemplate(tableMetadata: TableMetadata): ModuleNode {
 		imports,
 		body([
 			stmt(generateAllColumns(tableMetadata)),
+			newLine(),
 			stmt(varDecl(
 				'const',
 				tableMetadata.niceName + 'DefaultQueries',

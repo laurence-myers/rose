@@ -3,6 +3,7 @@ import * as rose from '@rosepg/rose';
 export const FooTableAllColumns = {
 	id: QFooTable.id,
 };
+
 export const FooTableDefaultQueries = {
 	getOne: (function getOne() {
 		interface Params {
