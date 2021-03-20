@@ -3,7 +3,7 @@
 import * as rose from '@rosepg/rose';
 
 export interface PaymentRow {
-	amount: number;
+	amount: string;
 	customerId: number;
 	paymentDate: Date;
 	paymentId: number;
@@ -12,7 +12,7 @@ export interface PaymentRow {
 }
 
 export interface PaymentInsertRow {
-	amount: number;
+	amount: string;
 	customerId: number;
 	paymentDate: Date;
 	paymentId?: number;
@@ -21,7 +21,7 @@ export interface PaymentInsertRow {
 }
 
 export class TPayment extends rose.QueryTable {
-	amount = new rose.ColumnMetamodel<number>(this.$table, 'amount');
+	amount = new rose.ColumnMetamodel<string>(this.$table, 'amount');
 	customerId = new rose.ColumnMetamodel<number>(this.$table, 'customer_id');
 	paymentDate = new rose.ColumnMetamodel<Date>(this.$table, 'payment_date');
 	paymentId = new rose.ColumnMetamodel<number>(this.$table, 'payment_id');

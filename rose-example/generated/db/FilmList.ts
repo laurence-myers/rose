@@ -8,7 +8,7 @@ export interface FilmListRow {
 	description: string | null;
 	fid: number | null;
 	length: number | null;
-	price: number | null;
+	price: string | null;
 	rating: 'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null;
 	title: string | null;
 }
@@ -19,7 +19,7 @@ export interface FilmListInsertRow {
 	description?: string | null;
 	fid?: number | null;
 	length?: number | null;
-	price?: number | null;
+	price?: string | null;
 	rating?: 'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null;
 	title?: string | null;
 }
@@ -30,7 +30,7 @@ export class TFilmList extends rose.QueryTable {
 	description = new rose.ColumnMetamodel<string | null>(this.$table, 'description');
 	fid = new rose.ColumnMetamodel<number | null>(this.$table, 'fid');
 	length = new rose.ColumnMetamodel<number | null>(this.$table, 'length');
-	price = new rose.ColumnMetamodel<number | null>(this.$table, 'price');
+	price = new rose.ColumnMetamodel<string | null>(this.$table, 'price');
 	rating = new rose.ColumnMetamodel<'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null>(this.$table, 'rating');
 	title = new rose.ColumnMetamodel<string | null>(this.$table, 'title');
 

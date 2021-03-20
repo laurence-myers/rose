@@ -13,8 +13,8 @@ export interface FilmRow {
 	rating: 'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null;
 	releaseYear: number | null;
 	rentalDuration: number;
-	rentalRate: number;
-	replacementCost: number;
+	rentalRate: string;
+	replacementCost: string;
 	specialFeatures: string | null;
 	title: string;
 }
@@ -30,8 +30,8 @@ export interface FilmInsertRow {
 	rating?: 'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null;
 	releaseYear?: number | null;
 	rentalDuration?: number;
-	rentalRate?: number;
-	replacementCost?: number;
+	rentalRate?: string;
+	replacementCost?: string;
 	specialFeatures?: string | null;
 	title: string;
 }
@@ -47,8 +47,8 @@ export class TFilm extends rose.QueryTable {
 	rating = new rose.ColumnMetamodel<'G' | 'PG' | 'PG-13' | 'R' | 'NC-17' | null>(this.$table, 'rating');
 	releaseYear = new rose.ColumnMetamodel<number | null>(this.$table, 'release_year');
 	rentalDuration = new rose.ColumnMetamodel<number>(this.$table, 'rental_duration');
-	rentalRate = new rose.ColumnMetamodel<number>(this.$table, 'rental_rate');
-	replacementCost = new rose.ColumnMetamodel<number>(this.$table, 'replacement_cost');
+	rentalRate = new rose.ColumnMetamodel<string>(this.$table, 'rental_rate');
+	replacementCost = new rose.ColumnMetamodel<string>(this.$table, 'replacement_cost');
 	specialFeatures = new rose.ColumnMetamodel<string | null>(this.$table, 'special_features');
 	title = new rose.ColumnMetamodel<string>(this.$table, 'title');
 

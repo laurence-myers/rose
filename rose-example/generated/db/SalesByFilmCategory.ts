@@ -4,17 +4,17 @@ import * as rose from '@rosepg/rose';
 
 export interface SalesByFilmCategoryRow {
 	category: string | null;
-	totalSales: number | null;
+	totalSales: string | null;
 }
 
 export interface SalesByFilmCategoryInsertRow {
 	category?: string | null;
-	totalSales?: number | null;
+	totalSales?: string | null;
 }
 
 export class TSalesByFilmCategory extends rose.QueryTable {
 	category = new rose.ColumnMetamodel<string | null>(this.$table, 'category');
-	totalSales = new rose.ColumnMetamodel<number | null>(this.$table, 'total_sales');
+	totalSales = new rose.ColumnMetamodel<string | null>(this.$table, 'total_sales');
 
 	constructor ($tableAlias?: string) {
 		super(new rose.TableMetamodel('sales_by_film_category', $tableAlias));
