@@ -11,7 +11,7 @@ export interface FooTableInsertRow {
 }
 
 export class TFooTable extends rose.QueryTable {
-	id = new rose.ColumnMetamodel<number>(this.$table, 'id');
+	readonly id = new rose.ColumnMetamodel<number>(this.$table, 'id');
 
 	constructor ($tableAlias?: string) {
 		super(new rose.TableMetamodel('foo_table', $tableAlias));

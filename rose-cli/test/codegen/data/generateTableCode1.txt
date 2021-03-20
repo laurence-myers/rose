@@ -42,22 +42,22 @@ export interface FooTableInsertRow {
 }
 
 export class TFooTable extends rose.QueryTable {
-	column1 = new rose.ColumnMetamodel<number>(this.$table, 'column_1');
-	column2 = new rose.ColumnMetamodel<number>(this.$table, 'column_2');
-	column3 = new rose.ColumnMetamodel<number | null>(this.$table, 'column_3');
-	column4 = new rose.ColumnMetamodel<number | null>(this.$table, 'column_4');
-	column5 = new rose.ColumnMetamodel<string>(this.$table, 'column_5');
-	column6 = new rose.ColumnMetamodel<string>(this.$table, 'column_6');
-	column7 = new rose.ColumnMetamodel<string | null>(this.$table, 'column_7');
-	column8 = new rose.ColumnMetamodel<string | null>(this.$table, 'column_8');
-	column9 = new rose.ColumnMetamodel<Date>(this.$table, 'column_9');
-	column10 = new rose.ColumnMetamodel<Date>(this.$table, 'column_10');
-	column11 = new rose.ColumnMetamodel<Date | null>(this.$table, 'column_11');
-	column12 = new rose.ColumnMetamodel<Date | null>(this.$table, 'column_12');
-	customType1 = new rose.ColumnMetamodel<'bar' | 'baz' | null>(this.$table, 'custom_type_1');
-	customType2 = new rose.ColumnMetamodel<CustomType2 | null>(this.$table, 'custom_type_2');
-	customType3 = new rose.ColumnMetamodel<CustomType2>(this.$table, 'custom_type_3');
-	enumType1 = new rose.ColumnMetamodel<'active' | 'locked' | 'pending' | 'disabled' | null>(this.$table, 'enum_type_1');
+	readonly column1 = new rose.ColumnMetamodel<number>(this.$table, 'column_1');
+	readonly column2 = new rose.ColumnMetamodel<number>(this.$table, 'column_2');
+	readonly column3 = new rose.ColumnMetamodel<number | null>(this.$table, 'column_3');
+	readonly column4 = new rose.ColumnMetamodel<number | null>(this.$table, 'column_4');
+	readonly column5 = new rose.ColumnMetamodel<string>(this.$table, 'column_5');
+	readonly column6 = new rose.ColumnMetamodel<string>(this.$table, 'column_6');
+	readonly column7 = new rose.ColumnMetamodel<string | null>(this.$table, 'column_7');
+	readonly column8 = new rose.ColumnMetamodel<string | null>(this.$table, 'column_8');
+	readonly column9 = new rose.ColumnMetamodel<Date>(this.$table, 'column_9');
+	readonly column10 = new rose.ColumnMetamodel<Date>(this.$table, 'column_10');
+	readonly column11 = new rose.ColumnMetamodel<Date | null>(this.$table, 'column_11');
+	readonly column12 = new rose.ColumnMetamodel<Date | null>(this.$table, 'column_12');
+	readonly customType1 = new rose.ColumnMetamodel<'bar' | 'baz' | null>(this.$table, 'custom_type_1');
+	readonly customType2 = new rose.ColumnMetamodel<CustomType2 | null>(this.$table, 'custom_type_2');
+	readonly customType3 = new rose.ColumnMetamodel<CustomType2>(this.$table, 'custom_type_3');
+	readonly enumType1 = new rose.ColumnMetamodel<'active' | 'locked' | 'pending' | 'disabled' | null>(this.$table, 'enum_type_1');
 
 	constructor ($tableAlias?: string) {
 		super(new rose.TableMetamodel('foo_table', $tableAlias));

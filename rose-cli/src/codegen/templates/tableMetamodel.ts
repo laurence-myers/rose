@@ -43,7 +43,8 @@ export function TableMetamodelTemplate(table: TableMetadata): ModuleNode {
 								),
 								lit(`'${ escapeColumnName(col) }'`)
 							]
-						)
+						),
+						readonly: true
 					})),
 					{
 						exported: true,
