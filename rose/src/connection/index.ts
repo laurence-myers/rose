@@ -1,16 +1,48 @@
-import { Queryable } from "../execution";
+import { Queryable, QueryResult } from "../execution";
 import { transaction, Transaction } from "../query/dsl";
 
 interface Disposable {
     dispose(): void;
 }
 
-interface PoolClient extends Queryable {
+export interface PoolClient extends Queryable {
     release(err?: Error | boolean): void;
 }
 
-interface Pool {
+export interface Pool {
     connect(): Promise<PoolClient>
+}
+
+/**
+ * This class intercepts calls to `query()` and calls the logger function you provide.
+ *
+ * To use it, you can override the `AbstractDatabaseContext` constructor, an wrap the given client.
+ *
+ * E.g.
+ *
+ * ```
+ * * class DatabaseContext extends AbstractDatabaseContext {
+ *     constructor(client: PoolClient) {
+ *         super(new LoggingClient((query, values) => console.log({ query, values }), client);
+ *     }
+ * }
+ * ```
+ */
+export class LoggingClient implements PoolClient {
+    constructor(
+        protected readonly logger: (queryText: string, values: unknown[]) => void,
+        protected readonly client: PoolClient
+    ) {
+    }
+
+    query(queryText: string, values: any[]): Promise<QueryResult> {
+        this.logger(queryText, values);
+        return this.client.query(queryText, values);
+    }
+
+    release(err?: Error | boolean): void {
+        return this.client.release(err);
+    }
 }
 
 /**
