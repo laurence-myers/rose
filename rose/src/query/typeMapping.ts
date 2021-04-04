@@ -18,7 +18,7 @@ export type QueryOutput<T extends MappableTypes> = (
 	T extends ColumnMetamodel<infer U> ? U :
 	T extends SelectorExpression<infer U> ? U :
 	T extends SelectorNestedOne<infer U> ? (
-		U extends QuerySelector ? MappedQuerySelector<U> : never
+		U extends QuerySelector ? MappedQuerySelector<U>[] : never // TODO: "nested one" should return an object, not an array containing one object
 	) :
 	T extends SelectorNestedMany<infer U> ? (
 		U extends QuerySelector ? MappedQuerySelector<U>[] : never

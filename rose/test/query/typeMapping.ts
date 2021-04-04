@@ -55,10 +55,10 @@ describe(`Type mapping`, function () {
 		};
 
 		const result: QueryOutput<typeof querySelect> = {
-			user: {
+			user: [{
 				// id: 123,
 				name: 'Henry',
-			}
+			}] // TODO: fix selectNestedOne(), it should return a single object, not an array.
 			,
 			// foo: [123]
 		};
