@@ -1,4 +1,6 @@
 /**
+ * Only works for PostgreSQL docs up to v12. From v13, the tables have been removed. :(
+ *
  * To use:
  * - Go to the PostgreSQL docs page containing the functions, e.g. https://www.postgresql.org/docs/12/functions-aggregate.html
  * - In your browser, select and copy the rows of a table (excluding the header)
@@ -76,7 +78,8 @@ async function generateFromCsv(csvFile: string): Promise<void> {
 		if (!row) return;
 		const split = row.split('\t');
 		const funcSyntax = split[0];
-		const description = split[split.length - 1];
+		const descriptionIndex = 2;
+		const description = split[descriptionIndex];
 		const functionName = funcSyntax.substring(0, funcSyntax.indexOf('('));
 		const argsBody = funcSyntax.substring(funcSyntax.indexOf('(') + 1, funcSyntax.indexOf(')'));
 		const startOptionals = argsBody.indexOf('[,');

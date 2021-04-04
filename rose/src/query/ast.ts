@@ -73,7 +73,11 @@ export type BooleanBinaryOperator =
 	| 'LIKE'
 	| 'NOT LIKE'
 	| 'ILIKE'
-	| 'NOT ILIKE';
+	| 'NOT ILIKE'
+	// Array operators
+	| '@>'
+	| '<@'
+	| '&&';
 
 export interface BooleanBinaryOperationNode extends BinaryOperationNode {
 	operator: BooleanBinaryOperator;
