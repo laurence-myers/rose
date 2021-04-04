@@ -11,6 +11,7 @@ const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<stri
 	["bpchar", "string"],
 	["bytea", "Buffer"],
 	["char", "string"],
+	["\"char\"", "string"], // https://www.postgresql.org/docs/13/datatype-character.html#DATATYPE-CHARACTER-SPECIAL-TABLE
 	["character varying", "string"],
 	["character", "string"],
 	["cidr", "string"],
@@ -30,13 +31,14 @@ const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<stri
 	["int8", "string"], // 8 bytes, can't be represented as a FP number
 	["int8range", "any"], // ?
 	["integer", "number"],
-	["interval", "{ years?: number; months?: number; days?: number; hours?: number; minutes?: number; seconds?: number; milliseconds?: number; toPostgres(): string; toISO(): string; toISOString(): string }"], // ?
+	["interval", "{ years?: number; months?: number; days?: number; hours?: number; minutes?: number; seconds?: number; milliseconds?: number; toPostgres(): string; toISO(): string; toISOString(): string }"],
 	["json", "object"], // would be nice to make this more explicit
 	["jsonb", "object"], // would be nice to make this more explicit
 	["line", "any"], // ?
 	["lseg", "any"], // ?
 	["macaddr", "string"],
 	["money", "string"],
+	["name", "string"], // https://www.postgresql.org/docs/13/datatype-character.html#DATATYPE-CHARACTER-SPECIAL-TABLE
 	["numeric", "string"],
 	["numrange", "string"],
 	["oid", "number"], // unsigned four-byte integer
@@ -67,8 +69,6 @@ const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<stri
 	["varbit", "number"], // bit string?
 	["varchar", "string"],
 	["xml", "string"], // ?
-
-	// Not supported; other internal formats like
 ]);
 
 export const defaultPostgresTypeMap = (function () {
