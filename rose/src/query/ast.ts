@@ -161,7 +161,7 @@ export interface CastNode {
  * ✔ A function call - FunctionExpressionNode, NaturalSyntaxFunctionExpressionNode
  * ~ An aggregate expression - partial support using FunctionExpressionNode, no support for FILTER or WITHIN GROUP
  * x A window function call
- * x A type cast
+ * ✔ A type cast
  * x A collation expression
  * ✔ A scalar subquery - SubSelectNode
  * x An array constructor

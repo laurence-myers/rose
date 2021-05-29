@@ -296,7 +296,7 @@ export class SqlAstWalker extends BaseWalker {
 		}
 		if (!node.omitParentheses) {
 			this.sb += '(';
-		} else {
+		} else if (node.name !== undefined) {
 			this.sb += ' ';
 		}
 		if (node.arguments.length > 0) {
