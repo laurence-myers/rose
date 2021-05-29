@@ -1,5 +1,6 @@
 import {
 	AnyAliasedExpressionNode,
+	ArrayConstructorNode,
 	AstNode,
 	BeginCommandNode,
 	BinaryOperationNode,
@@ -107,6 +108,18 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += ` as "`;
 		this.sb += node.alias;
 		this.sb += `"`;
+	}
+
+	protected walkArrayConstructorNode(node: ArrayConstructorNode): void {
+		const isSubQueryResults = node.expressions.length === 1 && node.expressions[0].type === 'subSelectNode';
+		this.sb += `ARRAY`;
+		if (!isSubQueryResults) {
+			this.sb += `[`;
+		}
+		this.walkNodes(node.expressions);
+		if (!isSubQueryResults) {
+			this.sb += `]`;
+		}
 	}
 
 	protected walkBeginCommandNode(node: BeginCommandNode): void {

@@ -63,6 +63,9 @@ export function subSelect<TParams>(...outputExpressions: SubSelectExpression[]) 
 	return new SubQueryBuilder<TParams>(outputExpressions);
 }
 
+/**
+ * Creates an aliased sub-query
+ */
 export function selectSubQuery<TQuerySelector extends QuerySelector>(alias: string, querySelector: TQuerySelector) {
 	return new AliasedSubQueryBuilder(alias, querySelector);
 }

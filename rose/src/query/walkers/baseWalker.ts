@@ -1,5 +1,6 @@
 import {
 	AnyAliasedExpressionNode,
+	ArrayConstructorNode,
 	AstNode,
 	BeginCommandNode,
 	BinaryOperationNode,
@@ -48,6 +49,8 @@ import { assertNever } from "../../lang";
 
 export abstract class BaseWalker {
 	protected abstract walkAliasedExpressionNode(node: AnyAliasedExpressionNode): void;
+
+	protected abstract walkArrayConstructorNode(node: ArrayConstructorNode): void;
 
 	protected abstract walkBeginCommandNode(node: BeginCommandNode): void;
 
@@ -143,6 +146,9 @@ export abstract class BaseWalker {
 		switch (node.type) {
 			case "aliasedExpressionNode":
 				this.walkAliasedExpressionNode(node);
+				break;
+			case "arrayConstructorNode":
+				this.walkArrayConstructorNode(node);
 				break;
 			case "beginCommandNode":
 				this.walkBeginCommandNode(node);

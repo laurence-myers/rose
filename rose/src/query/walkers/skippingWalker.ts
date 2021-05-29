@@ -1,5 +1,6 @@
 import {
 	AnyAliasedExpressionNode,
+	ArrayConstructorNode,
 	BeginCommandNode,
 	BinaryOperationNode,
 	BooleanExpressionGroupNode,
@@ -52,6 +53,10 @@ import { BaseWalker } from "./baseWalker";
 export class SkippingWalker extends BaseWalker {
 	protected walkAliasedExpressionNode(node: AnyAliasedExpressionNode): void {
 		this.walk(node.expression);
+	}
+
+	protected walkArrayConstructorNode(node: ArrayConstructorNode): void {
+		this.walkNodes(node.expressions);
 	}
 
 	protected walkBeginCommandNode(node: BeginCommandNode): void {

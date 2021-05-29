@@ -1,5 +1,6 @@
 import {
 	AliasedExpressionNode,
+	ArrayConstructorNode,
 	BooleanExpression,
 	BooleanExpressionGroupNode,
 	CastNode,
@@ -9,6 +10,7 @@ import {
 	NotExpressionNode,
 	ParameterOrValueExpressionNode,
 	RowConstructorNode,
+	SubSelectNode,
 	TableReferenceNode
 } from "../ast";
 import { ColumnMetamodel } from "../metamodel";
@@ -65,6 +67,17 @@ export function and(first: BooleanExpression | readonly BooleanExpression[], ...
 		expressions: rectifyVariadicArgs(first, rest)
 	};
 }
+
+export function arrayConstructor(subQuery: SubSelectNode): ArrayConstructorNode;
+export function arrayConstructor(...expressions: Exclude<ParameterOrValueExpressionNode, SubSelectNode>[]): ArrayConstructorNode;
+export function arrayConstructor(...expressions: ParameterOrValueExpressionNode[]): ArrayConstructorNode {
+	return {
+		type: 'arrayConstructorNode',
+		expressions
+	};
+}
+
+export const array_ = arrayConstructor;
 
 export function cast(expression: ParameterOrValueExpressionNode, castType: string, requiresParentheses: boolean = false): CastNode {
 	return {

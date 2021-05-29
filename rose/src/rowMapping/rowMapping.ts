@@ -58,6 +58,7 @@ function processOutputExpression(expr: SelectOutputExpression, row: any, output:
 			}
 			break;
 
+		case "arrayConstructorNode":
 		case "binaryOperationNode":
 		case "castNode":
 		case "columnReferenceNode":

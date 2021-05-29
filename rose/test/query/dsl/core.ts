@@ -1,4 +1,4 @@
-import { and, constant, isTrue, NotEnoughExpressionsError, or, row } from "../../../src";
+import { and, arrayConstructor, constant, isTrue, NotEnoughExpressionsError, or, row, subSelect } from "../../../src";
 import { doSimpleSqlTest } from "../../test-utils";
 import { QOrders } from "../../fixtures";
 import { SqlAstWalker } from "../../../src/query/walkers/sqlAstWalker";
@@ -88,6 +88,35 @@ describe(`core`, () => {
 			});
 		});
 	}
+
+	describe(`array constructor`, () => {
+		it(`accepts zero arguments`, () => {
+			const astNode = arrayConstructor();
+			const expected = `ARRAY[]`;
+			doSimpleSqlTest(astNode, expected);
+		});
+
+		it(`accepts one argument`, () => {
+			const astNode = arrayConstructor(constant(true));
+			const expected = `ARRAY[$1]`;
+			doSimpleSqlTest(astNode, expected);
+		});
+
+		it(`accepts a single subquery`, () => {
+			const astNode = arrayConstructor(subSelect(QOrders.product).toSubQuery());
+			// TODO: rectify table references in subqueries in array constructors
+			const expected = `ARRAY(SELECT "t1"."product")`;
+			doSimpleSqlTest(astNode, expected);
+		});
+
+		it(`does not accept multiple arguments if one is a sub-query`, () => {
+			arrayConstructor(
+				// @ts-expect-error Arrays constructed from a sub-query don't accept multiple args
+				subSelect(QOrders.product).toSubQuery(),
+				constant(true)
+			);
+		});
+	});
 
 	describe(`row constructor`, () => {
 		it(`accepts one argument`, () => {

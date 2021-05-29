@@ -149,6 +149,11 @@ export interface CastNode {
 	requiresParentheses?: boolean;
 }
 
+export interface ArrayConstructorNode {
+	type: 'arrayConstructorNode';
+	expressions: ParameterOrValueExpressionNode[];
+}
+
 export interface RowConstructorNode {
 	type: 'rowConstructorNode';
 	expressionList: ExpressionListNode;
@@ -169,21 +174,22 @@ export interface RowConstructorNode {
  * ✔ A type cast
  * x A collation expression
  * ✔ A scalar subquery - SubSelectNode
- * x An array constructor
- * x A row constructor
+ * ✔ An array constructor
+ * ✔ A row constructor
  * x Another value expression in parentheses (used to group subexpressions and override precedence)
  */
 export type ValueExpressionNode =
-	LiteralNode
+	| ArrayConstructorNode
+	| BinaryOperationNode
 	| CastNode
 	| ColumnReferenceNode
-	| BinaryOperationNode
-	| UnaryOperationNode
 	| FunctionExpressionNode
+	| LiteralNode
 	| NaturalSyntaxFunctionExpressionNode
 	| RowConstructorNode
 	| SimpleColumnReferenceNode
-	| SubSelectNode;
+	| SubSelectNode
+	| UnaryOperationNode;
 
 export type ParameterOrValueExpressionNode<TConstantValue = unknown> =
 	ConstantNode<TConstantValue>
