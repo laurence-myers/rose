@@ -65,6 +65,7 @@ function processOutputExpression(expr: SelectOutputExpression, row: any, output:
 		case "functionExpressionNode":
 		case "literalNode":
 		case "naturalSyntaxFunctionExpressionNode":
+		case "rowConstructorNode":
 		case "simpleColumnReferenceNode":
 		case "subSelectNode":
 		case "unaryOperationNode":

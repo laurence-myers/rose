@@ -28,6 +28,7 @@ import {
 	ReleaseSavepointCommandNode,
 	RollbackCommandNode,
 	RollbackToSavepointCommandNode,
+	RowConstructorNode,
 	SavepointCommandNode,
 	SelectCommandNode,
 	SelectLockingNode,
@@ -101,6 +102,8 @@ export abstract class BaseWalker {
 	protected abstract walkRollbackCommandNode(node: RollbackCommandNode): void;
 
 	protected abstract walkRollbackToSavepointCommandNode(node: RollbackToSavepointCommandNode): void;
+
+	protected abstract walkRowConstructorNode(node: RowConstructorNode): void;
 
 	protected abstract walkSavepointCommandNode(node: SavepointCommandNode): void;
 
@@ -221,6 +224,9 @@ export abstract class BaseWalker {
 				break;
 			case "rollbackToSavepointCommandNode":
 				this.walkRollbackToSavepointCommandNode(node);
+				break;
+			case "rowConstructorNode":
+				this.walkRowConstructorNode(node);
 				break;
 			case "savepointCommandNode":
 				this.walkSavepointCommandNode(node);

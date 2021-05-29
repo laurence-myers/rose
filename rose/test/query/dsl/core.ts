@@ -89,16 +89,16 @@ describe(`core`, () => {
 		});
 	}
 
-	describe(`row`, () => {
+	describe(`row constructor`, () => {
 		it(`accepts one argument`, () => {
 			const astNode = row(constant(true));
-			const expected = `($1)`;
+			const expected = `ROW($1)`;
 			doSimpleSqlTest(astNode, expected);
 		});
 
 		it(`accepts more than one argument`, () => {
 			const astNode = row(constant(true), QOrders.amount.col());
-			const expected = `($1, "t1"."amount")`;
+			const expected = `ROW($1, "t1"."amount")`;
 			doSimpleSqlTest(astNode, expected);
 		});
 
@@ -109,7 +109,7 @@ describe(`core`, () => {
 					QOrders.amount.col()
 				]
 			);
-			const expected = `($1, "t1"."amount")`;
+			const expected = `ROW($1, "t1"."amount")`;
 			doSimpleSqlTest(astNode, expected);
 		});
 

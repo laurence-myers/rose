@@ -16,7 +16,7 @@ import { exists } from "../../src/query/dsl/postgresql/subquery/expressions";
 import { sum } from "../../src/query/dsl/postgresql/aggregate/general";
 import { divide } from "../../src/query/dsl/postgresql/mathematical/operators";
 import { selectCte, selectExpression, selectNestedMany, subSelect } from "../../src/query/dsl/select";
-import { and, col, constant, literal, or, row } from "../../src/query/dsl/core";
+import { and, col, constant, literal, or } from "../../src/query/dsl/core";
 import { params, withParams } from "../../src/query/params";
 import { innerJoin } from "../../src/query/dsl";
 
@@ -93,11 +93,13 @@ describe(`Example queries`, function () {
 			 	"RecurringPayments"
 			 WHERE
 			 	"locationId" = :locationId
-			 AND ( (
-			 	"endDate" IS NULL
-			 	AND "startDate" = :startDate )
-			 	OR  (
-			 		"startDate", "endDate") OVERLAPS (:startDate, :endDate) )
+			 AND (
+		 		(
+			 		"endDate" IS NULL
+			 		AND "startDate" = :startDate
+		 		)
+			 	OR ("startDate", "endDate") OVERLAPS (:startDate, :endDate)
+		 	)
 			 LIMIT 1
 		 ) AS "exists";
 		 */
@@ -122,8 +124,10 @@ describe(`Example queries`, function () {
 							QRP.startDate.eq(P.startDate)
 						),
 						overlaps(
-							row(col(QRP.startDate), col(QRP.endDate)),
-							row(P.startDate, P.endDate)
+							col(QRP.startDate),
+							col(QRP.endDate),
+							P.startDate,
+							P.endDate
 						)
 					)
 				))

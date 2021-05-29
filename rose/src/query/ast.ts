@@ -45,7 +45,7 @@ export interface TableReferenceNode {
 
 export interface BinaryOperationNode {
 	type: 'binaryOperationNode';
-	left: ParameterOrValueExpressionNode | ExpressionListNode; // Should SubSelectNode just be part of ValueExpressionNode?
+	left: ParameterOrValueExpressionNode | ExpressionListNode;
 	operator: string;
 	right: ParameterOrValueExpressionNode | ExpressionListNode;
 }
@@ -149,6 +149,11 @@ export interface CastNode {
 	requiresParentheses?: boolean;
 }
 
+export interface RowConstructorNode {
+	type: 'rowConstructorNode';
+	expressionList: ExpressionListNode;
+}
+
 /**
  * https://www.postgresql.org/docs/9.6/static/sql-expressions.html
  *
@@ -176,6 +181,7 @@ export type ValueExpressionNode =
 	| UnaryOperationNode
 	| FunctionExpressionNode
 	| NaturalSyntaxFunctionExpressionNode
+	| RowConstructorNode
 	| SimpleColumnReferenceNode
 	| SubSelectNode;
 

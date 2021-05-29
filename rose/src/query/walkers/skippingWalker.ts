@@ -27,6 +27,7 @@ import {
 	ReleaseSavepointCommandNode,
 	RollbackCommandNode,
 	RollbackToSavepointCommandNode,
+	RowConstructorNode,
 	SavepointCommandNode,
 	SelectCommandNode,
 	SelectLockingNode,
@@ -186,6 +187,10 @@ export class SkippingWalker extends BaseWalker {
 
 	protected walkRollbackToSavepointCommandNode(node: RollbackToSavepointCommandNode): void {
 		this.walk(node.name);
+	}
+
+	protected walkRowConstructorNode(node: RowConstructorNode): void {
+		this.walk(node.expressionList);
 	}
 
 	protected walkSavepointCommandNode(node: SavepointCommandNode): void {

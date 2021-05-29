@@ -29,6 +29,7 @@ import {
 	ReleaseSavepointCommandNode,
 	RollbackCommandNode,
 	RollbackToSavepointCommandNode,
+	RowConstructorNode,
 	SavepointCommandNode,
 	SelectCommandNode,
 	SelectLockingNode,
@@ -421,6 +422,11 @@ export class SqlAstWalker extends BaseWalker {
 	protected walkRollbackToSavepointCommandNode(node: RollbackToSavepointCommandNode): void {
 		this.sb += `ROLLBACK TO SAVEPOINT `;
 		this.walk(node);
+	}
+
+	protected walkRowConstructorNode(node: RowConstructorNode): void {
+		this.sb += `ROW`;
+		this.walk(node.expressionList);
 	}
 
 	protected walkSavepointCommandNode(node: SavepointCommandNode): void {

@@ -5,10 +5,10 @@ import {
 	CastNode,
 	ColumnReferenceNode,
 	ConstantNode,
-	ExpressionListNode,
 	LiteralNode,
 	NotExpressionNode,
 	ParameterOrValueExpressionNode,
+	RowConstructorNode,
 	TableReferenceNode
 } from "../ast";
 import { ColumnMetamodel } from "../metamodel";
@@ -127,11 +127,14 @@ export function param<P, R>(getter: (params: P) => R): ConstantNode<R> {
 	};
 }
 
-export function row(values: readonly ParameterOrValueExpressionNode[]): ExpressionListNode
-export function row(first: ParameterOrValueExpressionNode, ...rest: readonly ParameterOrValueExpressionNode[]): ExpressionListNode;
-export function row(first: ParameterOrValueExpressionNode | readonly ParameterOrValueExpressionNode[], ...rest: readonly ParameterOrValueExpressionNode[]): ExpressionListNode {
+export function row(values: readonly ParameterOrValueExpressionNode[]): RowConstructorNode;
+export function row(first: ParameterOrValueExpressionNode, ...rest: readonly ParameterOrValueExpressionNode[]): RowConstructorNode;
+export function row(first: ParameterOrValueExpressionNode | readonly ParameterOrValueExpressionNode[], ...rest: readonly ParameterOrValueExpressionNode[]): RowConstructorNode {
 	return {
-		type: "expressionListNode",
-		expressions: rectifyVariadicArgs(first, rest)
+		type: "rowConstructorNode",
+		expressionList: {
+			type: "expressionListNode",
+			expressions: rectifyVariadicArgs(first, rest)
+		}
 	};
 }
