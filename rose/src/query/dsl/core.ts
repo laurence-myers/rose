@@ -12,6 +12,7 @@ import {
 	TableReferenceNode
 } from "../ast";
 import { ColumnMetamodel } from "../metamodel";
+import { rectifyVariadicArgs } from "../../lang";
 
 type SupportedConstant =
 	| number
@@ -55,11 +56,13 @@ export function aliasTable(tableName: string, alias: string): AliasedExpressionN
 	};
 }
 
-export function and(first: BooleanExpression, second: BooleanExpression, ...rest: BooleanExpression[]): BooleanExpressionGroupNode {
+export function and(first: BooleanExpression, second: BooleanExpression, ...rest: readonly BooleanExpression[]): BooleanExpressionGroupNode;
+export function and(first: readonly BooleanExpression[]): BooleanExpressionGroupNode;
+export function and(first: BooleanExpression | readonly BooleanExpression[], ...rest: readonly BooleanExpression[]): BooleanExpressionGroupNode {
 	return {
 		type: 'booleanExpressionGroupNode',
 		operator: 'and',
-		expressions: [first, second].concat(rest)
+		expressions: rectifyVariadicArgs(first, rest)
 	};
 }
 
@@ -107,11 +110,13 @@ export function null_(): LiteralNode {
 	return literal('NULL');
 }
 
-export function or(first: BooleanExpression, second: BooleanExpression, ...rest: BooleanExpression[]): BooleanExpressionGroupNode {
+export function or(first: BooleanExpression, second: BooleanExpression, ...rest: readonly BooleanExpression[]): BooleanExpressionGroupNode;
+export function or(first: readonly BooleanExpression[]): BooleanExpressionGroupNode;
+export function or(first: BooleanExpression | readonly BooleanExpression[], ...rest: readonly BooleanExpression[]): BooleanExpressionGroupNode {
 	return {
 		type: 'booleanExpressionGroupNode',
 		operator: 'or',
-		expressions: [first, second].concat(rest)
+		expressions: rectifyVariadicArgs(first, rest)
 	};
 }
 
@@ -122,9 +127,11 @@ export function param<P, R>(getter: (params: P) => R): ConstantNode<R> {
 	};
 }
 
-export function row(first: ParameterOrValueExpressionNode, ...rest: ParameterOrValueExpressionNode[]): ExpressionListNode {
+export function row(values: readonly ParameterOrValueExpressionNode[]): ExpressionListNode
+export function row(first: ParameterOrValueExpressionNode, ...rest: readonly ParameterOrValueExpressionNode[]): ExpressionListNode;
+export function row(first: ParameterOrValueExpressionNode | readonly ParameterOrValueExpressionNode[], ...rest: readonly ParameterOrValueExpressionNode[]): ExpressionListNode {
 	return {
 		type: "expressionListNode",
-		expressions: [first].concat(rest)
+		expressions: rectifyVariadicArgs(first, rest)
 	};
 }

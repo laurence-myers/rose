@@ -15,7 +15,7 @@ import {
 import { QuerySelectorProcessor } from "../metadata";
 import { ColumnMetamodel, QueryTable, TableMetamodel } from "../metamodel";
 import { UnsupportedOperationError } from "../../errors";
-import { Clone } from "../../lang";
+import { Clone, rectifyVariadicArgs } from "../../lang";
 import { FinalisedQueryWithParams } from "../finalisedQuery";
 import { aliasTable, constant } from "../dsl/core";
 import { RectifyingWalker } from "../walkers/rectifyingWalker";
@@ -52,8 +52,8 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	with(first: WithCteArg, ...rest: WithCteArg[]): this {
-		const selectNodes = [first].concat(rest).map((item) => {
+	with(first: WithCteArg | readonly WithCteArg[], ...rest: readonly WithCteArg[]): this {
+		const selectNodes = rectifyVariadicArgs(first, rest).map((item) => {
 			if (item instanceof CommonTableExpressionBuilder) {
 				return item.toNode();
 			} else {
@@ -82,8 +82,8 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	from(first: FromArg, ...rest: FromArg[]): this {
-		for (const item of [first].concat(rest)) {
+	from(first: FromArg | FromArg[], ...rest: FromArg[]): this {
+		for (const item of rectifyVariadicArgs(first, rest)) {
 			if (item instanceof AliasedSubQueryBuilder) {
 				this.queryAst.fromItems.push(item.toNode());
 			} else {
@@ -96,17 +96,8 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	join(joinBuilder: BuildableJoin, ...otherJoins: BuildableJoin[]): this {
-		for (const builder of [joinBuilder].concat(otherJoins)) {
-			const joinNode = builder.build(this.tableMap);
-			this.queryAst.joins.push(joinNode);
-		}
-		return this;
-	}
-
-	@Clone()
-	joins(joinBuilders: Array<BuildableJoin>): this {
-		for (const builder of joinBuilders) {
+	join(joinBuilder: BuildableJoin | readonly BuildableJoin[], ...otherJoins: readonly BuildableJoin[]): this {
+		for (const builder of rectifyVariadicArgs(joinBuilder, otherJoins)) {
 			const joinNode = builder.build(this.tableMap);
 			this.queryAst.joins.push(joinNode);
 		}
@@ -124,8 +115,8 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	groupBy(first: GroupByArg, ...rest: Array<GroupByArg>): this {
-		const all = [first].concat(rest).map((columnOrNode): GroupByExpressionNode => {
+	groupBy(first: GroupByArg | readonly GroupByArg[], ...rest: readonly GroupByArg[]): this {
+		const all = rectifyVariadicArgs(first, rest).map((columnOrNode): GroupByExpressionNode => {
 			if (columnOrNode instanceof ColumnMetamodel) {
 				return { // TODO: Support strings to reference aliased columns/expressions
 					type: "groupByExpressionNode",
@@ -142,10 +133,9 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	orderBy(first: OrderByExpressionNode, ...rest: OrderByExpressionNode[]): this {
-		this.queryAst.ordering.push(first);
-		if (rest && rest.length > 0) {
-			rest.forEach((node) => this.queryAst.ordering.push(node));
+	orderBy(first: OrderByExpressionNode | readonly OrderByExpressionNode[], ...rest: readonly OrderByExpressionNode[]): this {
+		for (const node of rectifyVariadicArgs(first, rest)) {
+			this.queryAst.ordering.push(node);
 		}
 		return this;
 	}
@@ -162,7 +152,7 @@ abstract class BaseSelectQueryBuilder {
 
 	@Clone()
 	for(lockStrength: SelectLockingNode['strength'], options: {
-		of?: QueryTable[],
+		of?: readonly QueryTable[],
 		wait?: SelectLockingNode['wait']
 	} = {}): this {
 		this.queryAst.locking.push({

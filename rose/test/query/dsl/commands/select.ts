@@ -371,7 +371,7 @@ describe(`SELECT commands`, () => {
 				parentName: QParent.name,
 				childName: QChild.name,
 				otherChildName: QOtherChild.name,
-			}).joins(joins)
+			}).join(joins)
 				.finalise({})
 				.toSql({}).sql;
 			const expected = `SELECT "t3"."name" as "parentName", "t1"."name" as "childName", "t2"."name" as "otherChildName" FROM "Parent" as "t3" INNER JOIN "Child" as "t1" USING ("parentId") INNER JOIN "OtherChild" as "t2" USING ("parentId")`;

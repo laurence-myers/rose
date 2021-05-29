@@ -45,7 +45,7 @@ import {
 	WithNode
 } from "../ast";
 import { assertNever } from "../../lang";
-import { UnsupportedOperationError } from "../../errors";
+import { NotEnoughExpressionsError, UnsupportedOperationError } from "../../errors";
 import { BaseWalker } from "./baseWalker";
 import { TableMap } from "../../data";
 
@@ -129,6 +129,11 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkBooleanExpressionGroupNode(node: BooleanExpressionGroupNode): void {
+		if (node.expressions.length < 2) {
+			throw new NotEnoughExpressionsError(
+				`Boolean expression group for "${ node.operator }" does not have enough expressions. Needed: 2, found: ${ node.expressions.length }`
+			);
+		}
 		const operator = BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP[node.operator];
 		this.sb += `(`;
 		node.expressions.forEach((node: BooleanExpression, index: number): void => {
@@ -202,6 +207,7 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkExpressionListNode(node: ExpressionListNode): void {
+		// TODO: should this throw an error if the expressions array is empty?
 		this.sb += '(';
 		node.expressions.forEach(this.doListWalk());
 		this.sb += ')';

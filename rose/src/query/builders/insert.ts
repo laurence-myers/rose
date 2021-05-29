@@ -38,7 +38,7 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 		return aliasTable(tableName, alias);
 	}
 
-	protected extractColumnNamesFromObject(keys: string[]): string[] {
+	protected extractColumnNamesFromObject(keys: readonly string[]): readonly string[] {
 		return keys.map((key) => {
 			const prop = (this.qtable as any)[key];
 			if (prop instanceof ColumnMetamodel) {

@@ -1,4 +1,4 @@
-import { AtLeastOne, Clone, sortedPopulatedKeys } from "../../lang";
+import { AtLeastOne, Clone, rectifyVariadicArgs, sortedPopulatedKeys } from "../../lang";
 import {
 	AliasedExpressionNode,
 	BooleanExpression,
@@ -37,8 +37,8 @@ export class UpdateQueryBuilder<TQTable extends QueryTable> {
 	}
 
 	@Clone()
-	from(first: QueryTable, ...rest: QueryTable[]): this {
-		for (const qtable of [first].concat(rest)) {
+	from(first: QueryTable | readonly QueryTable[], ...rest: readonly QueryTable[]): this {
+		for (const qtable of rectifyVariadicArgs(first, rest)) {
 			this.queryAst.fromItems.push(this.fromSingleTable(qtable));
 		}
 		return this;
@@ -53,7 +53,7 @@ export class UpdateQueryBuilder<TQTable extends QueryTable> {
 		);
 	}
 
-	protected getColumnNameMap(propertyNames: string[]): Map<string, string> {
+	protected getColumnNameMap(propertyNames: readonly string[]): Map<string, string> {
 		const map = new Map();
 		for (const propertyName of propertyNames) {
 			const column = (this.qtable as any)[propertyName];

@@ -2,6 +2,7 @@ import { ColumnMetamodel, QueryTable } from "../metamodel";
 import { JoinNode, SimpleColumnReferenceNode } from "../ast";
 import { TableMap } from "../../data";
 import { UnsupportedOperationError } from "../../errors";
+import { rectifyVariadicArgs } from "../../lang";
 
 export class InitialJoinBuilder {
 	constructor(
@@ -43,11 +44,12 @@ export class OnOrUsingJoinBuilder {
 		);
 	}
 
-	using(column: ColumnMetamodel<any>, ...columns: ColumnMetamodel<any>[]) {
-		const usingNodes = [column].concat(columns).map((columnToMap): SimpleColumnReferenceNode => ({
-			type: "simpleColumnReferenceNode",
-			columnName: columnToMap.name
-		}));
+	using(column: ColumnMetamodel<any> | readonly ColumnMetamodel<any>[], ...columns: readonly ColumnMetamodel<any>[]) {
+		const usingNodes = rectifyVariadicArgs(column, columns)
+			.map((columnToMap): SimpleColumnReferenceNode => ({
+				type: "simpleColumnReferenceNode",
+				columnName: columnToMap.name
+			}));
 		return new BuildableJoin(
 			this.qtable,
 			this.joinType,

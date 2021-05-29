@@ -125,6 +125,14 @@ export function Clone(): MethodDecorator {
 	};
 }
 
+/**
+ * Given an arg, which can be either a value or an array of values, and a second array of values,
+ * returns a single (concatenated) array
+ */
+export function rectifyVariadicArgs<T>(first: T | readonly T[], rest: readonly T[]): T[] {
+	return (Array.isArray(first) ? first : [first]).concat(rest);
+}
+
 export type Constructor<T> = { new(): T };
 
 /**

@@ -22,6 +22,10 @@ export class InvalidUpdateError extends RoseError {
 
 }
 
+export class NotEnoughExpressionsError extends RoseError {
+
+}
+
 export class RowMappingError extends RoseError {
 
 }
