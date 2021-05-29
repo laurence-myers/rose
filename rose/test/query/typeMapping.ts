@@ -1,6 +1,6 @@
 import { QUsers } from "../fixtures";
 import { QueryOutput } from "../../src/query/typeMapping";
-import { concat } from "../../src/query/postgresql/functions/string/sql";
+import { concat } from "../../src/query/dsl/postgresql/string/sql";
 import { constant, selectExpression, selectNestedMany, selectNestedOne } from "../../src/query/dsl";
 
 describe(`Type mapping`, function () {

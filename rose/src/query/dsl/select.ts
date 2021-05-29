@@ -7,7 +7,7 @@ import {
 	SubSelectExpression
 } from "../builders/select";
 import { ParameterOrValueExpressionNode } from "../ast";
-import { exists } from "../postgresql/functions";
+import { exists } from "./postgresql";
 import { constant } from "./core";
 
 export function selectCte<TQuerySelector extends QuerySelector>(alias: string, querySelector: TQuerySelector) {

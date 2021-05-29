@@ -8,8 +8,8 @@ import {
 	QUsers,
 	TLocations
 } from "../../../fixtures";
-import { lower } from "../../../../src/query/postgresql/functions/string/sql";
-import { count, sum } from "../../../../src/query/postgresql/functions/aggregate/general";
+import { lower } from "../../../../src/query/dsl/postgresql/string/sql";
+import { count, sum } from "../../../../src/query/dsl/postgresql/aggregate/general";
 import { deepFreeze } from "../../../../src/lang";
 import { select } from "../../../../src/query/dsl/commands";
 import {

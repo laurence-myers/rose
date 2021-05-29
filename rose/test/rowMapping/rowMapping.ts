@@ -8,7 +8,7 @@ import {
 	SelectOutputExpression
 } from "../../src/query/ast";
 import { RowMappingError, UnsupportedOperationError } from "../../src/errors";
-import { count } from "../../src/query/postgresql/functions/aggregate/general";
+import { count } from "../../src/query/dsl/postgresql/aggregate/general";
 import { QueryOutput } from "../../src/query/typeMapping";
 import { selectExpression, selectNestedMany } from "../../src/query/dsl/select";
 import { constant } from '../../src/query/dsl/core';

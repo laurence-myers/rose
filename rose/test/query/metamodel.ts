@@ -1,8 +1,8 @@
 import { TableColumnsForUpdateCommand } from "../../src/query/metamodel";
 import { QLocations, TUsers } from "../fixtures";
 import { col, constant, param } from "../../src/query/dsl";
-import { now } from "../../src/query/postgresql/functions/dateTime/functions";
-import { upper } from "../../src/query/postgresql/functions/string/sql";
+import { now } from "../../src/query/dsl/postgresql/dateTime/functions";
+import { upper } from "../../src/query/dsl/postgresql/string/sql";
 
 describe(`Metamodel`, () => {
 	it(`can derive an interface from the metamodel`, async () => {

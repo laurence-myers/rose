@@ -10,11 +10,11 @@ import {
 	QUploads
 } from "../fixtures";
 import { select } from "../../src/query/dsl/commands";
-import { now, overlaps } from "../../src/query/postgresql/functions/dateTime/functions";
+import { now, overlaps } from "../../src/query/dsl/postgresql/dateTime/functions";
 import * as assert from "assert";
-import { exists } from "../../src/query/postgresql/functions/subquery/expressions";
-import { sum } from "../../src/query/postgresql/functions/aggregate/general";
-import { divide } from "../../src/query/postgresql/functions/mathematical/operators";
+import { exists } from "../../src/query/dsl/postgresql/subquery/expressions";
+import { sum } from "../../src/query/dsl/postgresql/aggregate/general";
+import { divide } from "../../src/query/dsl/postgresql/mathematical/operators";
 import { selectCte, selectExpression, selectNestedMany, subSelect } from "../../src/query/dsl/select";
 import { and, col, constant, literal, or, row } from "../../src/query/dsl/core";
 import { params, withParams } from "../../src/query/params";

@@ -1,4 +1,4 @@
-import { caseMulti, caseSimple } from "../../../../src/query/postgresql/functions/conditional";
+import { caseMulti, caseSimple } from "../../../../src/query/dsl/postgresql/conditional";
 import { QProject } from "../../../fixtures";
 import { constant } from "../../../../src/query/dsl";
 import { SqlAstWalker } from "../../../../src/query/walkers/sqlAstWalker";

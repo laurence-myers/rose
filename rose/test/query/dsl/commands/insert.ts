@@ -23,11 +23,11 @@ import {
 } from "../../../../src/query/metamodel";
 import { params, ParamsWrapper, withParams, ParamsProxy } from "../../../../src/query/params";
 import { doNothing, doUpdate, targetIndex } from "../../../../src/query/dsl/onConflict";
-import { char_length, upper } from "../../../../src/query/postgresql/functions/string";
-import { greaterThanOrEqual, lessThanOrEqual } from "../../../../src/query/postgresql/functions/comparison";
+import { char_length, upper } from "../../../../src/query/dsl/postgresql/string";
+import { greaterThanOrEqual, lessThanOrEqual } from "../../../../src/query/dsl/postgresql/comparison";
 import assert = require('assert');
-import { now } from "../../../../src/query/postgresql/functions/dateTime";
-import { exists } from "../../../../src/query/postgresql/functions";
+import { now } from "../../../../src/query/dsl/postgresql/dateTime";
+import { exists } from "../../../../src/query/dsl/postgresql";
 import { leftJoin } from "../../../../src";
 
 describe(`INSERT commands`, () => {

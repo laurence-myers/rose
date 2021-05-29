@@ -3,7 +3,7 @@ export * from './dsl';
 export * from './metadata';
 export * from './metamodel';
 export * from './params';
-export * from './postgresql';
+export * from './dsl/postgresql';
 export * from './finalisedQuery';
 export * from './querySelector';
 export * from './typeMapping';

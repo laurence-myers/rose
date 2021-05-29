@@ -9,7 +9,7 @@ import { RectifyingWalker } from "../../../src/query/walkers/rectifyingWalker";
 import { deepEqual, equal, fail } from "assert";
 import { select } from "../../../src/query/dsl/commands";
 import { constant, selectExpression, selectSubQuery } from "../../../src/query/dsl";
-import { sum } from "../../../src/query/postgresql/functions/aggregate";
+import { sum } from "../../../src/query/dsl/postgresql/aggregate";
 import { QRecurringPayments, TLocations } from "../../fixtures";
 import { TableMap } from "../../../src/data";
 

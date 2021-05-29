@@ -1,5 +1,5 @@
 import { FunctionExpressionNode, ParameterOrValueExpressionNode } from "../../../ast";
-import { literal } from "../../../dsl/core";
+import { literal } from "../../core";
 import { createFunctionNode } from "../common";
 
 /**

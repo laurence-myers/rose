@@ -5,7 +5,7 @@ import {
 	ParameterOrValueExpressionNode
 } from "../../../ast";
 import { createBooleanBinaryOperatorNode, createNaturalSyntaxFunctionNode } from "../common";
-import { constant } from "../../../dsl";
+import { constant } from "../../index";
 
 function createLikeNode(operator: 'LIKE' | 'ILIKE' | 'NOT LIKE' | 'NOT ILIKE', value: ParameterOrValueExpressionNode, pattern: ParameterOrValueExpressionNode, escapeCharacter: string | undefined): NaturalSyntaxFunctionExpressionNode {
 	const keywords: NaturalSyntaxFunctionExpressionNodeArgument[] = [
