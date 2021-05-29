@@ -62,7 +62,7 @@ describe(`comparison`, () => {
 		]);
 
 		for (const [caseName, { astNode, expected }] of cases) {
-			it(`produces expected SQL for ${caseName}`, () => {
+			it(`produces expected SQL for ${ caseName }`, () => {
 				doSimpleSqlTest(astNode, expected);
 			});
 		}
@@ -157,7 +157,7 @@ describe(`comparison`, () => {
 		]);
 
 		for (const [caseName, { astNode, expected }] of cases) {
-			it(`produces expected SQL for ${caseName}`, () => {
+			it(`produces expected SQL for ${ caseName }`, () => {
 				doSimpleSqlTest(astNode, expected);
 			});
 		}
@@ -259,7 +259,7 @@ describe(`comparison`, () => {
 		]);
 
 		for (const [caseName, { astNode, expected }] of cases) {
-			it(`produces expected SQL for ${caseName}`, () => {
+			it(`produces expected SQL for ${ caseName }`, () => {
 				doSimpleSqlTest(astNode, expected);
 			});
 		}
