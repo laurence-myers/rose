@@ -99,13 +99,13 @@ export class SqlAstWalker extends BaseWalker {
 		};
 	}
 
-	protected doListWalk<N extends AstNode>() {
-		return (node: N, index: number): void => {
+	protected doListWalk<N extends AstNode>(nodes: readonly N[]): void {
+		nodes.forEach((node, index): void => {
 			if (index > 0) {
 				this.sb += `, `;
 			}
 			this.walk(node);
-		};
+		});
 	}
 	protected walkAliasedExpressionNode(node: AnyAliasedExpressionNode): void {
 		this.walk(node.expression);
@@ -122,7 +122,7 @@ export class SqlAstWalker extends BaseWalker {
 		if (!isSubQueryResults) {
 			this.sb += `[`;
 		}
-		node.expressions.forEach(this.doListWalk());
+		this.doListWalk(node.expressions);
 		if (!isSubQueryResults) {
 			this.sb += `]`;
 		}
@@ -234,7 +234,7 @@ export class SqlAstWalker extends BaseWalker {
 	protected walkExpressionListNode(node: ExpressionListNode): void {
 		// TODO: should this throw an error if the expressions array is empty?
 		this.sb += "(";
-		node.expressions.forEach(this.doListWalk());
+		this.doListWalk(node.expressions);
 		this.sb += ")";
 	}
 
@@ -242,7 +242,7 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += node.name;
 		this.sb += "(";
 		if (node.arguments.length > 0) {
-			node.arguments.forEach(this.doListWalk());
+			this.doListWalk(node.arguments);
 		}
 		this.sb += ")";
 	}
@@ -257,7 +257,7 @@ export class SqlAstWalker extends BaseWalker {
 		if (node.columns.length > 0) {
 			this.sb += " (";
 			if (node.columns.length > 0) {
-				node.columns.forEach(this.doListWalk());
+				this.doListWalk(node.columns);
 			}
 			this.sb += ")";
 		}
@@ -268,7 +268,7 @@ export class SqlAstWalker extends BaseWalker {
 					this.sb += `, `;
 				}
 				this.sb += "(";
-				values.forEach(this.doListWalk());
+				this.doListWalk(values);
 				this.sb += ")";
 			});
 		} else if (node.query) {
@@ -281,7 +281,7 @@ export class SqlAstWalker extends BaseWalker {
 		}
 		if (node.returning) {
 			this.sb += ` RETURNING `;
-			node.returning.forEach(this.doListWalk());
+			this.doListWalk(node.returning);
 		}
 	}
 
@@ -310,7 +310,7 @@ export class SqlAstWalker extends BaseWalker {
 			this.walk(node.on);
 		} else if (node.using) {
 			this.sb += ` USING (`;
-			node.using.forEach(this.doListWalk());
+			this.doListWalk(node.using);
 			this.sb += `)`;
 		}
 		// TODO: support "natural"
@@ -372,7 +372,7 @@ export class SqlAstWalker extends BaseWalker {
 	protected walkOnConflictDoUpdateNode(node: OnConflictDoUpdateNode): void {
 		this.walk(node.target);
 		this.sb += ` DO UPDATE SET `;
-		node.setItems.forEach(this.doListWalk());
+		this.doListWalk(node.setItems);
 		if (node.where) {
 			this.sb += ` WHERE `;
 			this.walk(node.where);
@@ -387,7 +387,7 @@ export class SqlAstWalker extends BaseWalker {
 		node: OnConflictTargetIndexesNode
 	): void {
 		this.sb += `(`;
-		node.indexes.forEach(this.doListWalk());
+		this.doListWalk(node.indexes);
 		this.sb += `)`;
 		if (node.where) {
 			this.sb += ` WHERE `;
@@ -504,10 +504,10 @@ export class SqlAstWalker extends BaseWalker {
 			default:
 				assertNever(node.distinction);
 		}
-		node.outputExpressions.forEach(this.doListWalk());
+		this.doListWalk(node.outputExpressions);
 		if (node.fromItems.length > 0) {
 			this.sb += " FROM ";
-			node.fromItems.forEach(this.doListWalk());
+			this.doListWalk(node.fromItems);
 		}
 		if (node.joins.length > 0) {
 			this.walkNodes(node.joins);
@@ -527,12 +527,12 @@ export class SqlAstWalker extends BaseWalker {
 		}
 		if (node.grouping.length > 0) {
 			this.sb += " GROUP BY (";
-			node.grouping.forEach(this.doListWalk());
+			this.doListWalk(node.grouping);
 			this.sb += ")";
 		}
 		if (node.ordering.length > 0) {
 			this.sb += " ORDER BY ";
-			node.ordering.forEach(this.doListWalk());
+			this.doListWalk(node.ordering);
 		}
 		if (node.limit) {
 			this.sb += " ";
@@ -548,7 +548,7 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += node.strength;
 		if (node.of.length > 0) {
 			this.sb += " OF ";
-			node.of.forEach(this.doListWalk());
+			this.doListWalk(node.of);
 		}
 		if (node.wait) {
 			this.sb += " ";
@@ -645,18 +645,18 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += `UPDATE `;
 		this.walk(node.table);
 		this.sb += ` SET `;
-		node.setItems.forEach(this.doListWalk());
+		this.doListWalk(node.setItems);
 		if (node.fromItems.length > 0) {
 			this.sb += ` FROM `;
-			node.fromItems.forEach(this.doListWalk());
+			this.doListWalk(node.fromItems);
 		}
 		if (node.conditions.length > 0) {
 			this.sb += ` WHERE `;
-			node.conditions.forEach(this.doListWalk());
+			this.doListWalk(node.conditions);
 		}
 		if (node.returning) {
 			this.sb += ` RETURNING `;
-			node.returning.forEach(this.doListWalk());
+			this.doListWalk(node.returning);
 		}
 	}
 
