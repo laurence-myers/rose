@@ -1,4 +1,7 @@
 import {
+	all,
+	any,
+	array_,
 	AstNode,
 	between,
 	betweenSymmetric,
@@ -30,6 +33,7 @@ import {
 	num_nonnulls,
 	num_nulls,
 	param,
+	some,
 } from "../../../../src";
 import { QOrders, QUsers } from "../../../fixtures";
 import { doSimpleSqlTest } from "../../../test-utils";
@@ -266,6 +270,47 @@ describe(`comparison`, () => {
 				{
 					astNode: notBetween(QOrders.amount.col(), constant(1), constant(5)),
 					expected: `"t1"."amount" NOT BETWEEN $1 AND $2`,
+				},
+			],
+		]);
+
+		for (const [caseName, { astNode, expected }] of cases) {
+			it(`produces expected SQL for ${caseName}`, () => {
+				doSimpleSqlTest(astNode, expected);
+			});
+		}
+	});
+
+	describe(`rowAndArrayComparisons`, () => {
+		const cases = new Map<string, SimpleCaseEntry>([
+			[
+				all.name,
+				{
+					astNode: eq(
+						QOrders.amount.col(),
+						all(array_(constant(1), constant(5)))
+					),
+					expected: `"t1"."amount" = ALL(ARRAY[$1, $2])`,
+				},
+			],
+			[
+				any.name,
+				{
+					astNode: eq(
+						QOrders.amount.col(),
+						any(array_(constant(1), constant(5)))
+					),
+					expected: `"t1"."amount" = ANY(ARRAY[$1, $2])`,
+				},
+			],
+			[
+				"some",
+				{
+					astNode: eq(
+						QOrders.amount.col(),
+						some(array_(constant(1), constant(5)))
+					),
+					expected: `"t1"."amount" = ANY(ARRAY[$1, $2])`,
 				},
 			],
 		]);

@@ -8,8 +8,8 @@ import {
 	SimpleColumnReferenceNode,
 	ValueExpressionNode,
 } from "./ast";
-import { any } from "./dsl/postgresql/array/functions";
 import { OptionalNulls } from "../lang";
+import { any } from "./dsl/postgresql";
 
 export class TableMetamodel {
 	constructor(

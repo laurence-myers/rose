@@ -122,7 +122,7 @@ export class SqlAstWalker extends BaseWalker {
 		if (!isSubQueryResults) {
 			this.sb += `[`;
 		}
-		this.walkNodes(node.expressions);
+		node.expressions.forEach(this.doListWalk());
 		if (!isSubQueryResults) {
 			this.sb += `]`;
 		}
