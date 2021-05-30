@@ -35,7 +35,7 @@ function processNestedPath(
 	output: any
 ): NestedPathResult {
 	const segments = allSegments.slice(0, allSegments.length - 1);
-	let nestedObject = segments.reduce((nestedObject: any, segment: string) => {
+	const nestedObject = segments.reduce((nestedObject: any, segment: string) => {
 		return processNestedPathSegment(segment, nestedObject);
 	}, output);
 	return {
@@ -122,7 +122,7 @@ function mergeNested(
 		const hash = hashRow(obj, nestedSchema.values);
 		const objToUpdate = hashMap.getOrSet(hash, obj);
 		for (const [key, value] of nestedSchema.nested.entries()) {
-			let propertyValue = obj[key];
+			const propertyValue = obj[key];
 			let nestedMap = objToUpdate[key];
 			if (!isMap(nestedMap)) {
 				nestedMap = new SettingMap<string, any>();
@@ -179,7 +179,7 @@ function extractNestedSchema(
 	const output = new NestedSchema();
 	for (const expr of outputExpressions) {
 		switch (expr.type) {
-			case "aliasedExpressionNode":
+			case "aliasedExpressionNode": {
 				let segment = output;
 				for (let i = 0; i < expr.aliasPath.length - 1; i++) {
 					const part = expr.aliasPath[i];
@@ -187,6 +187,7 @@ function extractNestedSchema(
 				}
 				segment.values.push(last(expr.aliasPath));
 				break;
+			}
 			default:
 				break;
 		}

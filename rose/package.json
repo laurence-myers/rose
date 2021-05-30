@@ -5,7 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"check:all": "yarn run check:tsc && yarn run lint && yarn run test",
-		"check:lint": "eslint . --ext .ts --max-warnings=0",
+		"check:lint": "eslint . --ext .ts --max-warnings=0 --report-unused-disable-directives",
 		"check:prettier": "prettier --check .",
 		"check:tsc": "yarn run compile --noEmit",
 		"compile": "tsc",

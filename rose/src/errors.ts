@@ -14,4 +14,6 @@ export class NotEnoughExpressionsError extends RoseError {}
 
 export class RowMappingError extends RoseError {}
 
+export class UnrecognisedColumnError extends RoseError {}
+
 export class UnrecognisedColumnTypeError extends RoseError {}

@@ -88,7 +88,7 @@ export class ColumnMetamodel<T> {
 		operator: BooleanBinaryOperators,
 		value: ValueType<T>
 	): BooleanBinaryOperationNode {
-		let right: ParameterOrValueExpressionNode = this.coerceToNode(value);
+		const right: ParameterOrValueExpressionNode = this.coerceToNode(value);
 		return {
 			type: "binaryOperationNode",
 			left: this.toColumnReferenceNode(),

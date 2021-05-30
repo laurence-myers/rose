@@ -105,8 +105,6 @@ export abstract class AbstractDatabaseContext implements Disposable {
 export abstract class AbstractConnectionManager<
 	TContext extends AbstractDatabaseContext
 > {
-	constructor() {}
-
 	protected abstract get pool(): Pool;
 
 	protected abstract createDatabaseContext(poolClient: PoolClient): TContext;

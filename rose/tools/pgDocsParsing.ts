@@ -92,7 +92,7 @@ async function generateFromCsv(csvFile: string): Promise<void> {
 			funcSyntax.indexOf(")")
 		);
 		const startOptionals = argsBody.indexOf("[,");
-		let allArgs = [];
+		const allArgs = [];
 		const mandatoryArgs = argsBody
 			.substring(0, startOptionals > -1 ? startOptionals : argsBody.length)
 			.trim();

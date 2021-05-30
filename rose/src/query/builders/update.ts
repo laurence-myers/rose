@@ -24,7 +24,7 @@ import {
 import { QuerySelector } from "../querySelector";
 import { ParamsProxy, ParamsWrapper } from "../params";
 import { TableMap } from "../../data";
-import { InvalidUpdateError } from "../../errors";
+import { InvalidUpdateError, UnrecognisedColumnError } from "../../errors";
 
 export class UpdateQueryBuilder<TQTable extends QueryTable> {
 	protected tableMap = new TableMap();
@@ -98,11 +98,17 @@ export class UpdateQueryBuilder<TQTable extends QueryTable> {
 			const expression: ParameterOrValueExpressionNode = (updates as any)[
 				propertyName
 			];
+			const columnName = columnsMap.get(propertyName);
+			if (!columnName) {
+				throw new UnrecognisedColumnError(
+					`Couldn't map property ${propertyName} to a column name`
+				);
+			}
 			this.queryAst.setItems.push({
 				type: "setItemNode",
 				column: {
 					type: "simpleColumnReferenceNode",
-					columnName: columnsMap.get(propertyName)!,
+					columnName,
 				},
 				expression,
 			});

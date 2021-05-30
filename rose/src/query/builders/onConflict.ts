@@ -12,7 +12,7 @@ import {
 	QueryTable,
 	TableColumnsForUpdateCommand,
 } from "../metamodel";
-import { InvalidUpdateError } from "../../errors";
+import { InvalidUpdateError, UnrecognisedColumnError } from "../../errors";
 import { AtLeastOne, Clone, sortedPopulatedKeys } from "../../lang";
 import { ColumnSimplifyingWalker } from "../walkers/columnSimplifyingWalker";
 
@@ -136,11 +136,17 @@ export class OnConflictDoUpdateSettingBuilder {
 			const expression: ParameterOrValueExpressionNode = (updates as any)[
 				propertyName
 			];
+			const columnName = columnsMap.get(propertyName);
+			if (!columnName) {
+				throw new UnrecognisedColumnError(
+					`Couldn't map property ${propertyName} to a column name`
+				);
+			}
 			this.setItems.push({
 				type: "setItemNode",
 				column: {
 					type: "simpleColumnReferenceNode",
-					columnName: columnsMap.get(propertyName)!,
+					columnName,
 				},
 				expression,
 			});

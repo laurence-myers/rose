@@ -77,25 +77,28 @@ export class QuerySelectorProcessor {
 		for (const key of Object.keys(querySelector)) {
 			const value = querySelector[key];
 			switch (value.$selectorKind) {
-				case "column":
+				case "column": {
 					const columnEntry: [string, SelectorColumnTypes] = [key, value];
 					columns.push(columnEntry);
 					break;
-				case "expression":
+				}
+				case "expression": {
 					const expressionEntry: [string, ParameterOrValueExpressionNode] = [
 						key,
 						value.expression,
 					];
 					expressions.push(expressionEntry);
 					break;
+				}
 				case "nestedOne":
-				case "nestedMany":
+				case "nestedMany": {
 					const nestedEntry: [string, NestedQueryOne | NestedQueryMany] = [
 						key,
 						value.nestedSelector,
 					];
 					nesteds.push(nestedEntry);
 					break;
+				}
 				default:
 					throw assertNever(value);
 			}

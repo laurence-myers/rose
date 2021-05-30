@@ -8,7 +8,7 @@ enum ExitCode {
 }
 
 async function main(args: string[]): Promise<ExitCode> {
-	let exitCode: ExitCode = ExitCode.Okay;
+	const exitCode: ExitCode = ExitCode.Okay;
 	const filesToCopy = ["package.json", "README.md"];
 	for (const fileToCopy of filesToCopy) {
 		console.log(`Copying ${fileToCopy}...`);

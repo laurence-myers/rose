@@ -248,7 +248,7 @@ export class SubQueryBuilder<TParams> extends BaseSelectQueryBuilder {
 	protected processSubSelectExpressions(
 		subSelectExpressions: SubSelectExpression[]
 	) {
-		for (let outputExpression of subSelectExpressions) {
+		for (const outputExpression of subSelectExpressions) {
 			if (outputExpression instanceof ColumnMetamodel) {
 				this.queryAst.outputExpressions.push(
 					outputExpression.toColumnReferenceNode()
