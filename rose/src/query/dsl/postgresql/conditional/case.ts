@@ -2,18 +2,19 @@ import {
 	BooleanExpression,
 	NaturalSyntaxFunctionExpressionNode,
 	NaturalSyntaxFunctionExpressionNodeArgument,
-	ParameterOrValueExpressionNode
+	ParameterOrValueExpressionNode,
 } from "../../../ast";
 import { Clone } from "../../../../lang";
 import { createNaturalSyntaxFunctionNode } from "../common";
 
 export class MultiCaseBuilder {
-	protected readonly cases: { when: BooleanExpression, then: ParameterOrValueExpressionNode }[] = [];
+	protected readonly cases: {
+		when: BooleanExpression;
+		then: ParameterOrValueExpressionNode;
+	}[] = [];
 	protected elseResult?: ParameterOrValueExpressionNode;
 
-	constructor(
-	) {
-	}
+	constructor() {}
 
 	@Clone()
 	when(value: BooleanExpression, then: ParameterOrValueExpressionNode): this {
@@ -34,39 +35,38 @@ export class MultiCaseBuilder {
 		const args: NaturalSyntaxFunctionExpressionNodeArgument[] = [];
 		for (const case_ of this.cases) {
 			args.push({
-				key: 'WHEN',
-				value: case_.when
+				key: "WHEN",
+				value: case_.when,
 			});
 			args.push({
-				key: 'THEN',
-				value: case_.then
+				key: "THEN",
+				value: case_.then,
 			});
 		}
 		if (this.elseResult) {
 			args.push({
-				key: 'ELSE',
+				key: "ELSE",
 				value: this.elseResult,
 			});
 		}
-		return createNaturalSyntaxFunctionNode(
-			'CASE',
-			args,
-			true
-		);
+		return createNaturalSyntaxFunctionNode("CASE", args, true);
 	}
 }
 
 export class SimpleCaseBuilder {
-	protected readonly cases: { when: ParameterOrValueExpressionNode, then: ParameterOrValueExpressionNode }[] = [];
+	protected readonly cases: {
+		when: ParameterOrValueExpressionNode;
+		then: ParameterOrValueExpressionNode;
+	}[] = [];
 	protected elseResult?: ParameterOrValueExpressionNode;
 
-	constructor(
-		protected readonly expression: ParameterOrValueExpressionNode,
-	) {
-	}
+	constructor(protected readonly expression: ParameterOrValueExpressionNode) {}
 
 	@Clone()
-	when(value: ParameterOrValueExpressionNode, then: ParameterOrValueExpressionNode): this {
+	when(
+		value: ParameterOrValueExpressionNode,
+		then: ParameterOrValueExpressionNode
+	): this {
 		this.cases.push({
 			when: value,
 			then,
@@ -84,28 +84,24 @@ export class SimpleCaseBuilder {
 		const args: NaturalSyntaxFunctionExpressionNodeArgument[] = [
 			{
 				value: this.expression,
-			}
+			},
 		];
 		for (const case_ of this.cases) {
 			args.push({
-				key: 'WHEN',
-				value: case_.when
+				key: "WHEN",
+				value: case_.when,
 			});
 			args.push({
-				key: 'THEN',
-				value: case_.then
+				key: "THEN",
+				value: case_.then,
 			});
 		}
 		if (this.elseResult) {
 			args.push({
-				key: 'ELSE',
+				key: "ELSE",
 				value: this.elseResult,
 			});
 		}
-		return createNaturalSyntaxFunctionNode(
-			'CASE',
-			args,
-			true
-		);
+		return createNaturalSyntaxFunctionNode("CASE", args, true);
 	}
 }

@@ -1,5 +1,9 @@
 import { QueryTable } from "../metamodel";
-import { BuildableJoin, InitialJoinBuilder, OnOrUsingJoinBuilder } from "../builders/join";
+import {
+	BuildableJoin,
+	InitialJoinBuilder,
+	OnOrUsingJoinBuilder,
+} from "../builders/join";
 
 export function join(queryTable: QueryTable): InitialJoinBuilder {
 	return new InitialJoinBuilder(queryTable);

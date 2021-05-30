@@ -3,42 +3,53 @@ import {
 	FromItemNode,
 	SelectCommandNode,
 	SubSelectNode,
-	TableReferenceNode
+	TableReferenceNode,
 } from "../../../src/query/ast";
 import { RectifyingWalker } from "../../../src/query/walkers/rectifyingWalker";
 import { deepEqual, equal, fail } from "assert";
 import { select } from "../../../src/query/dsl/commands";
-import { constant, selectExpression, selectSubQuery } from "../../../src/query/dsl";
+import {
+	constant,
+	selectExpression,
+	selectSubQuery,
+} from "../../../src/query/dsl";
 import { sum } from "../../../src/query/dsl/postgresql/aggregate";
 import { QRecurringPayments, TLocations } from "../../fixtures";
 import { TableMap } from "../../../src/data";
 
-function getFromItem(fromItem: FromItemNode): AliasedFromExpressionNode | never {
+function getFromItem(
+	fromItem: FromItemNode
+): AliasedFromExpressionNode | never {
 	if (fromItem.type == "aliasedExpressionNode") {
 		return fromItem;
 	} else {
-		throw fail(fromItem, "AliasedFromExpressionNode", "Expected an AliasedFromExpressionNode", "!=");
+		throw fail(
+			fromItem,
+			"AliasedFromExpressionNode",
+			"Expected an AliasedFromExpressionNode",
+			"!="
+		);
 	}
 }
 
 describe("Rectifying Walker", function () {
 	it("Rectifies a table referenced in a column reference node", function () {
 		const ast: SelectCommandNode = {
-			type: 'selectCommandNode',
+			type: "selectCommandNode",
 			outputExpressions: [
 				{
 					type: "columnReferenceNode",
 					tableName: "Users",
-					columnName: "id"
-				}
+					columnName: "id",
+				},
 			],
-			distinction: 'all',
+			distinction: "all",
 			fromItems: [],
 			joins: [],
 			conditions: [],
 			ordering: [],
 			grouping: [],
-			locking: []
+			locking: [],
 		};
 		const tableMap = new TableMap();
 		const walker = new RectifyingWalker(ast, tableMap);
@@ -51,15 +62,15 @@ describe("Rectifying Walker", function () {
 
 	it("Does not rectify a table referenced in a column reference node and in a from item node", function () {
 		const ast: SelectCommandNode = {
-			type: 'selectCommandNode',
+			type: "selectCommandNode",
 			outputExpressions: [
 				{
 					type: "columnReferenceNode",
 					tableName: "Users",
-					columnName: "id"
-				}
+					columnName: "id",
+				},
 			],
-			distinction: 'all',
+			distinction: "all",
 			fromItems: [
 				{
 					type: "aliasedExpressionNode",
@@ -67,15 +78,15 @@ describe("Rectifying Walker", function () {
 					aliasPath: ["t1"],
 					expression: {
 						type: "tableReferenceNode",
-						tableName: "Users"
-					}
-				}
+						tableName: "Users",
+					},
+				},
 			],
 			joins: [],
 			conditions: [],
 			ordering: [],
 			grouping: [],
-			locking: []
+			locking: [],
 		};
 		const tableMap = new TableMap();
 		const walker = new RectifyingWalker(ast, tableMap);
@@ -90,68 +101,68 @@ describe("Rectifying Walker", function () {
 
 	it("Rectifies nested sub-queries individually, separate from the outer query", function () {
 		const subSelectNode: SubSelectNode = {
-			type: 'subSelectNode',
+			type: "subSelectNode",
 			query: {
-				type: 'selectCommandNode',
+				type: "selectCommandNode",
 				outputExpressions: [
 					{
 						type: "columnReferenceNode",
 						tableName: "Locations",
-						columnName: "id"
-					}
+						columnName: "id",
+					},
 				],
-				distinction: 'all',
+				distinction: "all",
 				fromItems: [],
 				joins: [],
 				conditions: [
 					{
-						type: 'binaryOperationNode',
+						type: "binaryOperationNode",
 						left: {
 							type: "columnReferenceNode",
 							tableName: "Locations",
-							columnName: "id"
+							columnName: "id",
 						},
-						operator: '=',
+						operator: "=",
 						right: {
-							type: 'constantNode',
-							getter: (p: { locationId: number }) => p.locationId
-						}
-					}
+							type: "constantNode",
+							getter: (p: { locationId: number }) => p.locationId,
+						},
+					},
 				],
 				ordering: [],
 				grouping: [],
-				locking: []
+				locking: [],
 			},
-			tableMap: new TableMap()
+			tableMap: new TableMap(),
 		};
 
 		const ast: SelectCommandNode = {
-			type: 'selectCommandNode',
+			type: "selectCommandNode",
 			outputExpressions: [
 				{
 					type: "columnReferenceNode",
 					tableName: "Users",
-					columnName: "id"
-				}
+					columnName: "id",
+				},
 			],
-			distinction: 'all',
+			distinction: "all",
 			fromItems: [],
 			joins: [],
 			conditions: [
 				{
-					type: 'binaryOperationNode',
+					type: "binaryOperationNode",
 					left: {
 						type: "columnReferenceNode",
 						tableName: "Users",
-						columnName: "locationId"
+						columnName: "locationId",
 					},
-					operator: '=',
-					right: subSelectNode
-				}
+					operator: "=",
+					right: subSelectNode,
+				},
 			],
 			ordering: [],
 			grouping: [],
-			locking: []
+			locking: [],
 		};
 		const tableMap = new TableMap();
 		const walker = new RectifyingWalker(ast, tableMap);
@@ -163,21 +174,25 @@ describe("Rectifying Walker", function () {
 		equal(ast.conditions.length, 1);
 		equal(subSelectNode.query.fromItems.length, 1);
 		const nestedFromItem = getFromItem(subSelectNode.query.fromItems[0]);
-		equal((nestedFromItem.expression as TableReferenceNode).tableName, "Locations");
+		equal(
+			(nestedFromItem.expression as TableReferenceNode).tableName,
+			"Locations"
+		);
 		equal(nestedFromItem.alias, "t1");
 	});
 
 	it("Rectifies nested sub-queries individually, retaining aliased tables referenced from the outer query", function () {
 		// Setup
-		const locations = new TLocations('locations');
-		const amountSubQuery = selectSubQuery('amountSumT', {
-			amountSum: selectExpression(sum(QRecurringPayments.amount.col()))
+		const locations = new TLocations("locations");
+		const amountSubQuery = selectSubQuery("amountSumT", {
+			amountSum: selectExpression(sum(QRecurringPayments.amount.col())),
 		}).where(QRecurringPayments.locationId.eq(locations.id));
 
 		const actual = select({
 			name: locations.name,
-			amount: amountSubQuery.toMetamodel().amountSum
-		}).from(locations, amountSubQuery)
+			amount: amountSubQuery.toMetamodel().amountSum,
+		})
+			.from(locations, amountSubQuery)
 			.where(locations.id.eq(constant(123)));
 
 		const ast = (actual as unknown as { queryAst: SelectCommandNode }).queryAst;
@@ -193,148 +208,139 @@ describe("Rectifying Walker", function () {
 		const secondFromItem = getFromItem(ast.fromItems[1]);
 		equal(secondFromItem.alias, "amountSumT");
 		const subQueryNode = (secondFromItem.expression as SubSelectNode).query;
-		equal(subQueryNode.fromItems.length, 1, 'The inner query should not add "Locations" to its "from" clause');
+		equal(
+			subQueryNode.fromItems.length,
+			1,
+			'The inner query should not add "Locations" to its "from" clause'
+		);
 		const firstNestedFromItem = getFromItem(subQueryNode.fromItems[0]);
-		equal(firstNestedFromItem.alias, 't1');
+		equal(firstNestedFromItem.alias, "t1");
 	});
 
 	it("Rectifies unaliased FROM locations", function () {
-
 		const ast: SelectCommandNode = {
-			"type": "selectCommandNode",
-			"distinction": "all",
-			"outputExpressions": [
+			type: "selectCommandNode",
+			distinction: "all",
+			outputExpressions: [
 				{
-					"type": "aliasedExpressionNode",
-					"alias": "region",
-					"aliasPath": [
-						"region"
-					],
-					"expression": {
-						"type": "columnReferenceNode",
-						"columnName": "region",
-						"tableName": "orders",
-						"tableAlias": undefined
-					}
+					type: "aliasedExpressionNode",
+					alias: "region",
+					aliasPath: ["region"],
+					expression: {
+						type: "columnReferenceNode",
+						columnName: "region",
+						tableName: "orders",
+						tableAlias: undefined,
+					},
 				},
 				{
-					"type": "aliasedExpressionNode",
-					"alias": "total_sales",
-					"aliasPath": [
-						"total_sales"
-					],
-					"expression": {
-						"type": "functionExpressionNode",
-						"name": "sum",
-						"arguments": [
+					type: "aliasedExpressionNode",
+					alias: "total_sales",
+					aliasPath: ["total_sales"],
+					expression: {
+						type: "functionExpressionNode",
+						name: "sum",
+						arguments: [
 							{
-								"type": "columnReferenceNode",
-								"columnName": "amount",
-								"tableName": "orders",
-								"tableAlias": undefined
-							}
-						]
-					}
-				}
+								type: "columnReferenceNode",
+								columnName: "amount",
+								tableName: "orders",
+								tableAlias: undefined,
+							},
+						],
+					},
+				},
 			],
-			"fromItems": [
+			fromItems: [
 				{
-					"type": "aliasedExpressionNode",
-					"alias": "t1",
-					"aliasPath": [
-						"t1"
-					],
-					"expression": {
-						"type": "tableReferenceNode",
-						"tableName": "orders"
-					}
-				}
+					type: "aliasedExpressionNode",
+					alias: "t1",
+					aliasPath: ["t1"],
+					expression: {
+						type: "tableReferenceNode",
+						tableName: "orders",
+					},
+				},
 			],
-			"joins": [],
-			"conditions": [],
-			"ordering": [],
-			"grouping": [
+			joins: [],
+			conditions: [],
+			ordering: [],
+			grouping: [
 				{
-					"type": "groupByExpressionNode",
-					"expression": {
-						"type": "columnReferenceNode",
-						"columnName": "region",
-						"tableName": "orders",
-						"tableAlias": undefined
-					}
-				}
+					type: "groupByExpressionNode",
+					expression: {
+						type: "columnReferenceNode",
+						columnName: "region",
+						tableName: "orders",
+						tableAlias: undefined,
+					},
+				},
 			],
-			"locking": []
+			locking: [],
 		};
 		const tableMap = new TableMap();
 		const walker = new RectifyingWalker(ast, tableMap);
 		walker.rectify();
 
 		const expected = {
-			"type": "selectCommandNode",
-			"distinction": "all",
-			"outputExpressions": [
+			type: "selectCommandNode",
+			distinction: "all",
+			outputExpressions: [
 				{
-					"type": "aliasedExpressionNode",
-					"alias": "region",
-					"aliasPath": [
-						"region"
-					],
-					"expression": {
-						"type": "columnReferenceNode",
-						"columnName": "region",
-						"tableName": "orders",
-						"tableAlias": "t1"
-					}
+					type: "aliasedExpressionNode",
+					alias: "region",
+					aliasPath: ["region"],
+					expression: {
+						type: "columnReferenceNode",
+						columnName: "region",
+						tableName: "orders",
+						tableAlias: "t1",
+					},
 				},
 				{
-					"type": "aliasedExpressionNode",
-					"alias": "total_sales",
-					"aliasPath": [
-						"total_sales"
-					],
-					"expression": {
-						"type": "functionExpressionNode",
-						"name": "sum",
-						"arguments": [
+					type: "aliasedExpressionNode",
+					alias: "total_sales",
+					aliasPath: ["total_sales"],
+					expression: {
+						type: "functionExpressionNode",
+						name: "sum",
+						arguments: [
 							{
-								"type": "columnReferenceNode",
-								"columnName": "amount",
-								"tableName": "orders",
-								"tableAlias": "t1"
-							}
-						]
-					}
-				}
+								type: "columnReferenceNode",
+								columnName: "amount",
+								tableName: "orders",
+								tableAlias: "t1",
+							},
+						],
+					},
+				},
 			],
-			"fromItems": [
+			fromItems: [
 				{
-					"type": "aliasedExpressionNode",
-					"alias": "t1",
-					"aliasPath": [
-						"t1"
-					],
-					"expression": {
-						"type": "tableReferenceNode",
-						"tableName": "orders"
-					}
-				}
+					type: "aliasedExpressionNode",
+					alias: "t1",
+					aliasPath: ["t1"],
+					expression: {
+						type: "tableReferenceNode",
+						tableName: "orders",
+					},
+				},
 			],
-			"joins": [],
-			"conditions": [],
-			"ordering": [],
-			"grouping": [
+			joins: [],
+			conditions: [],
+			ordering: [],
+			grouping: [
 				{
-					"type": "groupByExpressionNode",
-					"expression": {
-						"type": "columnReferenceNode",
-						"columnName": "region",
-						"tableName": "orders",
-						"tableAlias": "t1"
-					}
-				}
+					type: "groupByExpressionNode",
+					expression: {
+						type: "columnReferenceNode",
+						columnName: "region",
+						tableName: "orders",
+						tableAlias: "t1",
+					},
+				},
 			],
-			"locking": []
+			locking: [],
 		};
 		deepEqual(ast, expected);
 	});

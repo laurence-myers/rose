@@ -1,5 +1,9 @@
 import { SkippingWalker } from "./skippingWalker";
-import { AstNode, ColumnReferenceNode, SimpleColumnReferenceNode } from "../ast";
+import {
+	AstNode,
+	ColumnReferenceNode,
+	SimpleColumnReferenceNode,
+} from "../ast";
 
 /**
  * Converts ColumnReferenceNodes to SimpleColumnReferenceNodes.
@@ -9,7 +13,8 @@ export class ColumnSimplifyingWalker extends SkippingWalker {
 		// Hack to replace the object's contents. Probably should think of a better way to do this.
 		delete node.tableAlias;
 		delete (node as any).tableName;
-		(node as ColumnReferenceNode | SimpleColumnReferenceNode).type = 'simpleColumnReferenceNode';
+		(node as ColumnReferenceNode | SimpleColumnReferenceNode).type =
+			"simpleColumnReferenceNode";
 	}
 
 	simplify(node: AstNode) {

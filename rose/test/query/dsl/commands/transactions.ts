@@ -3,7 +3,7 @@ import * as assert from "assert";
 import {
 	BeginCommandBuilder,
 	TransactionIsolationLevel,
-	TransactionReadMode
+	TransactionReadMode,
 } from "../../../../src/query/builders/begin";
 import { GeneratedQuery } from "../../../../src/query";
 import { CommitCommandBuilder } from "../../../../src/query/builders/commit";
@@ -12,55 +12,40 @@ import { RollbackCommandBuilder } from "../../../../src/query/builders/rollback"
 describe(`Transaction commands`, () => {
 	describe(`BEGIN command`, () => {
 		function doTest(builder: BeginCommandBuilder, expectedSql: string) {
-			const actual = builder
-				.finalise()
-				.toSql({});
+			const actual = builder.finalise().toSql({});
 
 			// Verify
 			const expected: GeneratedQuery = {
 				sql: expectedSql,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		}
 
 		it(`outputs command without extras`, async () => {
-			doTest(
-				begin(),
-				`BEGIN`
-			);
+			doTest(begin(), `BEGIN`);
 		});
 
 		it(`outputs command with isolation level`, async () => {
 			doTest(
-				begin()
-					.isolationLevel(TransactionIsolationLevel.Serializable),
+				begin().isolationLevel(TransactionIsolationLevel.Serializable),
 				`BEGIN ISOLATION LEVEL SERIALIZABLE`
 			);
 		});
 
 		it(`outputs command with read mode`, async () => {
 			doTest(
-				begin()
-					.readMode(TransactionReadMode.ReadWrite),
+				begin().readMode(TransactionReadMode.ReadWrite),
 				`BEGIN READ WRITE`
 			);
 		});
 
 		it(`outputs command with deferrable, explicitly set to true`, async () => {
-			doTest(
-				begin()
-					.deferrable(true),
-				`BEGIN DEFERRABLE`
-			);
+			doTest(begin().deferrable(true), `BEGIN DEFERRABLE`);
 		});
 
 		it(`outputs command with not deferrable`, async () => {
-			doTest(
-				begin()
-					.deferrable(false),
-				`BEGIN NOT DEFERRABLE`
-			);
+			doTest(begin().deferrable(false), `BEGIN NOT DEFERRABLE`);
 		});
 
 		it(`outputs command, unsetting each option`, async () => {
@@ -91,148 +76,92 @@ describe(`Transaction commands`, () => {
 
 	describe(`COMMIT command`, () => {
 		function doTest(builder: CommitCommandBuilder, expectedSql: string) {
-			const actual = builder
-				.finalise()
-				.toSql({});
+			const actual = builder.finalise().toSql({});
 
 			// Verify
 			const expected: GeneratedQuery = {
 				sql: expectedSql,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		}
 
 		it(`outputs command without extras`, async () => {
-			doTest(
-				commit(),
-				`COMMIT`
-			);
+			doTest(commit(), `COMMIT`);
 		});
 
 		it(`outputs command with chain`, async () => {
-			doTest(
-				commit()
-					.andChain(),
-				`COMMIT AND CHAIN`
-			);
+			doTest(commit().andChain(), `COMMIT AND CHAIN`);
 		});
 
 		it(`outputs command with no chain`, async () => {
-			doTest(
-				commit()
-					.andChain(false),
-				`COMMIT AND NO CHAIN`
-			);
+			doTest(commit().andChain(false), `COMMIT AND NO CHAIN`);
 		});
 
 		it(`outputs command with explicit chain`, async () => {
-			doTest(
-				commit()
-					.andChain(true),
-				`COMMIT AND CHAIN`
-			);
+			doTest(commit().andChain(true), `COMMIT AND CHAIN`);
 		});
 
 		it(`outputs command unsetting chain`, async () => {
-			doTest(
-				commit()
-					.andChain(true)
-					.andChain(null),
-				`COMMIT`
-			);
+			doTest(commit().andChain(true).andChain(null), `COMMIT`);
 		});
 	});
 
 	xdescribe(`RELEASE SAVEPOINT command`, () => {
-		xit(`produces expected SQL`, async () => {
-
-		});
+		xit(`produces expected SQL`, async () => {});
 	});
 
 	describe(`ROLLBACK command`, () => {
 		function doTest(builder: RollbackCommandBuilder, expectedSql: string) {
-			const actual = builder
-				.finalise()
-				.toSql({});
+			const actual = builder.finalise().toSql({});
 
 			// Verify
 			const expected: GeneratedQuery = {
 				sql: expectedSql,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		}
 
 		it(`outputs command without extras`, async () => {
-			doTest(
-				rollback(),
-				`ROLLBACK`
-			);
+			doTest(rollback(), `ROLLBACK`);
 		});
 
 		it(`outputs command with chain`, async () => {
-			doTest(
-				rollback()
-					.andChain(),
-				`ROLLBACK AND CHAIN`
-			);
+			doTest(rollback().andChain(), `ROLLBACK AND CHAIN`);
 		});
 
 		it(`outputs command with no chain`, async () => {
-			doTest(
-				rollback()
-					.andChain(false),
-				`ROLLBACK AND NO CHAIN`
-			);
+			doTest(rollback().andChain(false), `ROLLBACK AND NO CHAIN`);
 		});
 
 		it(`outputs command with explicit chain`, async () => {
-			doTest(
-				rollback()
-					.andChain(true),
-				`ROLLBACK AND CHAIN`
-			);
+			doTest(rollback().andChain(true), `ROLLBACK AND CHAIN`);
 		});
 
 		it(`outputs command unsetting chain`, async () => {
-			doTest(
-				rollback()
-					.andChain(true)
-					.andChain(null),
-				`ROLLBACK`
-			);
+			doTest(rollback().andChain(true).andChain(null), `ROLLBACK`);
 		});
 	});
 
 	xdescribe(`ROLLBACK TO SAVEPOINT command`, () => {
-		xit(`produces expected SQL`, async () => {
-
-		});
+		xit(`produces expected SQL`, async () => {});
 	});
 
 	xdescribe(`SAVEPOINT command`, () => {
-		xit(`produces expected SQL`, async () => {
-
-		});
+		xit(`produces expected SQL`, async () => {});
 	});
 
 	xdescribe(`SET SESSION CHARACTERISTICS AS TRANSACTION command`, () => {
-		xit(`produces expected SQL`, async () => {
-
-		});
+		xit(`produces expected SQL`, async () => {});
 	});
 
 	xdescribe(`SET TRANSACTION command`, () => {
-		xit(`produces expected SQL`, async () => {
-
-		});
+		xit(`produces expected SQL`, async () => {});
 	});
 
 	xdescribe(`SET TRANSACTION SNAPSHOT command`, () => {
-		xit(`produces expected SQL`, async () => {
-
-		});
+		xit(`produces expected SQL`, async () => {});
 	});
 
 	// TODO: support PREPARE TRANSACTION, COMMIT PREPARED, and ROLLBACK PREPARED

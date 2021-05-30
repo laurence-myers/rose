@@ -1,10 +1,13 @@
 import cloneDeep = require("lodash.clonedeep");
-import fs = require('fs');
+import fs = require("fs");
 import * as util from "util";
 
 export class DefaultMap<K, V> extends Map<K, V> {
-	constructor(private defaultValueFactory: (key: K, map: Map<K, V>) => V, iterable?: [K, V][] | Iterable<[K, V]>) {
-		super(<any> iterable); // have to cast to any; current ES6 type defs don't seem to support Iterable.
+	constructor(
+		private defaultValueFactory: (key: K, map: Map<K, V>) => V,
+		iterable?: [K, V][] | Iterable<[K, V]>
+	) {
+		super(<any>iterable); // have to cast to any; current ES6 type defs don't seem to support Iterable.
 	}
 
 	get(key: K): V {
@@ -13,7 +16,7 @@ export class DefaultMap<K, V> extends Map<K, V> {
 			this.set(key, value);
 			return value;
 		} else {
-			return <V> super.get(key); // should never be undefined
+			return <V>super.get(key); // should never be undefined
 		}
 	}
 }
@@ -24,7 +27,7 @@ export class SettingMap<K, V> extends Map<K, V> {
 			this.set(key, value);
 			return value;
 		} else {
-			return <V> super.get(key); // should never be undefined
+			return <V>super.get(key); // should never be undefined
 		}
 	}
 }
@@ -42,10 +45,10 @@ export function deepFreeze<T>(obj: T): Readonly<T> {
 
 	// Freeze properties before freezing self
 	propNames.forEach((name: string) => {
-		const prop: any = (<any> obj)[name];
+		const prop: any = (<any>obj)[name];
 
 		// Freeze prop if it is an object
-		if (typeof prop == 'object' && prop !== null) {
+		if (typeof prop == "object" && prop !== null) {
 			deepFreeze(prop);
 		}
 	});
@@ -59,7 +62,7 @@ export function makeDirs(fullPath: string): void {
 }
 
 export function assertNever(arg: never): never {
-	throw new Error(`Unexpected object: ${ (<any> arg).constructor || arg }`);
+	throw new Error(`Unexpected object: ${(<any>arg).constructor || arg}`);
 }
 
 export function remove<T>(arr: T[], obj: T): void {
@@ -81,10 +84,15 @@ export function safeKeys<T extends object>(object: T): Array<keyof T> {
 	return Object.keys(object) as Array<keyof T>;
 }
 
-export function sortedPopulatedKeys<T extends { [k: string]: unknown }>(object: T): Array<(keyof T) & string> {
+export function sortedPopulatedKeys<T extends { [k: string]: unknown }>(
+	object: T
+): Array<keyof T & string> {
 	const objectKeys = [];
 	for (const key in object) {
-		if (Object.prototype.hasOwnProperty.call(object, key) && object[key] !== undefined) {
+		if (
+			Object.prototype.hasOwnProperty.call(object, key) &&
+			object[key] !== undefined
+		) {
 			objectKeys.push(key);
 		}
 	}
@@ -93,7 +101,7 @@ export function sortedPopulatedKeys<T extends { [k: string]: unknown }>(object: 
 }
 
 export function logObject(obj: any): void {
-	console.log(util.inspect(obj, false, <any> null));
+	console.log(util.inspect(obj, false, <any>null));
 }
 
 export function last<T>(arr: T[]): T {
@@ -109,14 +117,18 @@ export function clone<T>(obj: T): T {
 }
 
 function isFunction(value: any): value is Function {
-	return typeof(value) === 'function';
+	return typeof value === "function";
 }
 
 export function Clone(): MethodDecorator {
-	return function<O, K extends keyof O, T>(target: O, propertyKey: K | string | symbol, descriptor: TypedPropertyDescriptor<T>): TypedPropertyDescriptor<T> | void {
+	return function <O, K extends keyof O, T>(
+		target: O,
+		propertyKey: K | string | symbol,
+		descriptor: TypedPropertyDescriptor<T>
+	): TypedPropertyDescriptor<T> | void {
 		const original = descriptor.value;
 		if (isFunction(original)) {
-			descriptor.value = function(this: any, ...args: any[]) {
+			descriptor.value = function (this: any, ...args: any[]) {
 				const newObj = clone(this);
 				return original.apply(newObj, args);
 			} as any;
@@ -129,16 +141,20 @@ export function Clone(): MethodDecorator {
  * Given an arg, which can be either a value or an array of values, and a second array of values,
  * returns a single (concatenated) array
  */
-export function rectifyVariadicArgs<T>(first: T | readonly T[], rest: readonly T[]): T[] {
+export function rectifyVariadicArgs<T>(
+	first: T | readonly T[],
+	rest: readonly T[]
+): T[] {
 	return (Array.isArray(first) ? first : [first]).concat(rest);
 }
 
-export type Constructor<T> = { new(): T };
+export type Constructor<T> = { new (): T };
 
 /**
  * https://stackoverflow.com/a/48244432/953887
  */
-export type AtLeastOne<T, U = {[K in keyof T]: Pick<T, K> }> = Partial<T> & U[keyof U]
+export type AtLeastOne<T, U = { [K in keyof T]: Pick<T, K> }> = Partial<T> &
+	U[keyof U];
 
 export function hasAtLeastOneKey<T>(obj: T): obj is AtLeastOne<T> {
 	return Object.keys(obj).length > 0;
@@ -155,4 +171,5 @@ type NonNullablePropertyKeys<T> = {
 /**
  * Allows substituting "undefined" for null properties, or omitting them completely.
  */
-export type OptionalNulls<T> = Pick<T, NonNullablePropertyKeys<T>> & Partial<Pick<T, NullablePropertyKeys<T>>>;
+export type OptionalNulls<T> = Pick<T, NonNullablePropertyKeys<T>> &
+	Partial<Pick<T, NullablePropertyKeys<T>>>;

@@ -1,4 +1,7 @@
-import { OnConflictDoNothingBuilder, OnConflictDoUpdateInitialBuilder } from "../builders/onConflict";
+import {
+	OnConflictDoNothingBuilder,
+	OnConflictDoUpdateInitialBuilder,
+} from "../builders/onConflict";
 import { OnConflictTargetIndexNode } from "../ast";
 
 export function doNothing() {
@@ -9,10 +12,13 @@ export function doUpdate() {
 	return new OnConflictDoUpdateInitialBuilder();
 }
 
-export function targetIndex(index: OnConflictTargetIndexNode['identifier'], options?: Pick<OnConflictTargetIndexNode, 'collation' | 'opclass'>): OnConflictTargetIndexNode {
+export function targetIndex(
+	index: OnConflictTargetIndexNode["identifier"],
+	options?: Pick<OnConflictTargetIndexNode, "collation" | "opclass">
+): OnConflictTargetIndexNode {
 	return {
 		type: "onConflictTargetIndexNode",
 		identifier: index,
-		...options
+		...options,
 	};
 }

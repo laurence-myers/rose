@@ -14,9 +14,5 @@
 		"sourceMap": true,
 		"outDir": "build/"
 	},
-	"include": [
-		"src/**/*.ts",
-		"test/**/*.ts",
-		"tools/**/*.ts"
-	]
+	"include": ["src/**/*.ts", "test/**/*.ts", "tools/**/*.ts"]
 }

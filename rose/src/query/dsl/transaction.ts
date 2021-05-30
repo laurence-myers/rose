@@ -1,4 +1,7 @@
-import { TransactionIsolationLevel, TransactionReadMode } from "../builders/begin";
+import {
+	TransactionIsolationLevel,
+	TransactionReadMode,
+} from "../builders/begin";
 import { begin, commit, rollback } from "./commands";
 import { Queryable } from "../../execution";
 import { FinalisedQueryNonReturningWithParams } from "../finalisedQuery";
@@ -63,10 +66,7 @@ export async function transaction<T>(
 	callback: (t: Transaction) => Promise<T>,
 	options: TransactionOptions = {}
 ): Promise<T> {
-	const trans = new Transaction(
-		client,
-		options
-	);
+	const trans = new Transaction(client, options);
 	try {
 		await trans.begin();
 		const result = await callback(trans);
@@ -76,7 +76,7 @@ export async function transaction<T>(
 		try {
 			await trans.rollback();
 		} catch (err2) {
-			console.error(`Failed to rollback transaction: ${ err2 }`);
+			console.error(`Failed to rollback transaction: ${err2}`);
 		}
 		throw err;
 	}

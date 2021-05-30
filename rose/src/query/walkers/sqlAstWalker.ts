@@ -45,10 +45,13 @@ import {
 	TransactionModeNode,
 	UnaryOperationNode,
 	UpdateCommandNode,
-	WithNode
+	WithNode,
 } from "../ast";
 import { assertNever } from "../../lang";
-import { NotEnoughExpressionsError, UnsupportedOperationError } from "../../errors";
+import {
+	NotEnoughExpressionsError,
+	UnsupportedOperationError,
+} from "../../errors";
 import { BaseWalker } from "./baseWalker";
 import { TableMap } from "../../data";
 
@@ -58,27 +61,27 @@ interface WalkedQueryData {
 }
 
 const JOIN_TEXT_MAP: {
-	[K in JoinNode['joinType']]: string;
+	[K in JoinNode["joinType"]]: string;
 } = {
-	'inner': 'INNER',
-	'left': 'LEFT OUTER',
-	'right': 'RIGHT OUTER',
-	'full': 'FULL OUTER',
-	'cross': 'CROSS'
+	inner: "INNER",
+	left: "LEFT OUTER",
+	right: "RIGHT OUTER",
+	full: "FULL OUTER",
+	cross: "CROSS",
 };
 
 const BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP: {
-	[K in BooleanExpressionGroupNode['operator']]: string;
+	[K in BooleanExpressionGroupNode["operator"]]: string;
 } = {
-	'and': 'AND',
-	'or': 'OR'
+	and: "AND",
+	or: "OR",
 };
 
 /**
  * Converts an AST to a SQL string.
  */
 export class SqlAstWalker extends BaseWalker {
-	protected sb: string = '';
+	protected sb: string = "";
 	protected parameterGetters: Array<(p: unknown) => unknown> = [];
 
 	constructor(
@@ -92,7 +95,7 @@ export class SqlAstWalker extends BaseWalker {
 		this.walk(this.queryAst);
 		return {
 			sql: this.sb,
-			parameterGetters: this.parameterGetters
+			parameterGetters: this.parameterGetters,
 		};
 	}
 
@@ -112,7 +115,9 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkArrayConstructorNode(node: ArrayConstructorNode): void {
-		const isSubQueryResults = node.expressions.length === 1 && node.expressions[0].type === 'subSelectNode';
+		const isSubQueryResults =
+			node.expressions.length === 1 &&
+			node.expressions[0].type === "subSelectNode";
 		this.sb += `ARRAY`;
 		if (!isSubQueryResults) {
 			this.sb += `[`;
@@ -125,11 +130,14 @@ export class SqlAstWalker extends BaseWalker {
 
 	protected walkBeginCommandNode(node: BeginCommandNode): void {
 		this.sb += `BEGIN`;
-		if (node.transactionMode && [
-			node.transactionMode.deferrable,
-			node.transactionMode.readMode,
-			node.transactionMode.isolationLevel
-		].some((entry) => entry !== undefined)) {
+		if (
+			node.transactionMode &&
+			[
+				node.transactionMode.deferrable,
+				node.transactionMode.readMode,
+				node.transactionMode.isolationLevel,
+			].some((entry) => entry !== undefined)
+		) {
 			this.sb += ` `;
 			this.walk(node.transactionMode);
 		}
@@ -143,10 +151,12 @@ export class SqlAstWalker extends BaseWalker {
 		this.walk(node.right);
 	}
 
-	protected walkBooleanExpressionGroupNode(node: BooleanExpressionGroupNode): void {
+	protected walkBooleanExpressionGroupNode(
+		node: BooleanExpressionGroupNode
+	): void {
 		if (node.expressions.length < 2) {
 			throw new NotEnoughExpressionsError(
-				`Boolean expression group for "${ node.operator }" does not have enough expressions. Needed: 2, found: ${ node.expressions.length }`
+				`Boolean expression group for "${node.operator}" does not have enough expressions. Needed: 2, found: ${node.expressions.length}`
 			);
 		}
 		const operator = BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP[node.operator];
@@ -170,7 +180,7 @@ export class SqlAstWalker extends BaseWalker {
 		if (node.requiresParentheses) {
 			this.sb += `)`;
 		}
-		this.sb += '::';
+		this.sb += "::";
 		this.sb += node.castType;
 	}
 
@@ -190,7 +200,7 @@ export class SqlAstWalker extends BaseWalker {
 			if (node.chain === false) {
 				this.sb += `NO `;
 			}
-			this.sb += `CHAIN`
+			this.sb += `CHAIN`;
 		}
 	}
 
@@ -223,18 +233,18 @@ export class SqlAstWalker extends BaseWalker {
 
 	protected walkExpressionListNode(node: ExpressionListNode): void {
 		// TODO: should this throw an error if the expressions array is empty?
-		this.sb += '(';
+		this.sb += "(";
 		node.expressions.forEach(this.doListWalk());
-		this.sb += ')';
+		this.sb += ")";
 	}
 
 	protected walkFunctionExpressionNode(node: FunctionExpressionNode): void {
 		this.sb += node.name;
-		this.sb += '(';
+		this.sb += "(";
 		if (node.arguments.length > 0) {
 			node.arguments.forEach(this.doListWalk());
 		}
-		this.sb += ')';
+		this.sb += ")";
 	}
 
 	protected walkGroupByExpressionNode(node: GroupByExpressionNode): void {
@@ -245,11 +255,11 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += `INSERT INTO `;
 		this.walk(node.table);
 		if (node.columns.length > 0) {
-			this.sb += ' (';
+			this.sb += " (";
 			if (node.columns.length > 0) {
 				node.columns.forEach(this.doListWalk());
 			}
-			this.sb += ')';
+			this.sb += ")";
 		}
 		if (node.values.length > 0) {
 			this.sb += ` VALUES `;
@@ -257,12 +267,12 @@ export class SqlAstWalker extends BaseWalker {
 				if (index > 0) {
 					this.sb += `, `;
 				}
-				this.sb += '(';
+				this.sb += "(";
 				values.forEach(this.doListWalk());
-				this.sb += ')';
+				this.sb += ")";
 			});
 		} else if (node.query) {
-			this.sb += ' ';
+			this.sb += " ";
 			this.walk(node.query);
 		}
 		if (node.onConflict) {
@@ -277,11 +287,18 @@ export class SqlAstWalker extends BaseWalker {
 
 	protected walkJoinNode(node: JoinNode): void {
 		const joinText = JOIN_TEXT_MAP[node.joinType];
-		if (node.joinType == 'cross' && (node.on || (node.using && node.using.length > 0))) {
-			throw new UnsupportedOperationError(`Cross joins cannot specify "on" or "using" conditions.`);
+		if (
+			node.joinType == "cross" &&
+			(node.on || (node.using && node.using.length > 0))
+		) {
+			throw new UnsupportedOperationError(
+				`Cross joins cannot specify "on" or "using" conditions.`
+			);
 		}
 		if (node.on && node.using && node.using.length > 0) {
-			throw new UnsupportedOperationError(`Joins cannot specify both "on" and "using" conditions.`);
+			throw new UnsupportedOperationError(
+				`Joins cannot specify both "on" and "using" conditions.`
+			);
 		}
 
 		this.sb += ` `;
@@ -300,10 +317,10 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkLimitOffsetNode(node: LimitOffsetNode): void {
-		this.sb += 'LIMIT ';
+		this.sb += "LIMIT ";
 		this.walk(node.limit);
 		// TODO: decouple limit and offset nodes
-		this.sb += ' OFFSET ';
+		this.sb += " OFFSET ";
 		this.walk(node.offset);
 	}
 
@@ -311,20 +328,22 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += node.value;
 	}
 
-	protected walkNaturalSyntaxFunctionExpressionNode(node: NaturalSyntaxFunctionExpressionNode): void {
+	protected walkNaturalSyntaxFunctionExpressionNode(
+		node: NaturalSyntaxFunctionExpressionNode
+	): void {
 		if (node.name !== undefined) {
 			this.sb += node.name;
 		}
 		if (!node.omitParentheses) {
-			this.sb += '(';
+			this.sb += "(";
 		} else if (node.name !== undefined) {
-			this.sb += ' ';
+			this.sb += " ";
 		}
 		if (node.arguments.length > 0) {
 			node.arguments.forEach((arg, index) => {
 				if (arg.key) {
 					this.sb += arg.key;
-					this.sb += ' ';
+					this.sb += " ";
 				}
 				this.walk(arg.value);
 				if (index < node.arguments.length - 1) {
@@ -333,7 +352,7 @@ export class SqlAstWalker extends BaseWalker {
 			});
 		}
 		if (!node.omitParentheses) {
-			this.sb += ')';
+			this.sb += ")";
 		}
 	}
 
@@ -364,7 +383,9 @@ export class SqlAstWalker extends BaseWalker {
 		this.walk(node.conflictAction);
 	}
 
-	protected walkOnConflictTargetIndexesNode(node: OnConflictTargetIndexesNode): void {
+	protected walkOnConflictTargetIndexesNode(
+		node: OnConflictTargetIndexesNode
+	): void {
 		this.sb += `(`;
 		node.indexes.forEach(this.doListWalk());
 		this.sb += `)`;
@@ -374,7 +395,9 @@ export class SqlAstWalker extends BaseWalker {
 		}
 	}
 
-	protected walkOnConflictTargetIndexNode(node: OnConflictTargetIndexNode): void {
+	protected walkOnConflictTargetIndexNode(
+		node: OnConflictTargetIndexNode
+	): void {
 		this.walk(node.identifier);
 		if (node.collation) {
 			this.sb += ` COLLATE '`;
@@ -382,13 +405,15 @@ export class SqlAstWalker extends BaseWalker {
 			this.sb += `'`;
 		}
 		if (node.opclass) {
-			this.sb += ` "`
+			this.sb += ` "`;
 			this.sb += node.opclass;
-			this.sb += `"`
+			this.sb += `"`;
 		}
 	}
 
-	protected walkOnConflictTargetOnConstraintNode(node: OnConflictTargetOnConstraintNode): void {
+	protected walkOnConflictTargetOnConstraintNode(
+		node: OnConflictTargetOnConstraintNode
+	): void {
 		this.sb += `ON CONSTRAINT "`;
 		this.sb += node.constraintName;
 		this.sb += `"`;
@@ -398,16 +423,18 @@ export class SqlAstWalker extends BaseWalker {
 		this.walk(node.expression);
 		if (node.order) {
 			switch (node.order) {
-				case 'asc':
-					this.sb += ' ASC';
+				case "asc":
+					this.sb += " ASC";
 					break;
-				case 'desc':
-					this.sb += ' DESC';
+				case "desc":
+					this.sb += " DESC";
 					break;
-				case 'using':
-					this.sb += ' USING ';
+				case "using":
+					this.sb += " USING ";
 					if (!node.operator) {
-						throw new UnsupportedOperationError(`An order by expression with "using" must also have an operator.`);
+						throw new UnsupportedOperationError(
+							`An order by expression with "using" must also have an operator.`
+						);
 					}
 					this.sb += node.operator;
 					break;
@@ -417,7 +444,9 @@ export class SqlAstWalker extends BaseWalker {
 		}
 	}
 
-	protected walkReleaseSavepointCommandNode(node: ReleaseSavepointCommandNode): void {
+	protected walkReleaseSavepointCommandNode(
+		node: ReleaseSavepointCommandNode
+	): void {
 		this.sb += `RELEASE SAVEPOINT `;
 		this.walk(node.name);
 	}
@@ -429,11 +458,13 @@ export class SqlAstWalker extends BaseWalker {
 			if (node.chain === false) {
 				this.sb += `NO `;
 			}
-			this.sb += `CHAIN`
+			this.sb += `CHAIN`;
 		}
 	}
 
-	protected walkRollbackToSavepointCommandNode(node: RollbackToSavepointCommandNode): void {
+	protected walkRollbackToSavepointCommandNode(
+		node: RollbackToSavepointCommandNode
+	): void {
 		this.sb += `ROLLBACK TO SAVEPOINT `;
 		this.walk(node);
 	}
@@ -464,7 +495,9 @@ export class SqlAstWalker extends BaseWalker {
 				if (node.distinctOn) {
 					this.walk(node.distinctOn);
 				} else {
-					throw new UnsupportedOperationError(`When using "distinct on", you must provide a distinctOn expression.`);
+					throw new UnsupportedOperationError(
+						`When using "distinct on", you must provide a distinctOn expression.`
+					);
 				}
 				this.sb += ") ";
 				break;
@@ -486,7 +519,7 @@ export class SqlAstWalker extends BaseWalker {
 				this.walkBooleanExpressionGroupNode({
 					expressions: node.conditions,
 					operator: "and",
-					type: "booleanExpressionGroupNode"
+					type: "booleanExpressionGroupNode",
 				});
 			} else {
 				this.walkNodes(node.conditions);
@@ -529,22 +562,30 @@ export class SqlAstWalker extends BaseWalker {
 		this.walk(node.expression);
 	}
 
-	protected walkSetSessionsCharacteristicsAsTransactionCommandNode(node: SetSessionsCharacteristicsAsTransactionCommandNode): void {
+	protected walkSetSessionsCharacteristicsAsTransactionCommandNode(
+		node: SetSessionsCharacteristicsAsTransactionCommandNode
+	): void {
 		this.sb += `SET SESSION CHARACTERISTICS AS TRANSACTION `;
 		this.walk(node.transactionMode);
 	}
 
-	protected walkSetTransactionCommandNode(node: SetTransactionCommandNode): void {
+	protected walkSetTransactionCommandNode(
+		node: SetTransactionCommandNode
+	): void {
 		this.sb += `SET TRANSACTION `;
 		this.walk(node.transactionMode);
 	}
 
-	protected walkSetTransactionSnapshotCommandNode(node: SetTransactionSnapshotCommandNode): void {
+	protected walkSetTransactionSnapshotCommandNode(
+		node: SetTransactionSnapshotCommandNode
+	): void {
 		this.sb += `SET TRANSACTION SNAPSHOT `;
 		this.walk(node.snapshotId);
 	}
 
-	protected walkSimpleColumnReferenceNode(node: SimpleColumnReferenceNode): void {
+	protected walkSimpleColumnReferenceNode(
+		node: SimpleColumnReferenceNode
+	): void {
 		this.sb += `"`;
 		this.sb += node.columnName;
 		this.sb += `"`;
@@ -577,22 +618,19 @@ export class SqlAstWalker extends BaseWalker {
 	protected walkTransactionModeNode(node: TransactionModeNode): void {
 		const values = [];
 		if (node.isolationLevel) {
-			values.push(`ISOLATION LEVEL ${ node.isolationLevel }`); // TODO: this is cheating, should abstract the output from the enum string
+			values.push(`ISOLATION LEVEL ${node.isolationLevel}`); // TODO: this is cheating, should abstract the output from the enum string
 		}
 		if (node.readMode) {
-			values.push(`READ ${ node.readMode }`); // TODO: also cheating
+			values.push(`READ ${node.readMode}`); // TODO: also cheating
 		}
 		if (node.deferrable !== undefined) {
-			values.push(
-				(node.deferrable === false ? 'NOT ' : '')
-				+ `DEFERRABLE`
-			);
+			values.push((node.deferrable === false ? "NOT " : "") + `DEFERRABLE`);
 		}
-		this.sb += values.join(' ');
+		this.sb += values.join(" ");
 	}
 
 	protected walkUnaryOperationNode(node: UnaryOperationNode): void {
-		if (node.position == 'left') {
+		if (node.position == "left") {
 			this.sb += node.operator;
 			this.sb += ` `;
 			this.walk(node.expression);

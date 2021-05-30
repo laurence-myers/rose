@@ -10,7 +10,7 @@ import {
 	SelectLockingNode,
 	SelectOutputExpression,
 	SubSelectNode,
-	TableReferenceNode
+	TableReferenceNode,
 } from "../ast";
 import { QuerySelectorProcessor } from "../metadata";
 import { ColumnMetamodel, QueryTable, TableMetamodel } from "../metamodel";
@@ -23,24 +23,28 @@ import { ParamsProxy, ParamsWrapper } from "../params";
 import { TableMap } from "../../data";
 import { BuildableJoin } from "./join";
 
-export type SubSelectExpression = SelectOutputExpression | ColumnMetamodel<unknown>;
+export type SubSelectExpression =
+	| SelectOutputExpression
+	| ColumnMetamodel<unknown>;
 
 type FromArg = QueryTable | AliasedSubQueryBuilder<QuerySelector>;
 type GroupByArg = GroupByExpressionNode | ColumnMetamodel<unknown>;
-type WithCteArg = AliasedExpressionNode<SubSelectNode> | CommonTableExpressionBuilder<QuerySelector>;
+type WithCteArg =
+	| AliasedExpressionNode<SubSelectNode>
+	| CommonTableExpressionBuilder<QuerySelector>;
 
 abstract class BaseSelectQueryBuilder {
 	protected tableMap = new TableMap();
 	protected queryAst: SelectCommandNode = {
-		type: 'selectCommandNode',
-		distinction: 'all',
+		type: "selectCommandNode",
+		distinction: "all",
 		outputExpressions: [],
 		fromItems: [],
 		joins: [],
 		conditions: [],
 		ordering: [],
 		grouping: [],
-		locking: []
+		locking: [],
 	};
 
 	/**
@@ -52,31 +56,34 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	with(first: WithCteArg | readonly WithCteArg[], ...rest: readonly WithCteArg[]): this {
+	with(
+		first: WithCteArg | readonly WithCteArg[],
+		...rest: readonly WithCteArg[]
+	): this {
 		const selectNodes = rectifyVariadicArgs(first, rest).map((item) => {
 			if (item instanceof CommonTableExpressionBuilder) {
 				return item.toNode();
 			} else {
-				 return item;
+				return item;
 			}
 		});
 
 		this.queryAst.with = {
 			type: "withNode",
-			selectNodes
+			selectNodes,
 		};
 		return this;
 	}
 
 	@Clone()
 	distinct(): this {
-		this.queryAst.distinction = 'distinct';
+		this.queryAst.distinction = "distinct";
 		return this;
 	}
 
 	@Clone()
 	distinctOn(expression: ParameterOrValueExpressionNode): this {
-		this.queryAst.distinction = 'on';
+		this.queryAst.distinction = "on";
 		this.queryAst.distinctOn = expression;
 		return this;
 	}
@@ -96,7 +103,10 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	join(joinBuilder: BuildableJoin | readonly BuildableJoin[], ...otherJoins: readonly BuildableJoin[]): this {
+	join(
+		joinBuilder: BuildableJoin | readonly BuildableJoin[],
+		...otherJoins: readonly BuildableJoin[]
+	): this {
 		for (const builder of rectifyVariadicArgs(joinBuilder, otherJoins)) {
 			const joinNode = builder.build(this.tableMap);
 			this.queryAst.joins.push(joinNode);
@@ -105,7 +115,10 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	where(whereExpression: BooleanExpression, options: { replace?: boolean } = {}): this {
+	where(
+		whereExpression: BooleanExpression,
+		options: { replace?: boolean } = {}
+	): this {
 		if (options?.replace) {
 			this.queryAst.conditions = [whereExpression];
 		} else {
@@ -115,17 +128,23 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	groupBy(first: GroupByArg | readonly GroupByArg[], ...rest: readonly GroupByArg[]): this {
-		const all = rectifyVariadicArgs(first, rest).map((columnOrNode): GroupByExpressionNode => {
-			if (columnOrNode instanceof ColumnMetamodel) {
-				return { // TODO: Support strings to reference aliased columns/expressions
-					type: "groupByExpressionNode",
-					expression: columnOrNode.col()
-				};
-			} else {
-				return columnOrNode;
+	groupBy(
+		first: GroupByArg | readonly GroupByArg[],
+		...rest: readonly GroupByArg[]
+	): this {
+		const all = rectifyVariadicArgs(first, rest).map(
+			(columnOrNode): GroupByExpressionNode => {
+				if (columnOrNode instanceof ColumnMetamodel) {
+					return {
+						// TODO: Support strings to reference aliased columns/expressions
+						type: "groupByExpressionNode",
+						expression: columnOrNode.col(),
+					};
+				} else {
+					return columnOrNode;
+				}
 			}
-		});
+		);
 		for (const node of all) {
 			this.queryAst.grouping.push(node);
 		}
@@ -133,7 +152,10 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	orderBy(first: OrderByExpressionNode | readonly OrderByExpressionNode[], ...rest: readonly OrderByExpressionNode[]): this {
+	orderBy(
+		first: OrderByExpressionNode | readonly OrderByExpressionNode[],
+		...rest: readonly OrderByExpressionNode[]
+	): this {
 		for (const node of rectifyVariadicArgs(first, rest)) {
 			this.queryAst.ordering.push(node);
 		}
@@ -141,34 +163,45 @@ abstract class BaseSelectQueryBuilder {
 	}
 
 	@Clone()
-	limit(limit: ConstantNode<number>, offset: ConstantNode<number> = constant(0)): this {
+	limit(
+		limit: ConstantNode<number>,
+		offset: ConstantNode<number> = constant(0)
+	): this {
 		this.queryAst.limit = {
-			type: 'limitOffsetNode',
+			type: "limitOffsetNode",
 			limit,
-			offset
+			offset,
 		};
 		return this;
 	}
 
 	@Clone()
-	for(lockStrength: SelectLockingNode['strength'], options: {
-		of?: readonly QueryTable[],
-		wait?: SelectLockingNode['wait']
-	} = {}): this {
+	for(
+		lockStrength: SelectLockingNode["strength"],
+		options: {
+			of?: readonly QueryTable[];
+			wait?: SelectLockingNode["wait"];
+		} = {}
+	): this {
 		this.queryAst.locking.push({
-			type: 'selectLockingNode',
+			type: "selectLockingNode",
 			strength: lockStrength,
-			of: options.of?.map((queryTable): TableReferenceNode => ({
-				type: 'tableReferenceNode',
-				tableName: queryTable.$table.name
-			})) ?? [],
-			wait: options.wait
+			of:
+				options.of?.map(
+					(queryTable): TableReferenceNode => ({
+						type: "tableReferenceNode",
+						tableName: queryTable.$table.name,
+					})
+				) ?? [],
+			wait: options.wait,
 		});
 		return this;
 	}
 }
 
-export class SelectQueryBuilder<TQuerySelector extends QuerySelector> extends BaseSelectQueryBuilder {
+export class SelectQueryBuilder<
+	TQuerySelector extends QuerySelector
+> extends BaseSelectQueryBuilder {
 	constructor(private querySelector: TQuerySelector) {
 		super();
 		this.select();
@@ -181,20 +214,22 @@ export class SelectQueryBuilder<TQuerySelector extends QuerySelector> extends Ba
 
 	protected select(): this {
 		this.queryAst = {
-			type: 'selectCommandNode',
-			distinction: 'all',
+			type: "selectCommandNode",
+			distinction: "all",
 			outputExpressions: this.processQuerySelector(),
 			fromItems: [],
 			joins: [],
 			conditions: [],
 			ordering: [],
 			grouping: [],
-			locking: []
+			locking: [],
 		};
 		return this;
 	}
 
-	finalise<TParams>(paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams>): FinalisedQueryWithParams<TQuerySelector, TParams> {
+	finalise<TParams>(
+		paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams>
+	): FinalisedQueryWithParams<TQuerySelector, TParams> {
 		return new FinalisedQueryWithParams(
 			this.querySelector,
 			this.queryAst,
@@ -210,10 +245,14 @@ export class SubQueryBuilder<TParams> extends BaseSelectQueryBuilder {
 		this.select(subSelectExpressions);
 	}
 
-	protected processSubSelectExpressions(subSelectExpressions: SubSelectExpression[]) {
+	protected processSubSelectExpressions(
+		subSelectExpressions: SubSelectExpression[]
+	) {
 		for (let outputExpression of subSelectExpressions) {
 			if (outputExpression instanceof ColumnMetamodel) {
-				this.queryAst.outputExpressions.push(outputExpression.toColumnReferenceNode());
+				this.queryAst.outputExpressions.push(
+					outputExpression.toColumnReferenceNode()
+				);
 			} else {
 				this.queryAst.outputExpressions.push(outputExpression);
 			}
@@ -222,15 +261,15 @@ export class SubQueryBuilder<TParams> extends BaseSelectQueryBuilder {
 
 	protected select(subSelectExpressions: SubSelectExpression[]): this {
 		this.queryAst = {
-			type: 'selectCommandNode',
-			distinction: 'all',
+			type: "selectCommandNode",
+			distinction: "all",
 			outputExpressions: [],
 			fromItems: [],
 			joins: [],
 			conditions: [],
 			ordering: [],
 			grouping: [],
-			locking: []
+			locking: [],
 		};
 		this.processSubSelectExpressions(subSelectExpressions);
 		return this;
@@ -238,9 +277,9 @@ export class SubQueryBuilder<TParams> extends BaseSelectQueryBuilder {
 
 	toSubQuery(): SubSelectNode {
 		return {
-			type: 'subSelectNode',
+			type: "subSelectNode",
 			query: this.queryAst,
-			tableMap: this.tableMap
+			tableMap: this.tableMap,
 		};
 	}
 }
@@ -249,7 +288,9 @@ export type AliasedSubQueryMetamodel<T extends QuerySelector> = {
 	[K in keyof T]: ColumnMetamodel<any>;
 };
 
-export class AliasedSubQueryBuilder<TQuerySelector extends QuerySelector> extends BaseSelectQueryBuilder {
+export class AliasedSubQueryBuilder<
+	TQuerySelector extends QuerySelector
+> extends BaseSelectQueryBuilder {
 	constructor(
 		protected readonly alias: string,
 		protected readonly querySelector: TQuerySelector
@@ -270,13 +311,12 @@ export class AliasedSubQueryBuilder<TQuerySelector extends QuerySelector> extend
 		for (const expr of this.queryAst.outputExpressions) {
 			switch (expr.type) {
 				case "aliasedExpressionNode":
-					output[expr.alias] = new ColumnMetamodel<unknown>(
-						table,
-						expr.alias,
-					);
+					output[expr.alias] = new ColumnMetamodel<unknown>(table, expr.alias);
 					break;
 				default:
-					throw new UnsupportedOperationError("Only aliased expressions can be used in aliased sub-queries");
+					throw new UnsupportedOperationError(
+						"Only aliased expressions can be used in aliased sub-queries"
+					);
 			}
 		}
 		return output as AliasedSubQueryMetamodel<TQuerySelector>;
@@ -289,14 +329,14 @@ export class AliasedSubQueryBuilder<TQuerySelector extends QuerySelector> extend
 			alias: this.alias,
 			aliasPath: [this.alias],
 			expression: {
-				type: 'subSelectNode',
+				type: "subSelectNode",
 				query: this.queryAst,
-				tableMap: this.tableMap
-			}
+				tableMap: this.tableMap,
+			},
 		};
 	}
 }
 
-export class CommonTableExpressionBuilder<TQuerySelector extends QuerySelector> extends AliasedSubQueryBuilder<TQuerySelector> {
-
-}
+export class CommonTableExpressionBuilder<
+	TQuerySelector extends QuerySelector
+> extends AliasedSubQueryBuilder<TQuerySelector> {}

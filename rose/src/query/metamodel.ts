@@ -6,52 +6,58 @@ import {
 	OrderByExpressionNode,
 	ParameterOrValueExpressionNode,
 	SimpleColumnReferenceNode,
-	ValueExpressionNode
+	ValueExpressionNode,
 } from "./ast";
 import { any } from "./dsl/postgresql/array/functions";
 import { OptionalNulls } from "../lang";
 
 export class TableMetamodel {
-
 	constructor(
 		readonly name: string,
 		readonly alias: string | undefined // Not great having this here, since it conflates metamodel with stateful querying.
-	) {
-	}
+	) {}
 }
 
 export type ParamGetter<P, R> = (params: P) => R;
 
 function isParamGetter<R>(value: any): value is ParamGetter<any, R> {
-	return value && typeof value == 'function';
+	return value && typeof value == "function";
 }
 
-type BooleanUnaryOperators = 'IS NULL'
-	| 'IS NOT NULL'
-	| 'IS TRUE'
-	| 'IS NOT TRUE'
-	| 'IS FALSE'
-	| 'IS NOT FALSE'
-	| 'IS UNKNOWN'
-	| 'IS NOT UNKNOWN';
-type BooleanBinaryOperators = '=' | '!=' | '<' | '<=' | '>' | '>=' | 'IS DISTINCT FROM' | 'IS NOT DISTINCT FROM' | 'IN';
-type ValueType<T> = ((params: unknown) => T) | ColumnMetamodel<T> | ParameterOrValueExpressionNode<T>;
+type BooleanUnaryOperators =
+	| "IS NULL"
+	| "IS NOT NULL"
+	| "IS TRUE"
+	| "IS NOT TRUE"
+	| "IS FALSE"
+	| "IS NOT FALSE"
+	| "IS UNKNOWN"
+	| "IS NOT UNKNOWN";
+type BooleanBinaryOperators =
+	| "="
+	| "!="
+	| "<"
+	| "<="
+	| ">"
+	| ">="
+	| "IS DISTINCT FROM"
+	| "IS NOT DISTINCT FROM"
+	| "IN";
+type ValueType<T> =
+	| ((params: unknown) => T)
+	| ColumnMetamodel<T>
+	| ParameterOrValueExpressionNode<T>;
 
 export class ColumnMetamodel<T> {
-	public readonly $selectorKind: 'column' = 'column';
+	public readonly $selectorKind: "column" = "column";
 
-	constructor(
-		readonly table: TableMetamodel,
-		readonly name: string,
-	) {
-
-	}
+	constructor(readonly table: TableMetamodel, readonly name: string) {}
 
 	asc(): OrderByExpressionNode {
 		return {
 			type: "orderByExpressionNode",
 			expression: this.toColumnReferenceNode(),
-			order: "asc"
+			order: "asc",
 		};
 	}
 
@@ -59,17 +65,19 @@ export class ColumnMetamodel<T> {
 		return {
 			type: "orderByExpressionNode",
 			expression: this.toColumnReferenceNode(),
-			order: "desc"
+			order: "desc",
 		};
 	}
 
-	protected coerceToNode<T>(value: ValueType<T>): ParameterOrValueExpressionNode {
+	protected coerceToNode<T>(
+		value: ValueType<T>
+	): ParameterOrValueExpressionNode {
 		if (value instanceof ColumnMetamodel) {
 			return value.toColumnReferenceNode();
 		} else if (isParamGetter(value)) {
-			return <ConstantNode<T>> {
-				type: 'constantNode',
-				getter: value
+			return <ConstantNode<T>>{
+				type: "constantNode",
+				getter: value,
 			};
 		} else {
 			return value;
@@ -78,46 +86,47 @@ export class ColumnMetamodel<T> {
 
 	protected createBooleanBinaryOperationNode(
 		operator: BooleanBinaryOperators,
-		value: ValueType<T>): BooleanBinaryOperationNode {
+		value: ValueType<T>
+	): BooleanBinaryOperationNode {
 		let right: ParameterOrValueExpressionNode = this.coerceToNode(value);
 		return {
-			type: 'binaryOperationNode',
+			type: "binaryOperationNode",
 			left: this.toColumnReferenceNode(),
 			right,
-			operator
+			operator,
 		};
 	}
 
 	eq(value: ValueType<T>): BooleanBinaryOperationNode {
-		return this.createBooleanBinaryOperationNode('=', value);
+		return this.createBooleanBinaryOperationNode("=", value);
 	}
 
 	neq(value: ValueType<T>): BooleanBinaryOperationNode {
-		return this.createBooleanBinaryOperationNode('!=', value);
+		return this.createBooleanBinaryOperationNode("!=", value);
 	}
 
 	gt(value: ValueType<T>): BooleanBinaryOperationNode {
-		return this.createBooleanBinaryOperationNode('>', value);
+		return this.createBooleanBinaryOperationNode(">", value);
 	}
 
 	gte(value: ValueType<T>): BooleanBinaryOperationNode {
-		return this.createBooleanBinaryOperationNode('>=', value);
+		return this.createBooleanBinaryOperationNode(">=", value);
 	}
 
 	lt(value: ValueType<T>): BooleanBinaryOperationNode {
-		return this.createBooleanBinaryOperationNode('<', value);
+		return this.createBooleanBinaryOperationNode("<", value);
 	}
 
 	lte(value: ValueType<T>): BooleanBinaryOperationNode {
-		return this.createBooleanBinaryOperationNode('<=', value);
+		return this.createBooleanBinaryOperationNode("<=", value);
 	}
 
 	isDistinctFrom(value: ValueType<T>): BooleanBinaryOperationNode {
-		return this.createBooleanBinaryOperationNode('IS DISTINCT FROM', value);
+		return this.createBooleanBinaryOperationNode("IS DISTINCT FROM", value);
 	}
 
 	isNotDistinctFrom(value: ValueType<T>): BooleanBinaryOperationNode {
-		return this.createBooleanBinaryOperationNode('IS NOT DISTINCT FROM', value);
+		return this.createBooleanBinaryOperationNode("IS NOT DISTINCT FROM", value);
 	}
 
 	/**
@@ -126,60 +135,62 @@ export class ColumnMetamodel<T> {
 	 * Instead, use "eqAny", which allows you to substitute an entire array value.
 	 */
 	in(value: ValueExpressionNode): BooleanBinaryOperationNode {
-		return this.createBooleanBinaryOperationNode('IN', value);
+		return this.createBooleanBinaryOperationNode("IN", value);
 	}
 
 	eqAny(value: ValueType<T | ReadonlyArray<T>>): BooleanBinaryOperationNode {
 		return this.eq(any(this.coerceToNode(value)));
 	}
 
-	protected createBooleanUnaryOperationNode(operator: BooleanUnaryOperators): BooleanUnaryOperationNode {
+	protected createBooleanUnaryOperationNode(
+		operator: BooleanUnaryOperators
+	): BooleanUnaryOperationNode {
 		return {
-			type: 'unaryOperationNode',
+			type: "unaryOperationNode",
 			expression: this.toColumnReferenceNode(),
 			operator,
-			position: 'right' // TODO: support left-hand unary operators
+			position: "right", // TODO: support left-hand unary operators
 		};
 	}
 
 	isNull(): BooleanUnaryOperationNode {
-		return this.createBooleanUnaryOperationNode('IS NULL');
+		return this.createBooleanUnaryOperationNode("IS NULL");
 	}
 
 	isNotNull(): BooleanUnaryOperationNode {
-		return this.createBooleanUnaryOperationNode('IS NOT NULL');
+		return this.createBooleanUnaryOperationNode("IS NOT NULL");
 	}
 
 	isTrue(): BooleanUnaryOperationNode {
-		return this.createBooleanUnaryOperationNode('IS TRUE');
+		return this.createBooleanUnaryOperationNode("IS TRUE");
 	}
 
 	isNotTrue(): BooleanUnaryOperationNode {
-		return this.createBooleanUnaryOperationNode('IS NOT TRUE');
+		return this.createBooleanUnaryOperationNode("IS NOT TRUE");
 	}
 
 	isFalse(): BooleanUnaryOperationNode {
-		return this.createBooleanUnaryOperationNode('IS FALSE');
+		return this.createBooleanUnaryOperationNode("IS FALSE");
 	}
 
 	isNotFalse(): BooleanUnaryOperationNode {
-		return this.createBooleanUnaryOperationNode('IS NOT FALSE');
+		return this.createBooleanUnaryOperationNode("IS NOT FALSE");
 	}
 
 	isUnknown(): BooleanUnaryOperationNode {
-		return this.createBooleanUnaryOperationNode('IS UNKNOWN');
+		return this.createBooleanUnaryOperationNode("IS UNKNOWN");
 	}
 
 	isNotUnknown(): BooleanUnaryOperationNode {
-		return this.createBooleanUnaryOperationNode('IS NOT UNKNOWN');
+		return this.createBooleanUnaryOperationNode("IS NOT UNKNOWN");
 	}
 
 	toColumnReferenceNode(): ColumnReferenceNode {
 		return {
-			type: 'columnReferenceNode',
+			type: "columnReferenceNode",
 			columnName: this.name,
 			tableName: this.table.name,
-			tableAlias: this.table.alias || undefined
+			tableAlias: this.table.alias || undefined,
 		};
 	}
 
@@ -190,7 +201,7 @@ export class ColumnMetamodel<T> {
 	scol(): SimpleColumnReferenceNode {
 		return {
 			type: "simpleColumnReferenceNode",
-			columnName: this.name
+			columnName: this.name,
 		};
 	}
 }
@@ -198,24 +209,33 @@ export class ColumnMetamodel<T> {
 export abstract class QueryTable {
 	protected constructor(
 		readonly $table: TableMetamodel,
-		readonly $tableAlias? : string
+		readonly $tableAlias?: string
 	) {
 		// TODO: validate that $tableAlias does not match the pattern of automatically generated aliases, e.g. "t1".
 	}
 }
 
 export type TableColumns<T extends QueryTable> = {
-	[K in Exclude<keyof T, '$table' | '$tableAlias'>]: T[K] extends ColumnMetamodel<infer U> ? U : never;
-}
+	[K in Exclude<
+		keyof T,
+		"$table" | "$tableAlias"
+	>]: T[K] extends ColumnMetamodel<infer U> ? U : never;
+};
 
-export type PartialTableColumns<T extends QueryTable> = Partial<TableColumns<T>>;
+export type PartialTableColumns<T extends QueryTable> = Partial<
+	TableColumns<T>
+>;
 
 export type AstMap<T> = {
 	[K in keyof T]: ParameterOrValueExpressionNode;
 };
 
-export type TableColumnsForUpdateCommand<T extends QueryTable> = AstMap<TableColumns<T>>;
+export type TableColumnsForUpdateCommand<T extends QueryTable> = AstMap<
+	TableColumns<T>
+>;
 
-export type TableColumnsForInsertCommand<T extends QueryTable> = AstMap<OptionalNulls<TableColumns<T>>>;
+export type TableColumnsForInsertCommand<T extends QueryTable> = AstMap<
+	OptionalNulls<TableColumns<T>>
+>;
 
 export type TableColumnsForInsertCommandFromRow<T> = AstMap<OptionalNulls<T>>;

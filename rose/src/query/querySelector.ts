@@ -1,12 +1,10 @@
 import { ColumnMetamodel } from "./metamodel";
 import { ParameterOrValueExpressionNode } from "./ast";
 
-export type SelectorColumnTypes = (
-	ColumnMetamodel<any>
-);
+export type SelectorColumnTypes = ColumnMetamodel<any>;
 
 export interface SelectorExpression<T> {
-	readonly $selectorKind: 'expression';
+	readonly $selectorKind: "expression";
 	readonly expression: ParameterOrValueExpressionNode;
 }
 
@@ -21,23 +19,22 @@ export interface NestedQueryMany {
 // export type NestedQuery = NestedQueryOne | NestedQueryMany;
 
 export interface SelectorNestedOne<T> {
-	readonly $selectorKind: 'nestedOne';
+	readonly $selectorKind: "nestedOne";
 	readonly nestedSelector: NestedQueryOne;
 }
 
 export interface SelectorNestedMany<T> {
-	readonly $selectorKind: 'nestedMany';
+	readonly $selectorKind: "nestedMany";
 	readonly nestedSelector: NestedQueryMany;
 }
 
-export type SelectorTypes = (
-	SelectorColumnTypes
+export type SelectorTypes =
+	| SelectorColumnTypes
 	| SelectorExpression<any>
 	| SelectorNestedOne<any>
-	| SelectorNestedMany<any>
-);
+	| SelectorNestedMany<any>;
 
-export type SelectorKind = 'column' | 'expression' | 'nestedOne' | 'nestedMany';
+export type SelectorKind = "column" | "expression" | "nestedOne" | "nestedMany";
 
 export interface QuerySelector {
 	[key: string]: SelectorTypes;
@@ -45,4 +42,4 @@ export interface QuerySelector {
 
 export type AsQuerySelector<T> = {
 	[K in keyof T]: SelectorTypes;
-}
+};

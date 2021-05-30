@@ -1,5 +1,9 @@
-import * as assert from 'assert';
-import { AbstractDatabaseContext, LoggingClient, PoolClient } from "../../src/connection";
+import * as assert from "assert";
+import {
+	AbstractDatabaseContext,
+	LoggingClient,
+	PoolClient,
+} from "../../src/connection";
 import { QueryResult } from "../../src/execution";
 
 describe(LoggingClient.name, () => {
@@ -12,7 +16,7 @@ describe(LoggingClient.name, () => {
 		function fakeLogger(query: string, values: ReadonlyArray<unknown>) {
 			loggedQueries.push({
 				query,
-				values
+				values,
 			});
 		}
 		class DatabaseContext extends AbstractDatabaseContext {
@@ -22,20 +26,21 @@ describe(LoggingClient.name, () => {
 		}
 		const expectedError = new Error(`Not implemented`);
 		const dummyPoolClient: PoolClient = {
-			release() {
-			},
+			release() {},
 			async query(): Promise<QueryResult> {
 				throw expectedError;
-			}
+			},
 		};
 		const querySql = `SELECT * FROM foo WHERE id = $1`;
-		const queryValues = ['1234'];
+		const queryValues = ["1234"];
 
 		const databaseContext = new DatabaseContext(dummyPoolClient);
 
 		try {
 			// Execute
-			await databaseContext.client.query(`SELECT * FROM foo WHERE id = $1`, ['1234']);
+			await databaseContext.client.query(`SELECT * FROM foo WHERE id = $1`, [
+				"1234",
+			]);
 			assert.fail(`Query should throw an error`);
 		} catch (err) {
 			assert.deepStrictEqual(err, expectedError);
@@ -45,8 +50,8 @@ describe(LoggingClient.name, () => {
 		assert.deepStrictEqual(loggedQueries, [
 			{
 				query: querySql,
-				values: queryValues
-			}
+				values: queryValues,
+			},
 		]);
 	});
 });

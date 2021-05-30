@@ -6,45 +6,62 @@ import {
 	SelectCommandNode,
 	SimpleColumnReferenceNode,
 	SubSelectNode,
-	TableReferenceNode
+	TableReferenceNode,
 } from "../ast";
-import { ColumnMetamodel, QueryTable, TableColumnsForInsertCommand } from "../metamodel";
+import {
+	ColumnMetamodel,
+	QueryTable,
+	TableColumnsForInsertCommand,
+} from "../metamodel";
 import { aliasTable } from "../dsl";
-import { FinalisedQueryNonReturningWithParams, FinalisedQueryWithParams } from "../finalisedQuery";
+import {
+	FinalisedQueryNonReturningWithParams,
+	FinalisedQueryWithParams,
+} from "../finalisedQuery";
 import { InvalidInsertError } from "../../errors";
 import { QuerySelector } from "../querySelector";
 import { ParamsProxy, ParamsWrapper } from "../params";
 import { TableMap } from "../../data";
-import { OnConflictDoUpdateWhereBuilder, OnConflictDoNothingBuildable } from "./onConflict";
+import {
+	OnConflictDoUpdateWhereBuilder,
+	OnConflictDoNothingBuildable,
+} from "./onConflict";
 
-export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends TableColumnsForInsertCommand<TQTable>> {
+export class InsertQueryBuilder<
+	TQTable extends QueryTable,
+	TInsertRow extends TableColumnsForInsertCommand<TQTable>
+> {
 	protected readonly tableMap = new TableMap();
 	protected readonly queryAst: InsertCommandNode;
 
-	constructor(
-		protected readonly qtable: TQTable
-	) {
+	constructor(protected readonly qtable: TQTable) {
 		this.queryAst = {
-			type: 'insertCommandNode',
+			type: "insertCommandNode",
 			table: this.fromSingleTable(qtable),
 			columns: [],
-			values: []
+			values: [],
 		};
 	}
 
-	protected fromSingleTable(qtable: QueryTable): AliasedExpressionNode<TableReferenceNode> {
+	protected fromSingleTable(
+		qtable: QueryTable
+	): AliasedExpressionNode<TableReferenceNode> {
 		const tableName = qtable.$table.name;
 		const alias = qtable.$table.alias || this.tableMap.get(tableName);
 		return aliasTable(tableName, alias);
 	}
 
-	protected extractColumnNamesFromObject(keys: readonly string[]): readonly string[] {
+	protected extractColumnNamesFromObject(
+		keys: readonly string[]
+	): readonly string[] {
 		return keys.map((key) => {
 			const prop = (this.qtable as any)[key];
 			if (prop instanceof ColumnMetamodel) {
 				return prop.name;
 			} else {
-				throw new InvalidInsertError(`Tried to insert property "${ key }", but couldn't find a matching column metamodel in table "${ this.qtable.$table.name }".`);
+				throw new InvalidInsertError(
+					`Tried to insert property "${key}", but couldn't find a matching column metamodel in table "${this.qtable.$table.name}".`
+				);
 			}
 		});
 	}
@@ -57,22 +74,28 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 			const existingColumns = this.queryAst.columns;
 			if (
 				// Is the new row missing one of the columns?
-				existingColumns.some((column) => insertColumns.indexOf(column.columnName) === -1)
+				existingColumns.some(
+					(column) => insertColumns.indexOf(column.columnName) === -1
+				) ||
 				// Does the new row have extra columns?
-				|| insertColumns.length !== existingColumns.length
+				insertColumns.length !== existingColumns.length
 			) {
-				throw new InvalidInsertError(`Inserted row columns doesn't match the expected columns. Expected: [${
-					existingColumns.map((column) => `"${ column.columnName }"`)
-				}], received: [${
-					insertColumns.map((columnName) => `"${ columnName }"`)
-				}]`);
+				throw new InvalidInsertError(
+					`Inserted row columns doesn't match the expected columns. Expected: [${existingColumns.map(
+						(column) => `"${column.columnName}"`
+					)}], received: [${insertColumns.map(
+						(columnName) => `"${columnName}"`
+					)}]`
+				);
 			}
 		} else {
 			this.queryAst.columns.push(
-				...insertColumns.map((insertColumn): SimpleColumnReferenceNode => ({
-					type: "simpleColumnReferenceNode",
-					columnName: insertColumn
-				}))
+				...insertColumns.map(
+					(insertColumn): SimpleColumnReferenceNode => ({
+						type: "simpleColumnReferenceNode",
+						columnName: insertColumn,
+					})
+				)
 			);
 		}
 		const values: ParameterOrValueExpressionNode[] = [];
@@ -83,7 +106,9 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 		return this;
 	}
 
-	private getQueryOutputExpressionNames(query: SelectCommandNode): SimpleColumnReferenceNode[] {
+	private getQueryOutputExpressionNames(
+		query: SelectCommandNode
+	): SimpleColumnReferenceNode[] {
 		const outputNames: SimpleColumnReferenceNode[] = [];
 		for (const node of query.outputExpressions) {
 			let outputNode: SimpleColumnReferenceNode;
@@ -91,13 +116,13 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 				case "aliasedExpressionNode":
 					outputNode = {
 						type: "simpleColumnReferenceNode",
-						columnName: node.alias
+						columnName: node.alias,
 					};
 					break;
 				case "columnReferenceNode":
 					outputNode = {
 						type: "simpleColumnReferenceNode",
-						columnName: node.columnName
+						columnName: node.columnName,
 					};
 					break;
 				default:
@@ -109,7 +134,10 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 	}
 
 	@Clone()
-	insertFromQuery(query: SubSelectNode, propertyNames?: Array<keyof TInsertRow & string>): this {
+	insertFromQuery(
+		query: SubSelectNode,
+		propertyNames?: Array<keyof TInsertRow & string>
+	): this {
 		if (propertyNames === undefined) {
 			const outputNames = this.getQueryOutputExpressionNames(query.query);
 			if (outputNames.length > 0) {
@@ -118,10 +146,12 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 		} else if (propertyNames.length > 0) {
 			const insertColumns = this.extractColumnNamesFromObject(propertyNames);
 			this.queryAst.columns.push(
-				...insertColumns.map((insertColumn): SimpleColumnReferenceNode => ({
-					type: "simpleColumnReferenceNode",
-					columnName: insertColumn
-				}))
+				...insertColumns.map(
+					(insertColumn): SimpleColumnReferenceNode => ({
+						type: "simpleColumnReferenceNode",
+						columnName: insertColumn,
+					})
+				)
 			);
 		}
 		this.queryAst.query = query;
@@ -129,15 +159,21 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 	}
 
 	@Clone()
-	onConflict(conflictAction: OnConflictDoUpdateWhereBuilder | OnConflictDoNothingBuildable): this {
+	onConflict(
+		conflictAction:
+			| OnConflictDoUpdateWhereBuilder
+			| OnConflictDoNothingBuildable
+	): this {
 		this.queryAst.onConflict = {
 			type: "onConflictNode",
-			conflictAction: conflictAction.build()
+			conflictAction: conflictAction.build(),
 		};
 		return this;
 	}
 
-	returning<TQuerySelector extends QuerySelector>(querySelector: TQuerySelector): InsertReturningQueryBuilder<TQTable, TQuerySelector> {
+	returning<TQuerySelector extends QuerySelector>(
+		querySelector: TQuerySelector
+	): InsertReturningQueryBuilder<TQTable, TQuerySelector> {
 		return new InsertReturningQueryBuilder<TQTable, TQuerySelector>(
 			this.qtable,
 			this.tableMap,
@@ -148,7 +184,9 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 		);
 	}
 
-	finalise<TParams>(paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams>): FinalisedQueryNonReturningWithParams<TParams> {
+	finalise<TParams>(
+		paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams>
+	): FinalisedQueryNonReturningWithParams<TParams> {
 		return new FinalisedQueryNonReturningWithParams<TParams>(
 			this.queryAst,
 			this.tableMap,
@@ -157,16 +195,20 @@ export class InsertQueryBuilder<TQTable extends QueryTable, TInsertRow extends T
 	}
 }
 
-export class InsertReturningQueryBuilder<TQTable extends QueryTable, TQuerySelector extends QuerySelector> {
+export class InsertReturningQueryBuilder<
+	TQTable extends QueryTable,
+	TQuerySelector extends QuerySelector
+> {
 	constructor(
 		protected readonly qtable: TQTable,
 		protected readonly tableMap: TableMap,
 		protected readonly queryAst: InsertCommandNode,
-		protected readonly querySelector: TQuerySelector,
-	) {
-	}
+		protected readonly querySelector: TQuerySelector
+	) {}
 
-	finalise<TParams>(paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams>): FinalisedQueryWithParams<TQuerySelector, TParams> {
+	finalise<TParams>(
+		paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams>
+	): FinalisedQueryWithParams<TQuerySelector, TParams> {
 		return new FinalisedQueryWithParams<TQuerySelector, TParams>(
 			this.querySelector,
 			this.queryAst,

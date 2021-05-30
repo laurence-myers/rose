@@ -2,15 +2,15 @@ import { Queryable, QueryResult } from "../execution";
 import { transaction, Transaction } from "../query/dsl";
 
 interface Disposable {
-    dispose(): void;
+	dispose(): void;
 }
 
 export interface PoolClient extends Queryable {
-    release(err?: Error | boolean): void;
+	release(err?: Error | boolean): void;
 }
 
 export interface Pool {
-    connect(): Promise<PoolClient>
+	connect(): Promise<PoolClient>;
 }
 
 /**
@@ -29,20 +29,19 @@ export interface Pool {
  * ```
  */
 export class LoggingClient implements PoolClient {
-    constructor(
-        protected readonly logger: (queryText: string, values: unknown[]) => void,
-        protected readonly client: PoolClient
-    ) {
-    }
+	constructor(
+		protected readonly logger: (queryText: string, values: unknown[]) => void,
+		protected readonly client: PoolClient
+	) {}
 
-    query(queryText: string, values: any[]): Promise<QueryResult> {
-        this.logger(queryText, values);
-        return this.client.query(queryText, values);
-    }
+	query(queryText: string, values: any[]): Promise<QueryResult> {
+		this.logger(queryText, values);
+		return this.client.query(queryText, values);
+	}
 
-    release(err?: Error | boolean): void {
-        return this.client.release(err);
-    }
+	release(err?: Error | boolean): void {
+		return this.client.release(err);
+	}
 }
 
 /**
@@ -58,19 +57,21 @@ export class LoggingClient implements PoolClient {
  *
  */
 export abstract class AbstractDatabaseContext implements Disposable {
-    constructor(protected readonly _client: PoolClient) {}
+	constructor(protected readonly _client: PoolClient) {}
 
-    public get client(): Queryable {
-        return this._client;
-    }
+	public get client(): Queryable {
+		return this._client;
+	}
 
-    public dispose(): void {
-        this._client.release();
-    }
+	public dispose(): void {
+		this._client.release();
+	}
 
-    public inTransaction<TReturn>(cb: (db: this, transaction: Transaction) => Promise<TReturn>): Promise<TReturn> {
-        return transaction(this._client, (transaction) => cb(this, transaction));
-    }
+	public inTransaction<TReturn>(
+		cb: (db: this, transaction: Transaction) => Promise<TReturn>
+	): Promise<TReturn> {
+		return transaction(this._client, (transaction) => cb(this, transaction));
+	}
 }
 
 /**
@@ -101,49 +102,54 @@ export abstract class AbstractDatabaseContext implements Disposable {
  * }
  * ```
  */
-export abstract class AbstractConnectionManager<TContext extends AbstractDatabaseContext> {
+export abstract class AbstractConnectionManager<
+	TContext extends AbstractDatabaseContext
+> {
+	constructor() {}
 
-    constructor() {}
+	protected abstract get pool(): Pool;
 
-    protected abstract get pool(): Pool;
+	protected abstract createDatabaseContext(poolClient: PoolClient): TContext;
 
-    protected abstract createDatabaseContext(poolClient: PoolClient): TContext;
+	protected async getConnection(): Promise<TContext> {
+		const poolClient: PoolClient = await this.pool.connect();
+		return this.createDatabaseContext(poolClient);
+	}
 
-    protected async getConnection(): Promise<TContext> {
-        const poolClient: PoolClient = await this.pool.connect();
-        return this.createDatabaseContext(poolClient);
-    }
+	/**
+	 * Acquire a connection, execute a callback that accepts a "database context", and release the connection when done.
+	 */
+	public async withConnection<TReturn>(
+		cb: (db: TContext) => Promise<TReturn>
+	): Promise<TReturn> {
+		let db;
+		try {
+			db = await this.getConnection();
+			const result = await cb(db);
+			return result;
+		} finally {
+			if (db) {
+				db.dispose();
+			}
+		}
+	}
 
-    /**
-     * Acquire a connection, execute a callback that accepts a "database context", and release the connection when done.
-     */
-    public async withConnection<TReturn>(cb: (db: TContext) => Promise<TReturn>): Promise<TReturn> {
-        let db;
-        try {
-            db = await this.getConnection();
-            const result = await cb(db);
-            return result;
-        } finally {
-            if (db) {
-                db.dispose();
-            }
-        }
-    }
-
-    /**
-     * Acquire a connection, begin a transaction, execute a callback, commit/rollback the transaction, then release the
-     * connection.
-     */
-    public async inTransaction<TReturn>(cb: (db: TContext, transaction: Transaction) => Promise<TReturn>): Promise<TReturn> {
-        let db;
-        try {
-            db = await this.getConnection();
-            const result = await db.inTransaction(cb);
-            return result;
-        } finally {
-            if (db) {
-                db.dispose();
-            }
-        }
-    }
+	/**
+	 * Acquire a connection, begin a transaction, execute a callback, commit/rollback the transaction, then release the
+	 * connection.
+	 */
+	public async inTransaction<TReturn>(
+		cb: (db: TContext, transaction: Transaction) => Promise<TReturn>
+	): Promise<TReturn> {
+		let db;
+		try {
+			db = await this.getConnection();
+			const result = await db.inTransaction(cb);
+			return result;
+		} finally {
+			if (db) {
+				db.dispose();
+			}
+		}
+	}
 }

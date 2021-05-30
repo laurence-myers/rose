@@ -10,7 +10,7 @@ describe(`Metamodel`, () => {
 			deletedAt: now(),
 			locationId: col(QLocations.id),
 			name: upper(param((p: { name: string }) => p.name)),
-			id: constant(1)
+			id: constant(1),
 		};
 	});
 });

@@ -16,9 +16,9 @@ describe(`Transactions`, () => {
 						oid: 1,
 						rowCount: 0,
 						rows: [],
-						fields: []
+						fields: [],
 					};
-				}
+				},
 			};
 
 			const callback = async () => {};
@@ -27,10 +27,7 @@ describe(`Transactions`, () => {
 			await transaction(client, callback);
 
 			// Verify
-			assert.deepEqual(sqlExecuted, [
-				`BEGIN`,
-				`COMMIT`,
-			]);
+			assert.deepEqual(sqlExecuted, [`BEGIN`, `COMMIT`]);
 		});
 
 		it(`should begin and rollback when an unhandled error is encountered`, async () => {
@@ -45,9 +42,9 @@ describe(`Transactions`, () => {
 						oid: 1,
 						rowCount: 0,
 						rows: [],
-						fields: []
+						fields: [],
 					};
-				}
+				},
 			};
 
 			const expectedError = new Error(`Expected test error`);
@@ -64,10 +61,7 @@ describe(`Transactions`, () => {
 			}
 
 			// Verify
-			assert.deepEqual(sqlExecuted, [
-				`BEGIN`,
-				`ROLLBACK`,
-			]);
+			assert.deepEqual(sqlExecuted, [`BEGIN`, `ROLLBACK`]);
 		});
 	});
 });

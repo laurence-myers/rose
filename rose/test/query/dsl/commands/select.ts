@@ -6,10 +6,13 @@ import {
 	QParent,
 	QRecurringPayments,
 	QUsers,
-	TLocations
+	TLocations,
 } from "../../../fixtures";
 import { lower } from "../../../../src/query/dsl/postgresql/string/sql";
-import { count, sum } from "../../../../src/query/dsl/postgresql/aggregate/general";
+import {
+	count,
+	sum,
+} from "../../../../src/query/dsl/postgresql/aggregate/general";
 import { deepFreeze } from "../../../../src/lang";
 import { select } from "../../../../src/query/dsl/commands";
 import {
@@ -17,17 +20,36 @@ import {
 	selectExpression,
 	selectNestedMany,
 	selectSubQuery,
-	subSelect
+	subSelect,
 } from "../../../../src/query/dsl/select";
-import { and, cast, col, constant, not, or } from "../../../../src/query/dsl/core";
+import {
+	and,
+	cast,
+	col,
+	constant,
+	not,
+	or,
+} from "../../../../src/query/dsl/core";
 import { params, ParamsProxy, withParams } from "../../../../src/query/params";
-import { crossJoin, exists, FinalisedQueryWithParams, fullJoin, innerJoin } from "../../../../src/query";
+import {
+	crossJoin,
+	exists,
+	FinalisedQueryWithParams,
+	fullJoin,
+	innerJoin,
+} from "../../../../src/query";
 import { leftJoin, rightJoin } from "../../../../src/query/dsl/join";
-import assert = require('assert');
+import assert = require("assert");
 
 describe(`SELECT commands`, () => {
-
-	function wrapQuery<TParams = never>(cb: (p: ParamsProxy<TParams>) => { finalise(params: ParamsProxy<TParams>): FinalisedQueryWithParams<any, TParams> }, parameters: TParams) {
+	function wrapQuery<TParams = never>(
+		cb: (p: ParamsProxy<TParams>) => {
+			finalise(
+				params: ParamsProxy<TParams>
+			): FinalisedQueryWithParams<any, TParams>;
+		},
+		parameters: TParams
+	) {
 		const p = params<TParams>();
 		const query = cb(p);
 		return query.finalise(p).toSql(parameters);
@@ -35,146 +57,141 @@ describe(`SELECT commands`, () => {
 
 	it("supports selecting and where clause from one table, with an immediate value (param)", function () {
 		const querySelect = {
-			id: QUsers.id
+			id: QUsers.id,
 		};
 
 		interface QueryParams {
 			userId: number;
 		}
 		const parameterValues = {
-			userId: 1
+			userId: 1,
 		};
 		const actual = wrapQuery<QueryParams>(
-			(p) => select(querySelect)
-				.where(QUsers.id.eq(p.userId)),
+			(p) => select(querySelect).where(QUsers.id.eq(p.userId)),
 			parameterValues
 		);
 		const expected = {
 			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE "t1"."id" = $1`,
-			parameters: [1]
+			parameters: [1],
 		};
 		assert.deepEqual(actual, expected);
 	});
 
 	it("supports calling `where()` multiple times", function () {
 		const querySelect = {
-			id: QUsers.id
+			id: QUsers.id,
 		};
 
 		interface QueryParams {
 			userId: number;
 		}
 		const parameterValues = {
-			userId: 1
+			userId: 1,
 		};
 		const actual = wrapQuery<QueryParams>(
-			(p) => select(querySelect)
-				.where(QUsers.id.eq(p.userId))
-				.where(QUsers.name.eq(constant("Phileas"))),
+			(p) =>
+				select(querySelect)
+					.where(QUsers.id.eq(p.userId))
+					.where(QUsers.name.eq(constant("Phileas"))),
 			parameterValues
 		);
 		const expected = {
 			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE ("t1"."id" = $1 AND "t1"."name" = $2)`,
-			parameters: [1, "Phileas"]
+			parameters: [1, "Phileas"],
 		};
 		assert.deepEqual(actual, expected);
 	});
 
 	it("can replace all existing `where()` clauses", function () {
 		const querySelect = {
-			id: QUsers.id
+			id: QUsers.id,
 		};
 
 		interface QueryParams {
 			userId: number;
 		}
 		const parameterValues = {
-			userId: 1
+			userId: 1,
 		};
 		const actual = wrapQuery<QueryParams>(
-			(p) => select(querySelect)
-				.where(QUsers.id.eq(p.userId))
-				.where(QUsers.name.eq(constant("Phileas")), { replace: true }),
+			(p) =>
+				select(querySelect)
+					.where(QUsers.id.eq(p.userId))
+					.where(QUsers.name.eq(constant("Phileas")), { replace: true }),
 			parameterValues
 		);
 		const expected = {
 			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE "t1"."name" = $1`,
-			parameters: ["Phileas"]
+			parameters: ["Phileas"],
 		};
 		assert.deepEqual(actual, expected);
 	});
 
 	it("supports selecting from a named interface", function () {
-
 		const querySelect = {
-			id: QUsers.id
+			id: QUsers.id,
 		};
 
 		const parameters = {
-			userId: 1
+			userId: 1,
 		};
 		const actual = wrapQuery<{
 			userId: number;
-		}>(
-			(p) => select(querySelect).where(QUsers.id.eq(p.userId)),
-			parameters
-		);
+		}>((p) => select(querySelect).where(QUsers.id.eq(p.userId)), parameters);
 		const expected = {
 			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE "t1"."id" = $1`,
-			parameters: [1]
+			parameters: [1],
 		};
 		assert.deepEqual(actual, expected);
 	});
 
 	it("supports ordering", function () {
 		const querySelect = {
-			id: QUsers.id
+			id: QUsers.id,
 		};
 
-		const parameters = {
-		};
+		const parameters = {};
 		const cases = [
 			{
 				expected: {
 					sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" ORDER BY "t1"."id" ASC`,
-					parameters: []
+					parameters: [],
 				},
 				actual: wrapQuery<{}>(
-					(p) => select(querySelect)
-						.orderBy(QUsers.id.asc()),
+					(p) => select(querySelect).orderBy(QUsers.id.asc()),
 					parameters
-				)
+				),
 			},
 			{
 				expected: {
 					sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" ORDER BY "t1"."id" DESC`,
-					parameters: []
+					parameters: [],
 				},
 				actual: wrapQuery<{}>(
-					(p) => select(querySelect)
-						.orderBy(QUsers.id.desc()),
-					parameters)
-			}
+					(p) => select(querySelect).orderBy(QUsers.id.desc()),
+					parameters
+				),
+			},
 		];
 		cases.forEach((entry) => {
 			assert.deepEqual(entry.actual, entry.expected);
 		});
 	});
 
-	it('supports ordering by an aliased expression', function () {
+	it("supports ordering by an aliased expression", function () {
 		const nameExpr = lower(col(QUsers.name));
 
 		const querySelect = {
-			userName: selectExpression(nameExpr)
+			userName: selectExpression(nameExpr),
 		};
 
 		// TODO: don't require manually constructing an OrderByExpressionNode to "orderBy"
 		// TODO: expose the expression alias, and use it in the generated "ORDER BY" statement
 		const actual = wrapQuery(
-			() => select(querySelect)
-				.orderBy({
-					type: 'orderByExpressionNode',
-					expression: nameExpr
+			() =>
+				select(querySelect).orderBy({
+					type: "orderByExpressionNode",
+					expression: nameExpr,
 				}), // TODO: better API for this
 			{}
 		).sql;
@@ -189,7 +206,10 @@ describe(`SELECT commands`, () => {
 			locationId: QLocations.id,
 		};
 
-		const actual = select(querySelect).where(QLocations.id.eq(QUsers.locationId)).finalise({}).toSql({}).sql;
+		const actual = select(querySelect)
+			.where(QLocations.id.eq(QUsers.locationId))
+			.finalise({})
+			.toSql({}).sql;
 		const expected = `SELECT "t1"."id" as "id", "t2"."id" as "locationId" FROM "Users" as "t1", "Locations" as "t2" WHERE "t2"."id" = "t1"."locationId"`;
 		assert.equal(actual, expected);
 	});
@@ -201,7 +221,7 @@ describe(`SELECT commands`, () => {
 
 		const querySelect = {
 			id: QLocations.id,
-			users: selectNestedMany(querySelectNested)
+			users: selectNestedMany(querySelectNested),
 		};
 
 		// TODO: specify the type of join for nested items
@@ -217,13 +237,13 @@ describe(`SELECT commands`, () => {
 
 		const querySelectNested = {
 			id: QLocations.id,
-			users: selectNestedMany(querySelectNestedNested)
+			users: selectNestedMany(querySelectNestedNested),
 		};
 
 		const querySelect = {
 			id: QAgencies.id,
 
-			locations: selectNestedMany(querySelectNested)
+			locations: selectNestedMany(querySelectNested),
 		};
 
 		const actual = select(querySelect).finalise({}).toSql({}).sql;
@@ -233,10 +253,13 @@ describe(`SELECT commands`, () => {
 
 	it("supports function expressions as select output", function () {
 		const querySelect = {
-			count: selectExpression(count())
+			count: selectExpression(count()),
 		};
 
-		const actual = select(querySelect).from(QUsers, QLocations).finalise({}).toSql({}).sql;
+		const actual = select(querySelect)
+			.from(QUsers, QLocations)
+			.finalise({})
+			.toSql({}).sql;
 		const expected = `SELECT count(*) as "count" FROM "Users" as "t1", "Locations" as "t2"`;
 		assert.equal(actual, expected);
 	});
@@ -260,12 +283,12 @@ describe(`SELECT commands`, () => {
 			(p) => select(querySelect).limit(p.limit, p.offset),
 			{
 				limit: 10,
-				offset: 20
+				offset: 20,
 			}
 		);
 		const expected = {
 			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" LIMIT $1 OFFSET $2`,
-			parameters: [10, 20]
+			parameters: [10, 20],
 		};
 		assert.deepEqual(actual, expected);
 	});
@@ -279,7 +302,10 @@ describe(`SELECT commands`, () => {
 		// TODO: see if we can fix the generated alias ordering. Although, does it matter?
 
 		it("can perform an inner join", function () {
-			const actual = select(querySelect).join(innerJoin(QUsers).on(QUsers.locationId.eq(QLocations.id))).finalise({}).toSql({}).sql;
+			const actual = select(querySelect)
+				.join(innerJoin(QUsers).on(QUsers.locationId.eq(QLocations.id)))
+				.finalise({})
+				.toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" INNER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
 			assert.deepEqual(actual, expected);
 		});
@@ -289,7 +315,9 @@ describe(`SELECT commands`, () => {
 				.join(
 					innerJoin(QUsers).on(QUsers.locationId.eq(QLocations.id)),
 					innerJoin(QAgencies).on(QAgencies.id.eq(QLocations.agencyId))
-				).finalise({}).toSql({}).sql;
+				)
+				.finalise({})
+				.toSql({}).sql;
 			const expected = `SELECT "t3"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t3" INNER JOIN "Users" as "t1" ON "t1"."locationId" = "t3"."id" INNER JOIN "Agencies" as "t2" ON "t2"."id" = "t3"."agencyId"`;
 			assert.deepEqual(actual, expected);
 		});
@@ -299,12 +327,11 @@ describe(`SELECT commands`, () => {
 				parentName: QParent.name,
 				childName: QChild.name,
 				otherChildName: QOtherChild.name,
-			}).join(
-				innerJoin(QChild)
-					.using(QChild.parentId),
-				innerJoin(QOtherChild)
-					.using(QOtherChild.parentId)
-			)
+			})
+				.join(
+					innerJoin(QChild).using(QChild.parentId),
+					innerJoin(QOtherChild).using(QOtherChild.parentId)
+				)
 				.finalise({})
 				.toSql({}).sql;
 			const expected = `SELECT "t3"."name" as "parentName", "t1"."name" as "childName", "t2"."name" as "otherChildName" FROM "Parent" as "t3" INNER JOIN "Child" as "t1" USING ("parentId") INNER JOIN "OtherChild" as "t2" USING ("parentId")`;
@@ -313,40 +340,36 @@ describe(`SELECT commands`, () => {
 
 		it("can perform a left outer join", function () {
 			const actual = select(querySelect)
-				.join(
-					leftJoin(QUsers)
-						.on(QUsers.locationId.eq(QLocations.id))
-				).finalise({}).toSql({}).sql;
+				.join(leftJoin(QUsers).on(QUsers.locationId.eq(QLocations.id)))
+				.finalise({})
+				.toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" LEFT OUTER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can perform a right outer join", function () {
 			const actual = select(querySelect)
-				.join(
-					rightJoin(QUsers)
-						.on(QUsers.locationId.eq(QLocations.id))
-				).finalise({}).toSql({}).sql;
+				.join(rightJoin(QUsers).on(QUsers.locationId.eq(QLocations.id)))
+				.finalise({})
+				.toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" RIGHT OUTER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can perform a full outer join", function () {
 			const actual = select(querySelect)
-				.join(
-					fullJoin(QUsers)
-						.on(QUsers.locationId.eq(QLocations.id))
-				).finalise({}).toSql({}).sql;
+				.join(fullJoin(QUsers).on(QUsers.locationId.eq(QLocations.id)))
+				.finalise({})
+				.toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" FULL OUTER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can perform a left outer join with 'using'", function () {
 			const actual = select(querySelect)
-				.join(
-					leftJoin(QUsers)
-						.using(QLocations.id)
-				).finalise({}).toSql({}).sql;
+				.join(leftJoin(QUsers).using(QLocations.id))
+				.finalise({})
+				.toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" LEFT OUTER JOIN "Users" as "t1" USING ("id")`;
 			assert.deepEqual(actual, expected);
 		});
@@ -354,24 +377,24 @@ describe(`SELECT commands`, () => {
 		it("can perform a cross join", function () {
 			const actual = select(querySelect)
 				.join(crossJoin(QUsers))
-				.finalise({}).toSql({}).sql;
+				.finalise({})
+				.toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" CROSS JOIN "Users" as "t1"`;
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can perform multiple pre-defined joins using `joins()`", function () {
 			const joins = [
-				innerJoin(QChild)
-					.using(QChild.parentId),
-				innerJoin(QOtherChild)
-					.using(QOtherChild.parentId)
+				innerJoin(QChild).using(QChild.parentId),
+				innerJoin(QOtherChild).using(QOtherChild.parentId),
 			];
 
 			const actual = select({
 				parentName: QParent.name,
 				childName: QChild.name,
 				otherChildName: QOtherChild.name,
-			}).join(joins)
+			})
+				.join(joins)
 				.finalise({})
 				.toSql({}).sql;
 			const expected = `SELECT "t3"."name" as "parentName", "t1"."name" as "childName", "t2"."name" as "otherChildName" FROM "Parent" as "t3" INNER JOIN "Child" as "t1" USING ("parentId") INNER JOIN "OtherChild" as "t2" USING ("parentId")`;
@@ -388,12 +411,12 @@ describe(`SELECT commands`, () => {
 			const actual = wrapQuery<{ locationId: number }>(
 				(p) => select(querySelect).where(QLocations.id.eq(p.locationId)),
 				{
-					locationId: 123
+					locationId: 123,
 				}
 			);
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" = $1`,
-				parameters: [123]
+				parameters: [123],
 			};
 			assert.deepEqual(actual, expected);
 		});
@@ -402,12 +425,12 @@ describe(`SELECT commands`, () => {
 			const actual = wrapQuery<{ locationId: number }>(
 				(p) => select(querySelect).where(QLocations.id.neq(p.locationId)),
 				{
-					locationId: 123
+					locationId: 123,
 				}
 			);
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" != $1`,
-				parameters: [123]
+				parameters: [123],
 			};
 			assert.deepEqual(actual, expected);
 		});
@@ -416,12 +439,12 @@ describe(`SELECT commands`, () => {
 			const actual = wrapQuery<{ locationId: number }>(
 				(p) => select(querySelect).where(QLocations.id.gt(p.locationId)),
 				{
-					locationId: 123
+					locationId: 123,
 				}
 			);
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" > $1`,
-				parameters: [123]
+				parameters: [123],
 			};
 			assert.deepEqual(actual, expected);
 		});
@@ -430,12 +453,12 @@ describe(`SELECT commands`, () => {
 			const actual = wrapQuery<{ locationId: number }>(
 				(p) => select(querySelect).where(QLocations.id.gte(p.locationId)),
 				{
-					locationId: 123
+					locationId: 123,
 				}
 			);
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" >= $1`,
-				parameters: [123]
+				parameters: [123],
 			};
 			assert.deepEqual(actual, expected);
 		});
@@ -444,12 +467,12 @@ describe(`SELECT commands`, () => {
 			const actual = wrapQuery<{ locationId: number }>(
 				(p) => select(querySelect).where(QLocations.id.lt(p.locationId)),
 				{
-					locationId: 123
+					locationId: 123,
 				}
 			);
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" < $1`,
-				parameters: [123]
+				parameters: [123],
 			};
 			assert.deepEqual(actual, expected);
 		});
@@ -458,54 +481,63 @@ describe(`SELECT commands`, () => {
 			const actual = wrapQuery<{ locationId: number }>(
 				(p) => select(querySelect).where(QLocations.id.lte(p.locationId)),
 				{
-					locationId: 123
+					locationId: 123,
 				}
 			);
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" <= $1`,
-				parameters: [123]
+				parameters: [123],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can test for distinct from", function () {
 			const actual = wrapQuery(
-				() => select(querySelect).where(QLocations.id.isDistinctFrom(QUsers.locationId)),
+				() =>
+					select(querySelect).where(
+						QLocations.id.isDistinctFrom(QUsers.locationId)
+					),
 				{}
 			);
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1", "Users" as "t2" WHERE "t1"."id" IS DISTINCT FROM "t2"."locationId"`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can test for not distinct from", function () {
 			const actual = wrapQuery(
-				() => select(querySelect).where(QLocations.id.isNotDistinctFrom(QUsers.locationId)),
+				() =>
+					select(querySelect).where(
+						QLocations.id.isNotDistinctFrom(QUsers.locationId)
+					),
 				{}
 			);
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1", "Users" as "t2" WHERE "t1"."id" IS NOT DISTINCT FROM "t2"."locationId"`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can test for in", function () {
 			const actual = wrapQuery<{ agencyId: number }>(
-				(p) => select(querySelect).where(QLocations.id.in(
-					subSelect(QLocations.id)
-						.where(QLocations.agencyId.eq(p.agencyId))
-						.toSubQuery()
-				)),
+				(p) =>
+					select(querySelect).where(
+						QLocations.id.in(
+							subSelect(QLocations.id)
+								.where(QLocations.agencyId.eq(p.agencyId))
+								.toSubQuery()
+						)
+					),
 				{
-					agencyId: 321
+					agencyId: 321,
 				}
 			);
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" IN (SELECT "t1"."id" FROM "Locations" as "t1" WHERE "t1"."agencyId" = $1)`,
-				parameters: [321]
+				parameters: [321],
 			};
 			assert.deepEqual(actual, expected);
 		});
@@ -517,73 +549,97 @@ describe(`SELECT commands`, () => {
 		};
 
 		it("can test for null", function () {
-			const actual = select(querySelect).where(QLocations.id.isNull()).finalise({}).toSql({});
+			const actual = select(querySelect)
+				.where(QLocations.id.isNull())
+				.finalise({})
+				.toSql({});
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" IS NULL`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can test for not null", function () {
-			const actual = select(querySelect).where(QLocations.id.isNotNull()).finalise({}).toSql({});
+			const actual = select(querySelect)
+				.where(QLocations.id.isNotNull())
+				.finalise({})
+				.toSql({});
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" IS NOT NULL`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can test for true", function () {
-			const actual = select(querySelect).where(QLocations.id.isTrue()).finalise({}).toSql({});
+			const actual = select(querySelect)
+				.where(QLocations.id.isTrue())
+				.finalise({})
+				.toSql({});
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" IS TRUE`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can test for not true", function () {
-			const actual = select(querySelect).where(QLocations.id.isNotTrue()).finalise({}).toSql({});
+			const actual = select(querySelect)
+				.where(QLocations.id.isNotTrue())
+				.finalise({})
+				.toSql({});
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" IS NOT TRUE`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can test for false", function () {
-			const actual = select(querySelect).where(QLocations.id.isFalse()).finalise({}).toSql({});
+			const actual = select(querySelect)
+				.where(QLocations.id.isFalse())
+				.finalise({})
+				.toSql({});
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" IS FALSE`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can test for not false", function () {
-			const actual = select(querySelect).where(QLocations.id.isNotFalse()).finalise({}).toSql({});
+			const actual = select(querySelect)
+				.where(QLocations.id.isNotFalse())
+				.finalise({})
+				.toSql({});
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" IS NOT FALSE`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can test for unknown", function () {
-			const actual = select(querySelect).where(QLocations.id.isUnknown()).finalise({}).toSql({});
+			const actual = select(querySelect)
+				.where(QLocations.id.isUnknown())
+				.finalise({})
+				.toSql({});
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" IS UNKNOWN`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can test for not unknown", function () {
-			const actual = select(querySelect).where(QLocations.id.isNotUnknown()).finalise({}).toSql({});
+			const actual = select(querySelect)
+				.where(QLocations.id.isNotUnknown())
+				.finalise({})
+				.toSql({});
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Locations" as "t1" WHERE "t1"."id" IS NOT UNKNOWN`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
@@ -597,29 +653,25 @@ describe(`SELECT commands`, () => {
 		};
 
 		it("can group with 'and'", function () {
-			const actual = select(querySelect).where(
-				and(
-					QUsers.id.isNotUnknown(),
-					QUsers.name.isNotNull()
-				)
-			).finalise({}).toSql({});
+			const actual = select(querySelect)
+				.where(and(QUsers.id.isNotUnknown(), QUsers.name.isNotNull()))
+				.finalise({})
+				.toSql({});
 			const expected = {
 				sql: `SELECT "t1"."id" as "id", "t1"."name" as "name" FROM "Users" as "t1" WHERE ("t1"."id" IS NOT UNKNOWN AND "t1"."name" IS NOT NULL)`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it("can group with 'or'", function () {
-			const actual = select(querySelect).where(
-				or(
-					QUsers.id.isNotUnknown(),
-					QUsers.name.isNotNull()
-				)
-			).finalise({}).toSql({});
+			const actual = select(querySelect)
+				.where(or(QUsers.id.isNotUnknown(), QUsers.name.isNotNull()))
+				.finalise({})
+				.toSql({});
 			const expected = {
 				sql: `SELECT "t1"."id" as "id", "t1"."name" as "name" FROM "Users" as "t1" WHERE ("t1"."id" IS NOT UNKNOWN OR "t1"."name" IS NOT NULL)`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
@@ -631,15 +683,14 @@ describe(`SELECT commands`, () => {
 		};
 
 		const actual = wrapQuery(
-			(p) => select(querySelect).where(
-				not(QUsers.id.eq(p.userId)),
-			), {
-				userId: 123
+			(p) => select(querySelect).where(not(QUsers.id.eq(p.userId))),
+			{
+				userId: 123,
 			}
 		);
 		const expected = {
 			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE NOT ("t1"."id" = $1)`,
-			parameters: [123]
+			parameters: [123],
 		};
 		assert.deepEqual(actual, expected);
 	});
@@ -650,20 +701,24 @@ describe(`SELECT commands`, () => {
 		};
 
 		const actual = wrapQuery(
-			(p) => select(querySelect).where(
-				not(exists(
-					subSelect(constant(1))
-						.from(QUsers)
-						.where(QUsers.id.eq(p.userId))
-						.toSubQuery()
-				)),
-			), {
-				userId: 123
+			(p) =>
+				select(querySelect).where(
+					not(
+						exists(
+							subSelect(constant(1))
+								.from(QUsers)
+								.where(QUsers.id.eq(p.userId))
+								.toSubQuery()
+						)
+					)
+				),
+			{
+				userId: 123,
 			}
 		);
 		const expected = {
 			sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE NOT (EXISTS (SELECT $1 FROM "Users" as "t1" WHERE "t1"."id" = $2))`,
-			parameters: [1, 123]
+			parameters: [1, 123],
 		};
 		assert.deepEqual(actual, expected);
 	});
@@ -672,26 +727,26 @@ describe(`SELECT commands`, () => {
 		// Setup
 		const query = withParams<{ locationId: number }>()((p) =>
 			selectExists((q) =>
-				q.from(QUsers)
-					.where(and(
-						QLocations.id.eq(QUsers.locationId),
-						QLocations.id.eq(p.locationId)
-					))
+				q
+					.from(QUsers)
+					.where(
+						and(
+							QLocations.id.eq(QUsers.locationId),
+							QLocations.id.eq(p.locationId)
+						)
+					)
 			).finalise(p)
 		);
 
 		// Execute
 		const actual = query.toSql({
-			locationId: 123
+			locationId: 123,
 		});
 
 		// Verify
 		const expected = {
-			parameters: [
-				1,
-				123
-			],
-			sql: `SELECT EXISTS (SELECT $1 FROM "Users" as "t1", "Locations" as "t2" WHERE ("t2"."id" = "t1"."locationId" AND "t2"."id" = $2)) as "exists"`
+			parameters: [1, 123],
+			sql: `SELECT EXISTS (SELECT $1 FROM "Users" as "t1", "Locations" as "t2" WHERE ("t2"."id" = "t1"."locationId" AND "t2"."id" = $2)) as "exists"`,
 		};
 		assert.deepEqual(actual, expected);
 	});
@@ -703,22 +758,22 @@ describe(`SELECT commands`, () => {
 			};
 
 			const actual = wrapQuery(
-				(p) => select(querySelect).where(
-					QUsers.locationId.eq(
-						subSelect(
-							QLocations.id
-						).where(QLocations.agencyId.eq(p.agencyId))
-							.toSubQuery()
+				(p) =>
+					select(querySelect).where(
+						QUsers.locationId.eq(
+							subSelect(QLocations.id)
+								.where(QLocations.agencyId.eq(p.agencyId))
+								.toSubQuery()
+						)
 					),
-				),
 				{
-					agencyId: 123
+					agencyId: 123,
 				}
 			);
 			// NOTE: generated aliases are back-to-front, since the deepest tables are aliased first.
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" WHERE "t1"."locationId" = (SELECT "t1"."id" FROM "Locations" as "t1" WHERE "t1"."agencyId" = $1)`,
-				parameters: [123]
+				parameters: [123],
 			};
 			assert.deepEqual(actual, expected);
 		});
@@ -731,14 +786,18 @@ describe(`SELECT commands`, () => {
 
 			const actual = select(querySelect)
 				.from(QOuterLocations)
-				.where(QOuterLocations.id.in(
-					subSelect(QLocations.id)
-						.where(QLocations.agencyId.eq(QOuterLocations.agencyId))
-						.toSubQuery()
-				)).finalise({}).toSql({});
+				.where(
+					QOuterLocations.id.in(
+						subSelect(QLocations.id)
+							.where(QLocations.agencyId.eq(QOuterLocations.agencyId))
+							.toSubQuery()
+					)
+				)
+				.finalise({})
+				.toSql({});
 			const expected = {
 				sql: `SELECT "outerLocations"."id" as "id" FROM "Locations" as "outerLocations" WHERE "outerLocations"."id" IN (SELECT "t1"."id" FROM "Locations" as "t1" WHERE "t1"."agencyId" = "outerLocations"."agencyId")`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
@@ -751,30 +810,35 @@ describe(`SELECT commands`, () => {
 
 			const actual = select(querySelect)
 				.from(QOuterLocations)
-				.where(QOuterLocations.agencyId.in(
-					subSelect(QAgencies.id)
-						.where(QOuterLocations.agencyId.eq(QAgencies.id))
-						.toSubQuery()
-				)).finalise({}).toSql({});
+				.where(
+					QOuterLocations.agencyId.in(
+						subSelect(QAgencies.id)
+							.where(QOuterLocations.agencyId.eq(QAgencies.id))
+							.toSubQuery()
+					)
+				)
+				.finalise({})
+				.toSql({});
 			const expected = {
 				sql: `SELECT "outerLocations"."id" as "id" FROM "Locations" as "outerLocations" WHERE "outerLocations"."agencyId" IN (SELECT "t1"."id" FROM "Agencies" as "t1" WHERE "outerLocations"."agencyId" = "t1"."id")`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it(`can use sub-queries in the "from" clause`, function () {
 			// Setup
-			const locations = new TLocations('locations');
-			const amountSubQuery = selectSubQuery('amountSumT', {
-				amountSum: selectExpression(sum(QRecurringPayments.amount.col()))
+			const locations = new TLocations("locations");
+			const amountSubQuery = selectSubQuery("amountSumT", {
+				amountSum: selectExpression(sum(QRecurringPayments.amount.col())),
 			}).where(QRecurringPayments.locationId.eq(locations.id));
 
 			// Execute
 			const actual = select({
-					name: locations.name,
-					amount: amountSubQuery.toMetamodel().amountSum
-				}).from(locations, amountSubQuery)
+				name: locations.name,
+				amount: amountSubQuery.toMetamodel().amountSum,
+			})
+				.from(locations, amountSubQuery)
 				.where(locations.id.eq(constant(123)))
 				.finalise({})
 				.toSql({});
@@ -793,13 +857,12 @@ describe(`SELECT commands`, () => {
 				select({
 					exists: selectExpression(
 						exists(
-							subSelect(
-								constant(1)
-							).from(QUsers)
+							subSelect(constant(1))
+								.from(QUsers)
 								.where(QLocations.id.eq(QUsers.locationId))
 								.toSubQuery()
 						)
-					)
+					),
 				}).finalise(p)
 			);
 
@@ -808,10 +871,8 @@ describe(`SELECT commands`, () => {
 
 			// Verify
 			const expected = {
-				parameters: [
-					1
-				],
-				sql: `SELECT EXISTS (SELECT $1 FROM "Users" as "t1", "Locations" as "t2" WHERE "t2"."id" = "t1"."locationId") as "exists"`
+				parameters: [1],
+				sql: `SELECT EXISTS (SELECT $1 FROM "Users" as "t1", "Locations" as "t2" WHERE "t2"."id" = "t1"."locationId") as "exists"`,
 			};
 			assert.deepEqual(actual, expected);
 		});
@@ -825,23 +886,58 @@ describe(`SELECT commands`, () => {
 
 		const builder1 = select(querySelect);
 		const builder2 = builder1.where(QUsers.id.eq(p.userId));
-		assert.notStrictEqual(builder1, builder2, "where() should create a new QueryBuilder");
-		assert.notStrictEqual((builder1 as any).queryAst, (builder2 as any).queryAst, "immutable methods should deep clone the queryAst property");
+		assert.notStrictEqual(
+			builder1,
+			builder2,
+			"where() should create a new QueryBuilder"
+		);
+		assert.notStrictEqual(
+			(builder1 as any).queryAst,
+			(builder2 as any).queryAst,
+			"immutable methods should deep clone the queryAst property"
+		);
 		// assert.notStrictEqual((builder1 as any).tableMap, (builder2 as any).tableMap, "immutable methods should deep clone the tableMap property");
 		const builder3 = builder2.from(QUsers);
-		assert.notStrictEqual(builder2, builder3, "from() should create a new QueryBuilder");
-		assert.ok((builder3 as any).tableMap.size > 0, "from() should populate the tableMap");
+		assert.notStrictEqual(
+			builder2,
+			builder3,
+			"from() should create a new QueryBuilder"
+		);
+		assert.ok(
+			(builder3 as any).tableMap.size > 0,
+			"from() should populate the tableMap"
+		);
 		const builder4 = builder3.join(crossJoin(QUsers));
-		assert.notStrictEqual(builder3, builder4, "join() should create a new QueryBuilder");
+		assert.notStrictEqual(
+			builder3,
+			builder4,
+			"join() should create a new QueryBuilder"
+		);
 		// assert.ok((builder4 as any).tableMap.size > 0, "join() should populate the tableMap");
 		const builder5 = builder4.distinct();
-		assert.notStrictEqual(builder4, builder5, "distinct() should create a new QueryBuilder");
+		assert.notStrictEqual(
+			builder4,
+			builder5,
+			"distinct() should create a new QueryBuilder"
+		);
 		const builder6 = builder5.distinctOn(col(QUsers.id));
-		assert.notStrictEqual(builder5, builder6, "distinctOn() should create a new QueryBuilder");
+		assert.notStrictEqual(
+			builder5,
+			builder6,
+			"distinctOn() should create a new QueryBuilder"
+		);
 		const builder7 = builder6.limit(constant(10));
-		assert.notStrictEqual(builder6, builder7, "limit() should create a new QueryBuilder");
+		assert.notStrictEqual(
+			builder6,
+			builder7,
+			"limit() should create a new QueryBuilder"
+		);
 		const builder8 = builder7.orderBy(QUsers.id.asc());
-		assert.notStrictEqual(builder7, builder8, "orderBy() should create a new QueryBuilder");
+		assert.notStrictEqual(
+			builder7,
+			builder8,
+			"orderBy() should create a new QueryBuilder"
+		);
 	});
 
 	xit(`supports "WITH" (CTEs)`, function () {});
@@ -853,7 +949,7 @@ describe(`SELECT commands`, () => {
 	describe(`Params`, function () {
 		it(`can be provided via a convenience proxy`, function () {
 			const querySelect = {
-				name: QUsers.name
+				name: QUsers.name,
 			};
 
 			interface Params {
@@ -862,26 +958,24 @@ describe(`SELECT commands`, () => {
 
 			const p = params<Params>();
 
-			const query = select(querySelect)
-				.where(QUsers.id.eq(p.id));
+			const query = select(querySelect).where(QUsers.id.eq(p.id));
 
 			query.finalise(p).toSql({
-				id: 123
+				id: 123,
 			});
 		});
 
 		it(`can be provided via withParams`, function () {
 			const querySelect = {
-				name: QUsers.name
+				name: QUsers.name,
 			};
 
 			const query = withParams<{
 				id: number;
-			}>()((p) => select(querySelect)
-				.where(QUsers.id.eq(p.id))
-				.finalise(p)
+			}>()((p) =>
+				select(querySelect).where(QUsers.id.eq(p.id)).finalise(p)
 			).toSql({
-				id: 123
+				id: 123,
 			});
 		});
 	});
@@ -889,132 +983,142 @@ describe(`SELECT commands`, () => {
 	describe(`Locking`, function () {
 		it(`Supports FOR UPDATE`, () => {
 			const actual = wrapQuery(
-				() => select({
-					id: QUsers.id
-				}).for('UPDATE'),
+				() =>
+					select({
+						id: QUsers.id,
+					}).for("UPDATE"),
 				{}
 			);
 
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR UPDATE`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it(`Supports FOR SHARE`, () => {
 			const actual = wrapQuery(
-				() => select({
-					id: QUsers.id
-				}).for('SHARE'),
+				() =>
+					select({
+						id: QUsers.id,
+					}).for("SHARE"),
 				{}
 			);
 
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR SHARE`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it(`Supports FOR KEY SHARE`, () => {
 			const actual = wrapQuery(
-				() => select({
-					id: QUsers.id
-				}).for('KEY SHARE'),
+				() =>
+					select({
+						id: QUsers.id,
+					}).for("KEY SHARE"),
 				{}
 			);
 
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR KEY SHARE`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it(`Supports FOR NO KEY UPDATE`, () => {
 			const actual = wrapQuery(
-				() => select({
-					id: QUsers.id
-				}).for('NO KEY UPDATE'),
+				() =>
+					select({
+						id: QUsers.id,
+					}).for("NO KEY UPDATE"),
 				{}
 			);
 
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR NO KEY UPDATE`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it(`Supports OF`, () => {
 			const actual = wrapQuery(
-				() => select({
-					id: QUsers.id
-				}).for('UPDATE', {
-					of: [QUsers, QLocations]
-				}),
+				() =>
+					select({
+						id: QUsers.id,
+					}).for("UPDATE", {
+						of: [QUsers, QLocations],
+					}),
 				{}
 			);
 
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR UPDATE OF "t1", "Locations"`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it(`Supports NOWAIT`, () => {
 			const actual = wrapQuery(
-				() => select({
-					id: QUsers.id
-				}).for('UPDATE', {
-					wait: "NOWAIT"
-				}),
+				() =>
+					select({
+						id: QUsers.id,
+					}).for("UPDATE", {
+						wait: "NOWAIT",
+					}),
 				{}
 			);
 
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR UPDATE NOWAIT`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it(`Supports SKIP LOCKED`, () => {
 			const actual = wrapQuery(
-				() => select({
-					id: QUsers.id
-				}).for('UPDATE', {
-					wait: "SKIP LOCKED"
-				}),
+				() =>
+					select({
+						id: QUsers.id,
+					}).for("UPDATE", {
+						wait: "SKIP LOCKED",
+					}),
 				{}
 			);
 
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR UPDATE SKIP LOCKED`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it(`Supports multiple lock clauses`, () => {
 			const actual = wrapQuery(
-				() => select({
-					id: QUsers.id
-				}).for('NO KEY UPDATE', {
-					of: [QUsers],
-					wait: "SKIP LOCKED"
-				}).for('KEY SHARE', {
-					of: [QLocations],
-					wait: "NOWAIT"
-				}),
+				() =>
+					select({
+						id: QUsers.id,
+					})
+						.for("NO KEY UPDATE", {
+							of: [QUsers],
+							wait: "SKIP LOCKED",
+						})
+						.for("KEY SHARE", {
+							of: [QLocations],
+							wait: "NOWAIT",
+						}),
 				{}
 			);
 
 			const expected = {
 				sql: `SELECT "t1"."id" as "id" FROM "Users" as "t1" FOR NO KEY UPDATE OF "t1" SKIP LOCKED FOR KEY SHARE OF "Locations" NOWAIT`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
@@ -1023,28 +1127,32 @@ describe(`SELECT commands`, () => {
 	describe(`casts`, () => {
 		it(`can cast a value`, () => {
 			const actual = wrapQuery(
-				() => select({
-					id: selectExpression(cast(QUsers.id.col(), 'TEXT'))
-				}), {}
+				() =>
+					select({
+						id: selectExpression(cast(QUsers.id.col(), "TEXT")),
+					}),
+				{}
 			);
 
 			const expected = {
 				sql: `SELECT "t1"."id"::TEXT as "id" FROM "Users" as "t1"`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});
 
 		it(`can wrap a cast expression in parentheses`, () => {
 			const actual = wrapQuery(
-				() => select({
-					id: selectExpression(cast(QUsers.id.col(), 'TEXT', true))
-				}), {}
+				() =>
+					select({
+						id: selectExpression(cast(QUsers.id.col(), "TEXT", true)),
+					}),
+				{}
 			);
 
 			const expected = {
 				sql: `SELECT ("t1"."id")::TEXT as "id" FROM "Users" as "t1"`,
-				parameters: []
+				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
 		});

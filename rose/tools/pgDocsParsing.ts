@@ -11,9 +11,7 @@
 
 import * as fs from "fs";
 
-class ArgsError extends Error {
-
-}
+class ArgsError extends Error {}
 
 async function parseArgs() {
 	if (process.argv.length != 3) {
@@ -35,64 +33,79 @@ interface FunctionArg {
 
 function argsSignatureTemplate(args: FunctionArg[]) {
 	return args
-		.map((arg) => `${ arg.name }${ arg.isOptional ? '?' : '' }: ParameterOrValueExpressionNode`)
-		.join(', ');
+		.map(
+			(arg) =>
+				`${arg.name}${
+					arg.isOptional ? "?" : ""
+				}: ParameterOrValueExpressionNode`
+		)
+		.join(", ");
 }
 
 function argsPassthroughTemplate(args: FunctionArg[]) {
 	if (args.length === 0) {
-		return '';
+		return "";
 	}
-	return ', ' + args
-		.map((arg) => `${ arg.name }`)
-		.join(', ');
+	return ", " + args.map((arg) => `${arg.name}`).join(", ");
 }
 
-function functionTemplate(functionName: string, description: string, args: FunctionArg[]) {
+function functionTemplate(
+	functionName: string,
+	description: string,
+	args: FunctionArg[]
+) {
 	return `/**
- * ${ description }
+ * ${description}
  */
-export function ${ functionName }(${ argsSignatureTemplate(args) }): FunctionExpressionNode {
-	return createFunctionNode('${ functionName }'${ argsPassthroughTemplate(args) });
+export function ${functionName}(${argsSignatureTemplate(
+		args
+	)}): FunctionExpressionNode {
+	return createFunctionNode('${functionName}'${argsPassthroughTemplate(args)});
 }
 `;
 }
 
 function parseArg(arg: string, isOptional: boolean) {
 	return {
-		name: arg.split(' ')[0],
-		isOptional
+		name: arg.split(" ")[0],
+		isOptional,
 	};
 }
 
 function parseFunctionArgs(args: string, isOptional: boolean) {
 	if (!args) return [];
-	return args.split(', ')
-		.map((arg) => parseArg(arg, isOptional));
+	return args.split(", ").map((arg) => parseArg(arg, isOptional));
 }
 
 async function generateFromCsv(csvFile: string): Promise<void> {
-	const contents = fs.readFileSync(csvFile, 'utf-8');
-	const rows = contents.split('\n');
+	const contents = fs.readFileSync(csvFile, "utf-8");
+	const rows = contents.split("\n");
 	const outputEntries = rows.map((row) => {
 		if (!row) return;
-		const split = row.split('\t');
+		const split = row.split("\t");
 		const funcSyntax = split[0];
 		const descriptionIndex = 2;
 		const description = split[descriptionIndex];
-		const functionName = funcSyntax.substring(0, funcSyntax.indexOf('('));
-		const argsBody = funcSyntax.substring(funcSyntax.indexOf('(') + 1, funcSyntax.indexOf(')'));
-		const startOptionals = argsBody.indexOf('[,');
+		const functionName = funcSyntax.substring(0, funcSyntax.indexOf("("));
+		const argsBody = funcSyntax.substring(
+			funcSyntax.indexOf("(") + 1,
+			funcSyntax.indexOf(")")
+		);
+		const startOptionals = argsBody.indexOf("[,");
 		let allArgs = [];
-		const mandatoryArgs = argsBody.substring(0, startOptionals > -1 ? startOptionals : argsBody.length).trim();
+		const mandatoryArgs = argsBody
+			.substring(0, startOptionals > -1 ? startOptionals : argsBody.length)
+			.trim();
 		allArgs.push(...parseFunctionArgs(mandatoryArgs, false));
 		if (startOptionals > -1) {
-			const optionalArgs = argsBody.substring(startOptionals + 3, argsBody.indexOf(']')).trim();
+			const optionalArgs = argsBody
+				.substring(startOptionals + 3, argsBody.indexOf("]"))
+				.trim();
 			allArgs.push(...parseFunctionArgs(optionalArgs, true));
 		}
 		return functionTemplate(functionName, description, allArgs);
 	});
-	fs.writeFileSync(csvFile + '.ts', outputEntries.join('\n'));
+	fs.writeFileSync(csvFile + ".ts", outputEntries.join("\n"));
 }
 
 async function main(): Promise<void> {

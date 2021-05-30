@@ -7,58 +7,81 @@ import {
 	NaturalSyntaxFunctionExpressionNode,
 	NaturalSyntaxFunctionExpressionNodeArgument,
 	ParameterOrValueExpressionNode,
-	UnaryOperationNode
+	UnaryOperationNode,
 } from "../../../ast";
 
-export function createBooleanUnaryOperatorNode(operator: BooleanUnaryOperationNode['operator'], position: "left" | "right", expression: ParameterOrValueExpressionNode): BooleanUnaryOperationNode {
+export function createBooleanUnaryOperatorNode(
+	operator: BooleanUnaryOperationNode["operator"],
+	position: "left" | "right",
+	expression: ParameterOrValueExpressionNode
+): BooleanUnaryOperationNode {
 	return {
-		type: 'unaryOperationNode',
+		type: "unaryOperationNode",
 		expression,
 		position,
-		operator
+		operator,
 	};
 }
 
-export function createUnaryOperatorNode(operator: string, position: "left" | "right", expression: ParameterOrValueExpressionNode): UnaryOperationNode {
+export function createUnaryOperatorNode(
+	operator: string,
+	position: "left" | "right",
+	expression: ParameterOrValueExpressionNode
+): UnaryOperationNode {
 	return {
-		type: 'unaryOperationNode',
+		type: "unaryOperationNode",
 		expression,
 		position,
-		operator
+		operator,
 	};
 }
 
-export function createBooleanBinaryOperatorNode(operator: BooleanBinaryOperationNode['operator'], left: ParameterOrValueExpressionNode | ExpressionListNode, right: ParameterOrValueExpressionNode | ExpressionListNode): BooleanBinaryOperationNode {
+export function createBooleanBinaryOperatorNode(
+	operator: BooleanBinaryOperationNode["operator"],
+	left: ParameterOrValueExpressionNode | ExpressionListNode,
+	right: ParameterOrValueExpressionNode | ExpressionListNode
+): BooleanBinaryOperationNode {
 	return {
-		type: 'binaryOperationNode',
+		type: "binaryOperationNode",
 		left,
 		right,
-		operator
+		operator,
 	};
 }
 
-export function createBinaryOperatorNode(operator: string, left: ParameterOrValueExpressionNode | ExpressionListNode, right: ParameterOrValueExpressionNode | ExpressionListNode): BinaryOperationNode {
+export function createBinaryOperatorNode(
+	operator: string,
+	left: ParameterOrValueExpressionNode | ExpressionListNode,
+	right: ParameterOrValueExpressionNode | ExpressionListNode
+): BinaryOperationNode {
 	return {
-		type: 'binaryOperationNode',
+		type: "binaryOperationNode",
 		left,
 		right,
-		operator
+		operator,
 	};
 }
 
-export function createFunctionNode(name: string, ...args: ParameterOrValueExpressionNode[]): FunctionExpressionNode {
+export function createFunctionNode(
+	name: string,
+	...args: ParameterOrValueExpressionNode[]
+): FunctionExpressionNode {
 	return {
-		type: 'functionExpressionNode',
+		type: "functionExpressionNode",
 		name: name,
-		arguments: args
+		arguments: args,
 	};
 }
 
-export function createNaturalSyntaxFunctionNode(name: string | undefined, keywords: NaturalSyntaxFunctionExpressionNodeArgument[], omitParentheses?: boolean): NaturalSyntaxFunctionExpressionNode {
+export function createNaturalSyntaxFunctionNode(
+	name: string | undefined,
+	keywords: NaturalSyntaxFunctionExpressionNodeArgument[],
+	omitParentheses?: boolean
+): NaturalSyntaxFunctionExpressionNode {
 	return {
-		type: 'naturalSyntaxFunctionExpressionNode',
+		type: "naturalSyntaxFunctionExpressionNode",
 		name: name,
 		arguments: keywords,
-		omitParentheses
+		omitParentheses,
 	};
 }

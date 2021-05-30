@@ -1,24 +1,27 @@
-import assert = require('assert');
+import assert = require("assert");
 import { QAgencies, QLocations, QUsers } from "../fixtures";
 import { mapRowsToClass, mapRowToClass } from "../../src/rowMapping/rowMapping";
 import {
 	AliasedSelectExpressionNode,
 	ConstantNode,
 	ParameterOrValueExpressionNode,
-	SelectOutputExpression
+	SelectOutputExpression,
 } from "../../src/query/ast";
 import { RowMappingError, UnsupportedOperationError } from "../../src/errors";
 import { count } from "../../src/query/dsl/postgresql/aggregate/general";
 import { QueryOutput } from "../../src/query/typeMapping";
 import { selectExpression, selectNestedMany } from "../../src/query/dsl/select";
-import { constant } from '../../src/query/dsl/core';
+import { constant } from "../../src/query/dsl/core";
 
-function alias(aliasPath: string[], node: ParameterOrValueExpressionNode): AliasedSelectExpressionNode {
+function alias(
+	aliasPath: string[],
+	node: ParameterOrValueExpressionNode
+): AliasedSelectExpressionNode {
 	return {
 		type: "aliasedExpressionNode",
-		alias: aliasPath.join('.'),
+		alias: aliasPath.join("."),
 		aliasPath: aliasPath,
-		expression: node
+		expression: node,
 	};
 }
 
@@ -29,17 +32,17 @@ describe("Row mapping", function () {
 				type: "columnReferenceNode",
 				tableName: "Users",
 				columnName: "id",
-				tableAlias: "t1"
-			})
+				tableAlias: "t1",
+			}),
 		];
 		const row = {
-			id: 123
+			id: 123,
 		};
 
 		const result = mapRowToClass(outputExpressions, row);
 
 		assert.deepStrictEqual(result, {
-			id: 123
+			id: 123,
 		});
 	});
 
@@ -49,11 +52,11 @@ describe("Row mapping", function () {
 				type: "columnReferenceNode",
 				tableName: "Users",
 				columnName: "id",
-				tableAlias: "t1"
-			})
+				tableAlias: "t1",
+			}),
 		];
 		const row = {
-			userId: 123
+			userId: 123,
 		};
 
 		assert.throws(() => mapRowToClass(outputExpressions, row), RowMappingError);
@@ -61,20 +64,18 @@ describe("Row mapping", function () {
 
 	it("Can map a single string column to a data class, with the property name a different name to the column", function () {
 		const querySelect = {
-			userName: QUsers.name
+			userName: QUsers.name,
 		};
 		const outputExpressions: SelectOutputExpression[] = [
-			alias(["userName"],
-				{
-					type: "columnReferenceNode",
-					tableName: "Users",
-					columnName: "name",
-					tableAlias: "t1"
-				}
-			)
+			alias(["userName"], {
+				type: "columnReferenceNode",
+				tableName: "Users",
+				columnName: "name",
+				tableAlias: "t1",
+			}),
 		];
 		const row = {
-			userName: "Phileas Fogg"
+			userName: "Phileas Fogg",
 		};
 
 		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
@@ -89,54 +90,7 @@ describe("Row mapping", function () {
 
 		const querySelect = {
 			id: QLocations.id,
-			users: selectNestedMany(querySelectNested)
-		};
-
-		const outputExpressions: SelectOutputExpression[] = [
-			alias(["id"], {
-					type: "columnReferenceNode",
-					tableName: "Locations",
-					columnName: "id",
-					tableAlias: "t2"
-			}),
-			alias(["users", "id"],
-				{
-					type: "columnReferenceNode",
-					tableName: "Users",
-					columnName: "id",
-					tableAlias: "t1"
-				}
-			)
-		];
-		// TODO: map nested rows to a single outer object
-		const row = {
-			id: 123,
-			"users.id": 456
-		};
-
-		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
-
-		assert.deepEqual(result, {
-			id: 123,
-			users: [
-				{
-					id: 456
-				}
-			]
-		});
-	});
-
-	it("Can map a nested sub-query with multiple columns", function () {
-		const querySelectNested = {
-			id: QUsers.id,
-
-			userName: QUsers.name
-		};
-
-		const querySelect = {
-			id: QLocations.id,
-
-			users: selectNestedMany(querySelectNested)
+			users: selectNestedMany(querySelectNested),
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
@@ -144,30 +98,19 @@ describe("Row mapping", function () {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
-				tableAlias: "t2"
+				tableAlias: "t2",
 			}),
-			alias(["users", "id"],
-				{
-					type: "columnReferenceNode",
-					tableName: "Users",
-					columnName: "id",
-					tableAlias: "t1"
-				}
-			),
-			alias(["users", "userName"],
-				{
-					type: "columnReferenceNode",
-					tableName: "Users",
-					columnName: "id",
-					tableAlias: "t1"
-				}
-			)
+			alias(["users", "id"], {
+				type: "columnReferenceNode",
+				tableName: "Users",
+				columnName: "id",
+				tableAlias: "t1",
+			}),
 		];
 		// TODO: map nested rows to a single outer object
 		const row = {
 			id: 123,
 			"users.id": 456,
-			"users.userName": "Phileas Fogg"
 		};
 
 		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
@@ -177,9 +120,61 @@ describe("Row mapping", function () {
 			users: [
 				{
 					id: 456,
-					userName: "Phileas Fogg"
-				}
-			]
+				},
+			],
+		});
+	});
+
+	it("Can map a nested sub-query with multiple columns", function () {
+		const querySelectNested = {
+			id: QUsers.id,
+
+			userName: QUsers.name,
+		};
+
+		const querySelect = {
+			id: QLocations.id,
+
+			users: selectNestedMany(querySelectNested),
+		};
+
+		const outputExpressions: SelectOutputExpression[] = [
+			alias(["id"], {
+				type: "columnReferenceNode",
+				tableName: "Locations",
+				columnName: "id",
+				tableAlias: "t2",
+			}),
+			alias(["users", "id"], {
+				type: "columnReferenceNode",
+				tableName: "Users",
+				columnName: "id",
+				tableAlias: "t1",
+			}),
+			alias(["users", "userName"], {
+				type: "columnReferenceNode",
+				tableName: "Users",
+				columnName: "id",
+				tableAlias: "t1",
+			}),
+		];
+		// TODO: map nested rows to a single outer object
+		const row = {
+			id: 123,
+			"users.id": 456,
+			"users.userName": "Phileas Fogg",
+		};
+
+		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
+
+		assert.deepEqual(result, {
+			id: 123,
+			users: [
+				{
+					id: 456,
+					userName: "Phileas Fogg",
+				},
+			],
 		});
 	});
 
@@ -191,13 +186,13 @@ describe("Row mapping", function () {
 		const querySelectNested = {
 			id: QLocations.id,
 
-			users: selectNestedMany(querySelectDeeplyNested)
+			users: selectNestedMany(querySelectDeeplyNested),
 		};
 
 		const querySelect = {
 			id: QAgencies.id,
 
-			locations: selectNestedMany(querySelectNested)
+			locations: selectNestedMany(querySelectNested),
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
@@ -205,29 +200,25 @@ describe("Row mapping", function () {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
-				tableAlias: "t3"
+				tableAlias: "t3",
 			}),
-			alias(["locations", "id"],
-				{
-					type: "columnReferenceNode",
-					tableName: "Locations",
-					columnName: "id",
-					tableAlias: "t2"
-				}
-			),
-			alias(["locations", "users", "id"],
-				{
-					type: "columnReferenceNode",
-					tableName: "Users",
-					columnName: "id",
-					tableAlias: "t1"
-				}
-			)
+			alias(["locations", "id"], {
+				type: "columnReferenceNode",
+				tableName: "Locations",
+				columnName: "id",
+				tableAlias: "t2",
+			}),
+			alias(["locations", "users", "id"], {
+				type: "columnReferenceNode",
+				tableName: "Users",
+				columnName: "id",
+				tableAlias: "t1",
+			}),
 		];
 		const row = {
 			id: 123,
 			"locations.id": 456,
-			"locations.users.id": 789
+			"locations.users.id": 789,
 		};
 
 		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
@@ -239,11 +230,11 @@ describe("Row mapping", function () {
 					id: 456,
 					users: [
 						{
-							id: 789
-						}
-					]
-				}
-			]
+							id: 789,
+						},
+					],
+				},
+			],
 		});
 	});
 
@@ -255,13 +246,13 @@ describe("Row mapping", function () {
 		const querySelectNested = {
 			id: QLocations.id,
 
-			users: selectNestedMany(querySelectDeeplyNested)
+			users: selectNestedMany(querySelectDeeplyNested),
 		};
 
 		const querySelect = {
 			id: QAgencies.id,
 
-			locations: selectNestedMany(querySelectNested)
+			locations: selectNestedMany(querySelectNested),
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
@@ -269,7 +260,7 @@ describe("Row mapping", function () {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
-				tableAlias: "t3"
+				tableAlias: "t3",
 			}),
 			{
 				type: "aliasedExpressionNode",
@@ -279,8 +270,8 @@ describe("Row mapping", function () {
 					type: "columnReferenceNode",
 					tableName: "Locations",
 					columnName: "id",
-					tableAlias: "t2"
-				}
+					tableAlias: "t2",
+				},
 			},
 			{
 				type: "aliasedExpressionNode",
@@ -290,9 +281,9 @@ describe("Row mapping", function () {
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
-					tableAlias: "t1"
-				}
-			}
+					tableAlias: "t1",
+				},
+			},
 		];
 
 		const rows = [];
@@ -305,7 +296,7 @@ describe("Row mapping", function () {
 					rows.push({
 						id: 100 + agencyId,
 						"locations.id": 200 + locationId,
-						"locations.users.id": 300 + userId
+						"locations.users.id": 300 + userId,
 					});
 				}
 			}
@@ -321,25 +312,25 @@ describe("Row mapping", function () {
 						id: 202,
 						users: [
 							{
-								id: 302
+								id: 302,
 							},
 							{
-								id: 301
-							}
-						]
+								id: 301,
+							},
+						],
 					},
 					{
 						id: 201,
 						users: [
 							{
-								id: 302
+								id: 302,
 							},
 							{
-								id: 301
-							}
-						]
+								id: 301,
+							},
+						],
 					},
-				]
+				],
 			},
 			{
 				id: 101,
@@ -348,26 +339,26 @@ describe("Row mapping", function () {
 						id: 202,
 						users: [
 							{
-								id: 302
+								id: 302,
 							},
 							{
-								id: 301
-							}
-						]
+								id: 301,
+							},
+						],
 					},
 					{
 						id: 201,
 						users: [
 							{
-								id: 302
+								id: 302,
 							},
 							{
-								id: 301
-							}
-						]
+								id: 301,
+							},
+						],
 					},
-				]
-			}
+				],
+			},
 		]);
 	});
 
@@ -379,13 +370,13 @@ describe("Row mapping", function () {
 		const querySelectNested = {
 			id: QLocations.id,
 
-			users: selectNestedMany(querySelectDeeplyNested)
+			users: selectNestedMany(querySelectDeeplyNested),
 		};
 
 		const querySelect = {
 			id: QAgencies.id,
 
-			locations: selectNestedMany(querySelectNested)
+			locations: selectNestedMany(querySelectNested),
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
@@ -393,7 +384,7 @@ describe("Row mapping", function () {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
-				tableAlias: "t3"
+				tableAlias: "t3",
 			}),
 			{
 				type: "aliasedExpressionNode",
@@ -403,8 +394,8 @@ describe("Row mapping", function () {
 					type: "columnReferenceNode",
 					tableName: "Locations",
 					columnName: "id",
-					tableAlias: "t2"
-				}
+					tableAlias: "t2",
+				},
 			},
 			{
 				type: "aliasedExpressionNode",
@@ -414,9 +405,9 @@ describe("Row mapping", function () {
 					type: "columnReferenceNode",
 					tableName: "Users",
 					columnName: "id",
-					tableAlias: "t1"
-				}
-			}
+					tableAlias: "t1",
+				},
+			},
 		];
 
 		const rows = [];
@@ -429,7 +420,7 @@ describe("Row mapping", function () {
 					rows.push({
 						id: agencyId,
 						"locations.id": locationId,
-						"locations.users.id": userId
+						"locations.users.id": userId,
 					});
 				}
 			}
@@ -445,25 +436,25 @@ describe("Row mapping", function () {
 						id: 2,
 						users: [
 							{
-								id: 2
+								id: 2,
 							},
 							{
-								id: 1
-							}
-						]
+								id: 1,
+							},
+						],
 					},
 					{
 						id: 1,
 						users: [
 							{
-								id: 2
+								id: 2,
 							},
 							{
-								id: 1
-							}
-						]
+								id: 1,
+							},
+						],
 					},
-				]
+				],
 			},
 			{
 				id: 1,
@@ -472,26 +463,26 @@ describe("Row mapping", function () {
 						id: 2,
 						users: [
 							{
-								id: 2
+								id: 2,
 							},
 							{
-								id: 1
-							}
-						]
+								id: 1,
+							},
+						],
 					},
 					{
 						id: 1,
 						users: [
 							{
-								id: 2
+								id: 2,
 							},
 							{
-								id: 1
-							}
-						]
+								id: 1,
+							},
+						],
 					},
-				]
-			}
+				],
+			},
 		]);
 	});
 
@@ -503,7 +494,7 @@ describe("Row mapping", function () {
 		const querySelect = {
 			id: QLocations.id,
 
-			users: selectNestedMany(querySelectNested)
+			users: selectNestedMany(querySelectNested),
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
@@ -511,31 +502,29 @@ describe("Row mapping", function () {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
-				tableAlias: "t2"
+				tableAlias: "t2",
 			}),
-			alias(["users", "id"],
-				 {
-					type: "columnReferenceNode",
-					tableName: "Users",
-					columnName: "id",
-					tableAlias: "t1"
-				}
-			)
+			alias(["users", "id"], {
+				type: "columnReferenceNode",
+				tableName: "Users",
+				columnName: "id",
+				tableAlias: "t1",
+			}),
 		];
 
 		const rows = [
 			{
 				id: 123,
-				"users.id": 456
+				"users.id": 456,
 			},
 			{
 				id: 123,
-				"users.id": 789
+				"users.id": 789,
 			},
 			{
 				id: 321,
-				"users.id": 654
-			}
+				"users.id": 654,
+			},
 		];
 
 		const result = mapRowsToClass(outputExpressions, rows);
@@ -545,21 +534,21 @@ describe("Row mapping", function () {
 				id: 123,
 				users: [
 					{
-						id: 456
+						id: 456,
 					},
 					{
-						id: 789
-					}
-				]
+						id: 789,
+					},
+				],
 			},
 			{
 				id: 321,
 				users: [
 					{
-						id: 654
-					}
-				]
-			}
+						id: 654,
+					},
+				],
+			},
 		]);
 	});
 
@@ -571,7 +560,7 @@ describe("Row mapping", function () {
 		const querySelect = {
 			id: QLocations.id,
 
-			users: selectNestedMany(querySelectNested)
+			users: selectNestedMany(querySelectNested),
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
@@ -579,16 +568,14 @@ describe("Row mapping", function () {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
-				tableAlias: "t2"
+				tableAlias: "t2",
 			}),
-			alias(["users", "id"],
-				{
-					type: "columnReferenceNode",
-					tableName: "Users",
-					columnName: "id",
-					tableAlias: "t1"
-				}
-			)
+			alias(["users", "id"], {
+				type: "columnReferenceNode",
+				tableName: "Users",
+				columnName: "id",
+				tableAlias: "t1",
+			}),
 		];
 
 		const rows = [];
@@ -596,7 +583,7 @@ describe("Row mapping", function () {
 		for (let i = 0; i < numNested; i++) {
 			rows.push({
 				id: 123,
-				"users.id": i
+				"users.id": i,
 			});
 		}
 
@@ -616,14 +603,14 @@ describe("Row mapping", function () {
 				type: "columnReferenceNode",
 				tableName: "Users",
 				columnName: "id",
-				tableAlias: "t1"
-			})
+				tableAlias: "t1",
+			}),
 		];
 		const numToGenerate = 5;
 		const rows = [];
 		for (let i = numToGenerate; i > 0; i--) {
 			const row = {
-				id: i
+				id: i,
 			};
 			rows.push(row);
 		}
@@ -632,19 +619,19 @@ describe("Row mapping", function () {
 
 		assert.deepEqual(result, [
 			{
-				id: 5
+				id: 5,
 			},
 			{
-				id: 4
+				id: 4,
 			},
 			{
-				id: 3
+				id: 3,
 			},
 			{
-				id: 2
+				id: 2,
 			},
 			{
-				id: 1
+				id: 1,
 			},
 		]);
 	});
@@ -657,7 +644,7 @@ describe("Row mapping", function () {
 		const querySelect = {
 			id: QLocations.id,
 
-			users: selectNestedMany(querySelectNested)
+			users: selectNestedMany(querySelectNested),
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
@@ -665,16 +652,14 @@ describe("Row mapping", function () {
 				type: "columnReferenceNode",
 				tableName: "Locations",
 				columnName: "id",
-				tableAlias: "t2"
+				tableAlias: "t2",
 			}),
-			alias(["users", "id"],
-				{
-					type: "columnReferenceNode",
-					tableName: "Users",
-					columnName: "id",
-					tableAlias: "t1"
-				}
-			)
+			alias(["users", "id"], {
+				type: "columnReferenceNode",
+				tableName: "Users",
+				columnName: "id",
+				tableAlias: "t1",
+			}),
 		];
 		const numToGenerate = 5;
 		const rows = [];
@@ -682,17 +667,17 @@ describe("Row mapping", function () {
 		for (let i = numToGenerate; i > 0; i--) {
 			const expectedRow = {
 				id: i,
-				users: <QueryOutput<typeof querySelectNested>[]> []
+				users: <QueryOutput<typeof querySelectNested>[]>[],
 			};
 			for (let j = numToGenerate; j > 0; j--) {
 				const userId = i * 100 + j;
 				const row = {
 					id: i,
-					"users.id": userId
+					"users.id": userId,
 				};
 				rows.push(row);
 				expectedRow.users.push({
-					id: userId
+					id: userId,
 				});
 			}
 			expectedRows.push(expectedRow);
@@ -705,7 +690,7 @@ describe("Row mapping", function () {
 
 	it("Can map from function expressions", function () {
 		const querySelect = {
-			countValue: selectExpression(count())
+			countValue: selectExpression(count()),
 		};
 		const outputExpressions: SelectOutputExpression[] = [
 			{
@@ -715,12 +700,12 @@ describe("Row mapping", function () {
 				expression: {
 					type: "functionExpressionNode",
 					name: "count",
-					arguments: []
-				}
+					arguments: [],
+				},
 			},
 		];
 		const row = {
-			countValue: 123
+			countValue: 123,
 		};
 
 		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
@@ -730,17 +715,17 @@ describe("Row mapping", function () {
 
 	it("Cannot map from un-aliased function expressions", function () {
 		const querySelect = {
-			countValue: selectExpression(count())
+			countValue: selectExpression(count()),
 		};
 		const outputExpressions: SelectOutputExpression[] = [
 			{
 				type: "functionExpressionNode",
 				name: "count",
-				arguments: []
-			}
+				arguments: [],
+			},
 		];
 		const row = {
-			countValue: 123
+			countValue: 123,
 		};
 
 		assert.throws(() => {
@@ -749,16 +734,15 @@ describe("Row mapping", function () {
 	});
 
 	it("Cannot map from constants", function () {
-		const querySelect = {
-		};
+		const querySelect = {};
 		const outputExpressions: SelectOutputExpression[] = [
-			<ConstantNode<any>> {
+			<ConstantNode<any>>{
 				type: "constantNode",
-				getter: () => {}
-			}
+				getter: () => {},
+			},
 		];
 		const row = {
-			junk: 123
+			junk: 123,
 		};
 
 		assert.throws(() => {
@@ -767,8 +751,7 @@ describe("Row mapping", function () {
 	});
 
 	it("Cannot map from binary operations", function () {
-		const querySelect = {
-		};
+		const querySelect = {};
 		const outputExpressions: SelectOutputExpression[] = [
 			{
 				type: "binaryOperationNode",
@@ -776,17 +759,17 @@ describe("Row mapping", function () {
 				left: {
 					type: "functionExpressionNode",
 					name: "count",
-					arguments: []
+					arguments: [],
 				},
 				right: {
 					type: "functionExpressionNode",
 					name: "count",
-					arguments: []
-				}
-			}
+					arguments: [],
+				},
+			},
 		];
 		const row = {
-			junk: 123
+			junk: 123,
 		};
 
 		assert.throws(() => {
@@ -795,18 +778,17 @@ describe("Row mapping", function () {
 	});
 
 	it("Cannot map from unary operations", function () {
-		const querySelect = {
-		};
+		const querySelect = {};
 		const outputExpressions: SelectOutputExpression[] = [
 			{
 				type: "unaryOperationNode",
 				operator: "!",
-				position: 'left',
-				expression: constant(true)
-			}
+				position: "left",
+				expression: constant(true),
+			},
 		];
 		const row = {
-			junk: 123
+			junk: 123,
 		};
 
 		assert.throws(() => {

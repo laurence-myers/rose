@@ -22,15 +22,15 @@ import { TableMap } from "../data";
  In addition to this list, there are a number of constructs that can be classified as an expression but do not follow any general syntax rules. These generally have the semantics of a function or operator and are explained in the appropriate location in Chapter 9. An example is the IS NULL clause.
  */
 export interface ConstantNode<T> {
-	type: 'constantNode';
+	type: "constantNode";
 	getter: (params: any) => T;
 }
 
 export interface ColumnReferenceNode {
-	type: 'columnReferenceNode';
+	type: "columnReferenceNode";
 	//schema? : string;
 	tableName: string;
-	tableAlias? : string;
+	tableAlias?: string;
 	columnName: string;
 }
 
@@ -39,12 +39,12 @@ export interface ColumnReferenceNode {
  * are consumers of other definitions.
  */
 export interface TableReferenceNode {
-	type: 'tableReferenceNode';
+	type: "tableReferenceNode";
 	tableName: string;
 }
 
 export interface BinaryOperationNode {
-	type: 'binaryOperationNode';
+	type: "binaryOperationNode";
 	left: ParameterOrValueExpressionNode | ExpressionListNode;
 	operator: string;
 	right: ParameterOrValueExpressionNode | ExpressionListNode;
@@ -52,115 +52,123 @@ export interface BinaryOperationNode {
 
 export type BooleanBinaryOperator =
 	// Equality
-	| '='
-	| '!='
+	| "="
+	| "!="
 	// Comparison
-	| '<'
-	| '<='
-	| '>'
-	| '>='
+	| "<"
+	| "<="
+	| ">"
+	| ">="
 	// Regexp
-	| '~'
-	| '~*'
-	| '!~'
-	| '!~*'
+	| "~"
+	| "~*"
+	| "!~"
+	| "!~*"
 	// Misc
-	| 'IS DISTINCT FROM'
-	| 'IS NOT DISTINCT FROM'
-	| 'IN'
-	| 'OVERLAPS'
+	| "IS DISTINCT FROM"
+	| "IS NOT DISTINCT FROM"
+	| "IN"
+	| "OVERLAPS"
 	// Pattern matching
-	| 'LIKE'
-	| 'NOT LIKE'
-	| 'ILIKE'
-	| 'NOT ILIKE'
+	| "LIKE"
+	| "NOT LIKE"
+	| "ILIKE"
+	| "NOT ILIKE"
 	// Array operators
-	| '@>'
-	| '<@'
-	| '&&';
+	| "@>"
+	| "<@"
+	| "&&";
 
 export interface BooleanBinaryOperationNode extends BinaryOperationNode {
 	operator: BooleanBinaryOperator;
 }
 
 export interface UnaryOperationNode {
-	type: 'unaryOperationNode';
+	type: "unaryOperationNode";
 	expression: ParameterOrValueExpressionNode;
 	operator: string;
-	position: 'left' | 'right';
+	position: "left" | "right";
 }
 
 export interface BooleanUnaryOperationNode extends UnaryOperationNode {
 	operator:
-		| 'EXISTS'
-		| 'IS NULL'
-		| 'IS NOT NULL'
-		| 'IS TRUE'
-		| 'IS NOT TRUE'
-		| 'IS FALSE'
-		| 'IS NOT FALSE'
-		| 'IS UNKNOWN'
-		| 'IS NOT UNKNOWN';
+		| "EXISTS"
+		| "IS NULL"
+		| "IS NOT NULL"
+		| "IS TRUE"
+		| "IS NOT TRUE"
+		| "IS FALSE"
+		| "IS NOT FALSE"
+		| "IS UNKNOWN"
+		| "IS NOT UNKNOWN";
 }
 
 export interface BooleanExpressionGroupNode {
-	type: 'booleanExpressionGroupNode';
-	operator: 'and' | 'or';
+	type: "booleanExpressionGroupNode";
+	operator: "and" | "or";
 	expressions: BooleanExpression[];
 }
 
 export interface NotExpressionNode {
-	type: 'notExpressionNode';
+	type: "notExpressionNode";
 	expression: BooleanExpression; // TODO: check if NOT coerces other expressions into booleans
 }
 
-export type BooleanExpression = BooleanBinaryOperationNode | BooleanUnaryOperationNode | BooleanExpressionGroupNode | NotExpressionNode;
+export type BooleanExpression =
+	| BooleanBinaryOperationNode
+	| BooleanUnaryOperationNode
+	| BooleanExpressionGroupNode
+	| NotExpressionNode;
 
 /**
  * Should generally NOT be used by consuming code, due to security and syntax risks.
  */
 export interface LiteralNode {
-	type: 'literalNode';
+	type: "literalNode";
 	value: string;
 }
 
 export interface FunctionExpressionNode {
-	type: 'functionExpressionNode';
+	type: "functionExpressionNode";
 	name: string;
-	arguments: (ParameterOrValueExpressionNode | LiteralNode | BooleanExpression)[];
+	arguments: (
+		| ParameterOrValueExpressionNode
+		| LiteralNode
+		| BooleanExpression
+	)[];
 }
 
 export interface NaturalSyntaxFunctionExpressionNodeArgument {
-	key? : string;
+	key?: string;
 	value: ParameterOrValueExpressionNode | LiteralNode | BooleanExpression;
 }
 
 export interface NaturalSyntaxFunctionExpressionNode {
-	type: 'naturalSyntaxFunctionExpressionNode';
+	type: "naturalSyntaxFunctionExpressionNode";
 	name?: string;
 	omitParentheses?: boolean;
 	arguments: NaturalSyntaxFunctionExpressionNodeArgument[];
 }
 
 export interface CastNode {
-	type: 'castNode';
+	type: "castNode";
 	castType: string;
 	expression: ParameterOrValueExpressionNode;
 	requiresParentheses?: boolean;
 }
 
 export interface ArrayConstructorNode {
-	type: 'arrayConstructorNode';
+	type: "arrayConstructorNode";
 	expressions: ParameterOrValueExpressionNode[];
 }
 
 export interface RowConstructorNode {
-	type: 'rowConstructorNode';
+	type: "rowConstructorNode";
 	expressionList: ExpressionListNode;
 }
 
 export interface SubscriptNode {
-	type: 'subscriptNode';
+	type: "subscriptNode";
 	expression: ParameterOrValueExpressionNode;
 	lowerSubscript: ParameterOrValueExpressionNode;
 	upperSubscript?: ParameterOrValueExpressionNode;
@@ -200,81 +208,87 @@ export type ValueExpressionNode =
 	| UnaryOperationNode;
 
 export type ParameterOrValueExpressionNode<TConstantValue = unknown> =
-	ConstantNode<TConstantValue>
+	| ConstantNode<TConstantValue>
 	| ValueExpressionNode;
 
 export interface ExpressionListNode {
-	type: 'expressionListNode';
+	type: "expressionListNode";
 	expressions: ParameterOrValueExpressionNode[];
 }
 
 export interface AliasedExpressionNode<TNode> {
-	type: 'aliasedExpressionNode';
+	type: "aliasedExpressionNode";
 	alias: string;
 	aliasPath: string[];
 	expression: TNode;
 }
 
-export type AliasedSelectExpressionNode = AliasedExpressionNode<ParameterOrValueExpressionNode>;
+export type AliasedSelectExpressionNode =
+	AliasedExpressionNode<ParameterOrValueExpressionNode>;
 
 export interface JoinNode {
-	type: 'joinNode';
-	joinType: 'inner' | 'left' | 'right' | 'full' | 'cross';
+	type: "joinNode";
+	joinType: "inner" | "left" | "right" | "full" | "cross";
 	fromItem: FromItemNode;
-	on? : BooleanExpression;
-	using? : SimpleColumnReferenceNode[];
+	on?: BooleanExpression;
+	using?: SimpleColumnReferenceNode[];
 	// TODO: support lateral
 	// TODO: support natural
 }
 
 export type FromExpressionNode = TableReferenceNode | SubSelectNode;
 
-export type AliasedFromExpressionNode = AliasedExpressionNode<TableReferenceNode> | AliasedExpressionNode<SubSelectNode>;
+export type AliasedFromExpressionNode =
+	| AliasedExpressionNode<TableReferenceNode>
+	| AliasedExpressionNode<SubSelectNode>;
 
 export type FromItemNode = AliasedFromExpressionNode | FromExpressionNode;
 
-export type AnyAliasedExpressionNode = AliasedFromExpressionNode | AliasedSelectExpressionNode;
+export type AnyAliasedExpressionNode =
+	| AliasedFromExpressionNode
+	| AliasedSelectExpressionNode;
 
 export interface OrderByExpressionNode {
-	type: 'orderByExpressionNode';
+	type: "orderByExpressionNode";
 	expression: ParameterOrValueExpressionNode; //?
-	order? : 'asc' | 'desc' | 'using';
-	operator? : string; //?
-	nulls? : 'first' | 'last';
+	order?: "asc" | "desc" | "using";
+	operator?: string; //?
+	nulls?: "first" | "last";
 }
 
 export interface GroupByExpressionNode {
-	type: 'groupByExpressionNode';
+	type: "groupByExpressionNode";
 	expression: ParameterOrValueExpressionNode;
 }
 
 export interface LimitOffsetNode {
-	type: 'limitOffsetNode';
+	type: "limitOffsetNode";
 	limit: ConstantNode<number>; // could also be "ALL", but let's not support that
 	offset: ConstantNode<number>;
 }
 
 export interface SelectLockingNode {
-	type: 'selectLockingNode';
-	strength: 'UPDATE' | 'NO KEY UPDATE' | 'SHARE' | 'KEY SHARE';
+	type: "selectLockingNode";
+	strength: "UPDATE" | "NO KEY UPDATE" | "SHARE" | "KEY SHARE";
 	of: TableReferenceNode[];
-	wait?: 'NOWAIT' | 'SKIP LOCKED';
+	wait?: "NOWAIT" | "SKIP LOCKED";
 }
 
 export interface WithNode {
-	type: 'withNode';
+	type: "withNode";
 	selectNodes: AliasedExpressionNode<SubSelectNode>[];
 }
 
-export type SelectNodes = (
+export type SelectNodes =
 	| GroupByExpressionNode
 	| LimitOffsetNode
 	| OrderByExpressionNode
 	| SelectLockingNode
-	| WithNode
-);
+	| WithNode;
 
-export type SelectOutputExpression = ParameterOrValueExpressionNode | AliasedSelectExpressionNode;
+export type SelectOutputExpression =
+	| ParameterOrValueExpressionNode
+	| AliasedSelectExpressionNode;
 
 /*
  https://www.postgresql.org/docs/9.6/static/sql-select.html
@@ -323,8 +337,8 @@ export type SelectOutputExpression = ParameterOrValueExpressionNode | AliasedSel
  TABLE [ ONLY ] table_name [ * ]
 */
 export interface SelectCommandNode {
-	type: 'selectCommandNode';
-	distinction: 'distinct' | 'all' | 'on';
+	type: "selectCommandNode";
+	distinction: "distinct" | "all" | "on";
 	distinctOn?: ParameterOrValueExpressionNode;
 	outputExpressions: Array<SelectOutputExpression>; // should we also support *?
 	fromItems: FromItemNode[];
@@ -338,7 +352,7 @@ export interface SelectCommandNode {
 }
 
 export interface SubSelectNode {
-	type: 'subSelectNode';
+	type: "subSelectNode";
 	query: SelectCommandNode;
 	tableMap: TableMap;
 }
@@ -352,18 +366,18 @@ export interface SubSelectNode {
  [ RETURNING * | output_expression [ [ AS ] output_name ] [, ...] ]
 */
 export interface DeleteCommandNode {
-	type: 'deleteCommandNode';
+	type: "deleteCommandNode";
 	from: FromItemNode;
 	conditions: BooleanExpression[];
 }
 
 export interface SimpleColumnReferenceNode {
-	type: 'simpleColumnReferenceNode';
+	type: "simpleColumnReferenceNode";
 	columnName: string;
 }
 
 export interface SetItemNode {
-	type: 'setItemNode';
+	type: "setItemNode";
 	column: SimpleColumnReferenceNode;
 	expression: ParameterOrValueExpressionNode;
 }
@@ -380,7 +394,7 @@ export interface SetItemNode {
      [ RETURNING * | output_expression [ [ AS ] output_name ] [, ...] ]
 */
 export interface UpdateCommandNode {
-	type: 'updateCommandNode';
+	type: "updateCommandNode";
 	table: FromItemNode;
 	setItems: SetItemNode[];
 	fromItems: FromItemNode[];
@@ -390,59 +404,59 @@ export interface UpdateCommandNode {
 
 // INSERT ... ON CONFLICT nodes below
 
-export type IndexExpressionNode = (
+export type IndexExpressionNode =
 	| BinaryOperationNode
 	| UnaryOperationNode
 	| FunctionExpressionNode
-	| NaturalSyntaxFunctionExpressionNode
-);
+	| NaturalSyntaxFunctionExpressionNode;
 
 export interface OnConflictTargetIndexNode {
-	type: 'onConflictTargetIndexNode';
+	type: "onConflictTargetIndexNode";
 	identifier: SimpleColumnReferenceNode | IndexExpressionNode;
 	collation?: string;
 	opclass?: string;
 }
 
 export interface OnConflictTargetIndexesNode {
-	type: 'onConflictTargetIndexesNode';
+	type: "onConflictTargetIndexesNode";
 	indexes: OnConflictTargetIndexNode[];
 	where?: BooleanExpression;
 }
 
 export interface OnConflictTargetOnConstraintNode {
-	type: 'onConflictTargetOnConstraintNode';
+	type: "onConflictTargetOnConstraintNode";
 	constraintName: string; // TODO: make this type-safe
 }
 
-export type OnConflictTargetNode = OnConflictTargetIndexesNode | OnConflictTargetOnConstraintNode;
+export type OnConflictTargetNode =
+	| OnConflictTargetIndexesNode
+	| OnConflictTargetOnConstraintNode;
 
 export interface OnConflictDoNothingNode {
-	type: 'onConflictDoNothingNode';
+	type: "onConflictDoNothingNode";
 	target?: OnConflictTargetNode;
 }
 
 export interface OnConflictDoUpdateNode {
-	type: 'onConflictDoUpdateNode';
+	type: "onConflictDoUpdateNode";
 	target: OnConflictTargetNode;
 	setItems: SetItemNode[];
 	where?: BooleanExpression;
 }
 
 export interface OnConflictNode {
-	type: 'onConflictNode';
+	type: "onConflictNode";
 	conflictAction: OnConflictDoNothingNode | OnConflictDoUpdateNode;
 }
 
-type OnConflictNodes = (
+type OnConflictNodes =
 	| IndexExpressionNode
 	| OnConflictTargetIndexNode
 	| OnConflictTargetIndexesNode
 	| OnConflictTargetOnConstraintNode
 	| OnConflictDoNothingNode
 	| OnConflictDoUpdateNode
-	| OnConflictNode
-);
+	| OnConflictNode;
 
 /*
 [ WITH [ RECURSIVE ] with_query [, ...] ]
@@ -467,7 +481,7 @@ and conflict_action is one of:
               [ WHERE condition ]
 */
 export interface InsertCommandNode {
-	type: 'insertCommandNode';
+	type: "insertCommandNode";
 	table: FromItemNode;
 	columns: SimpleColumnReferenceNode[];
 	values: ParameterOrValueExpressionNode[][];
@@ -477,58 +491,62 @@ export interface InsertCommandNode {
 }
 
 export interface TransactionModeNode {
-	type: 'transactionModeNode';
-	isolationLevel?: 'SERIALIZABLE' | 'REPEATABLE READ' | 'READ COMMITTED' | 'READ UNCOMMITTED';
-	readMode?: 'WRITE' | 'ONLY';
+	type: "transactionModeNode";
+	isolationLevel?:
+		| "SERIALIZABLE"
+		| "REPEATABLE READ"
+		| "READ COMMITTED"
+		| "READ UNCOMMITTED";
+	readMode?: "WRITE" | "ONLY";
 	deferrable?: boolean;
 }
 
 export interface BeginCommandNode {
-	type: 'beginCommandNode';
+	type: "beginCommandNode";
 	transactionMode?: TransactionModeNode;
 }
 
 export interface SetTransactionCommandNode {
-	type: 'setTransactionCommandNode';
+	type: "setTransactionCommandNode";
 	transactionMode: TransactionModeNode;
 }
 
 export interface SetTransactionSnapshotCommandNode {
-	type: 'setTransactionSnapshotCommandNode';
+	type: "setTransactionSnapshotCommandNode";
 	snapshotId: ConstantNode<string>;
 }
 
 export interface SetSessionsCharacteristicsAsTransactionCommandNode {
-	type: 'setSessionsCharacteristicsAsTransactionCommandNode';
+	type: "setSessionsCharacteristicsAsTransactionCommandNode";
 	transactionMode: TransactionModeNode;
 }
 
 export interface SavepointCommandNode {
-	type: 'savepointCommandNode';
+	type: "savepointCommandNode";
 	name: ConstantNode<string>;
 }
 
 export interface CommitCommandNode {
-	type: 'commitCommandNode';
+	type: "commitCommandNode";
 	chain?: boolean;
 }
 
 export interface RollbackCommandNode {
-	type: 'rollbackCommandNode';
+	type: "rollbackCommandNode";
 	chain?: boolean;
 }
 
 export interface RollbackToSavepointCommandNode {
-	type: 'rollbackToSavepointCommandNode';
+	type: "rollbackToSavepointCommandNode";
 	name: ConstantNode<string>;
 }
 
 export interface ReleaseSavepointCommandNode {
-	type: 'releaseSavepointCommandNode';
+	type: "releaseSavepointCommandNode";
 	name: ConstantNode<string>;
 }
 
-type TransactionCommandNodes = (
+type TransactionCommandNodes =
 	| BeginCommandNode
 	| CommitCommandNode
 	| ReleaseSavepointCommandNode
@@ -537,12 +555,16 @@ type TransactionCommandNodes = (
 	| SavepointCommandNode
 	| SetSessionsCharacteristicsAsTransactionCommandNode
 	| SetTransactionCommandNode
-	| SetTransactionSnapshotCommandNode
-);
+	| SetTransactionSnapshotCommandNode;
 
 type TransactionNodes = TransactionCommandNodes | TransactionModeNode;
 
-export type AnyCommandNode = SelectCommandNode | DeleteCommandNode | UpdateCommandNode | InsertCommandNode | TransactionCommandNodes;
+export type AnyCommandNode =
+	| SelectCommandNode
+	| DeleteCommandNode
+	| UpdateCommandNode
+	| InsertCommandNode
+	| TransactionCommandNodes;
 
 export type AstNode =
 	| AliasedSelectExpressionNode

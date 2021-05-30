@@ -4,15 +4,15 @@ import { FinalisedQueryNonReturningWithParams } from "../finalisedQuery";
 import { TableMap } from "../../data";
 
 export enum TransactionIsolationLevel {
-	Serializable = 'SERIALIZABLE',
-	RepeatableRead = 'REPEATABLE READ',
-	ReadCommitted = 'READ COMMITTED',
-	ReadUncommitted = 'READ UNCOMMITTED'
+	Serializable = "SERIALIZABLE",
+	RepeatableRead = "REPEATABLE READ",
+	ReadCommitted = "READ COMMITTED",
+	ReadUncommitted = "READ UNCOMMITTED",
 }
 
 export enum TransactionReadMode {
-	ReadWrite = 'WRITE',
-	ReadOnly = 'ONLY'
+	ReadWrite = "WRITE",
+	ReadOnly = "ONLY",
 }
 
 export class BeginCommandBuilder {
@@ -26,7 +26,7 @@ export class BeginCommandBuilder {
 
 	protected createTransactionModeNode(): TransactionModeNode {
 		return {
-			type: "transactionModeNode"
+			type: "transactionModeNode",
 		};
 	}
 
@@ -35,7 +35,8 @@ export class BeginCommandBuilder {
 		if (!this.queryAst.transactionMode) {
 			this.queryAst.transactionMode = this.createTransactionModeNode();
 		}
-		this.queryAst.transactionMode.isolationLevel = coerceNullToUndefined(isolationLevel);
+		this.queryAst.transactionMode.isolationLevel =
+			coerceNullToUndefined(isolationLevel);
 		return this;
 	}
 
@@ -53,7 +54,8 @@ export class BeginCommandBuilder {
 		if (!this.queryAst.transactionMode) {
 			this.queryAst.transactionMode = this.createTransactionModeNode();
 		}
-		this.queryAst.transactionMode.deferrable = coerceNullToUndefined(isDeferrable);
+		this.queryAst.transactionMode.deferrable =
+			coerceNullToUndefined(isDeferrable);
 		return this;
 	}
 

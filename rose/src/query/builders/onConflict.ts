@@ -1,18 +1,23 @@
 import {
 	BooleanExpression,
-	OnConflictDoNothingNode, OnConflictDoUpdateNode,
+	OnConflictDoNothingNode,
+	OnConflictDoUpdateNode,
 	OnConflictTargetIndexNode,
-	OnConflictTargetNode, ParameterOrValueExpressionNode,
-	SetItemNode
+	OnConflictTargetNode,
+	ParameterOrValueExpressionNode,
+	SetItemNode,
 } from "../ast";
-import { ColumnMetamodel, QueryTable, TableColumnsForUpdateCommand } from "../metamodel";
+import {
+	ColumnMetamodel,
+	QueryTable,
+	TableColumnsForUpdateCommand,
+} from "../metamodel";
 import { InvalidUpdateError } from "../../errors";
 import { AtLeastOne, Clone, sortedPopulatedKeys } from "../../lang";
 import { ColumnSimplifyingWalker } from "../walkers/columnSimplifyingWalker";
 
 abstract class BaseInitialBuilder<TNextBuilder> {
-	constructor() {
-	}
+	constructor() {}
 
 	protected abstract nextBuilder(target: OnConflictTargetNode): TNextBuilder;
 
@@ -20,7 +25,9 @@ abstract class BaseInitialBuilder<TNextBuilder> {
 	 * The "where" clause in the conflict target requires simple column references, but the column metamodel methods
 	 * produce qualified column references. We'll do a hack to fix them here.
 	 */
-	protected rectifyConflictTargetWhereClause(where: BooleanExpression | undefined): void {
+	protected rectifyConflictTargetWhereClause(
+		where: BooleanExpression | undefined
+	): void {
 		if (!where) {
 			return;
 		}
@@ -31,58 +38,66 @@ abstract class BaseInitialBuilder<TNextBuilder> {
 	/**
 	 * Convenience function for `onIndexes()`
 	 */
-	onColumns(columns: ColumnMetamodel<unknown>[], where?: BooleanExpression): TNextBuilder {
+	onColumns(
+		columns: ColumnMetamodel<unknown>[],
+		where?: BooleanExpression
+	): TNextBuilder {
 		this.rectifyConflictTargetWhereClause(where);
-		const indexes = columns.map((column): OnConflictTargetIndexNode => ({
-			type: "onConflictTargetIndexNode",
-			identifier: {
-				type: "simpleColumnReferenceNode",
-				columnName: column.name
-			}
-		}));
+		const indexes = columns.map(
+			(column): OnConflictTargetIndexNode => ({
+				type: "onConflictTargetIndexNode",
+				identifier: {
+					type: "simpleColumnReferenceNode",
+					columnName: column.name,
+				},
+			})
+		);
 		return this.onIndexes(indexes, where);
 	}
 
 	onConstraint(name: string): TNextBuilder {
 		return this.nextBuilder({
 			type: "onConflictTargetOnConstraintNode",
-			constraintName: name
+			constraintName: name,
 		});
 	}
 
-	onIndexes(indexes: OnConflictTargetIndexNode[], where?: BooleanExpression): TNextBuilder {
+	onIndexes(
+		indexes: OnConflictTargetIndexNode[],
+		where?: BooleanExpression
+	): TNextBuilder {
 		this.rectifyConflictTargetWhereClause(where);
 		return this.nextBuilder({
 			type: "onConflictTargetIndexesNode",
 			indexes,
-			where: where
+			where: where,
 		});
 	}
 }
 
 export class OnConflictDoNothingBuilder extends BaseInitialBuilder<OnConflictDoNothingBuildable> {
-	protected nextBuilder(target: OnConflictTargetNode): OnConflictDoNothingBuildable {
+	protected nextBuilder(
+		target: OnConflictTargetNode
+	): OnConflictDoNothingBuildable {
 		return new OnConflictDoNothingBuildable(target);
 	}
 }
 
 export class OnConflictDoNothingBuildable {
-	constructor(
-		protected readonly target: OnConflictTargetNode
-	) {
-
-	}
+	constructor(protected readonly target: OnConflictTargetNode) {}
 
 	build(): OnConflictDoNothingNode {
 		return {
 			type: "onConflictDoNothingNode",
-			target: this.target
+			target: this.target,
 		};
 	}
 }
 
 export class OnConflictDoUpdateInitialBuilder extends BaseInitialBuilder<OnConflictDoUpdateSettingBuilder> {
-	protected nextBuilder(target: OnConflictTargetNode): OnConflictDoUpdateSettingBuilder {
+	protected nextBuilder(
+		target: OnConflictTargetNode
+	): OnConflictDoUpdateSettingBuilder {
 		return new OnConflictDoUpdateSettingBuilder(target);
 	}
 }
@@ -90,43 +105,47 @@ export class OnConflictDoUpdateInitialBuilder extends BaseInitialBuilder<OnConfl
 export class OnConflictDoUpdateSettingBuilder {
 	protected readonly setItems: SetItemNode[] = [];
 
-	constructor(
-		protected readonly target: OnConflictTargetNode
-	) {
-	}
+	constructor(protected readonly target: OnConflictTargetNode) {}
 
-	protected getColumnNameMap<TQTable extends QueryTable>(qtable: TQTable, propertyNames: string[]): Map<string, string> {
+	protected getColumnNameMap<TQTable extends QueryTable>(
+		qtable: TQTable,
+		propertyNames: string[]
+	): Map<string, string> {
 		const map = new Map();
 		for (const propertyName of propertyNames) {
 			const column = (qtable as any)[propertyName];
 			if (column instanceof ColumnMetamodel) {
 				map.set(propertyName, column.name);
 			} else {
-				throw new InvalidUpdateError(`Tried to update property "${ propertyName }", but couldn't find a matching column metamodel in table "${ qtable.$table.name }".`);
+				throw new InvalidUpdateError(
+					`Tried to update property "${propertyName}", but couldn't find a matching column metamodel in table "${qtable.$table.name}".`
+				);
 			}
 		}
 		return map;
 	}
 
-	set<TQTable extends QueryTable>(table: TQTable, updates: AtLeastOne<Partial<TableColumnsForUpdateCommand<TQTable>>>): OnConflictDoUpdateWhereBuilder {
+	set<TQTable extends QueryTable>(
+		table: TQTable,
+		updates: AtLeastOne<Partial<TableColumnsForUpdateCommand<TQTable>>>
+	): OnConflictDoUpdateWhereBuilder {
 		const propertyNames = sortedPopulatedKeys(updates);
 		const columnsMap = this.getColumnNameMap(table, propertyNames);
 
 		for (const propertyName of propertyNames) {
-			const expression: ParameterOrValueExpressionNode = (updates as any)[propertyName];
+			const expression: ParameterOrValueExpressionNode = (updates as any)[
+				propertyName
+			];
 			this.setItems.push({
-				type: 'setItemNode',
+				type: "setItemNode",
 				column: {
-					type: 'simpleColumnReferenceNode',
+					type: "simpleColumnReferenceNode",
 					columnName: columnsMap.get(propertyName)!,
 				},
 				expression,
 			});
 		}
-		return new OnConflictDoUpdateWhereBuilder(
-			this.target,
-			this.setItems
-		);
+		return new OnConflictDoUpdateWhereBuilder(this.target, this.setItems);
 	}
 }
 
@@ -136,8 +155,7 @@ export class OnConflictDoUpdateWhereBuilder {
 	constructor(
 		protected readonly target: OnConflictTargetNode,
 		protected readonly setItems: SetItemNode[]
-	) {
-	}
+	) {}
 
 	@Clone()
 	where(expression: BooleanExpression): this {
@@ -150,7 +168,7 @@ export class OnConflictDoUpdateWhereBuilder {
 			type: "onConflictDoUpdateNode",
 			target: this.target,
 			setItems: this.setItems,
-			where: this.condition
+			where: this.condition,
 		};
 	}
 }

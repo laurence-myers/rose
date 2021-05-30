@@ -1,4 +1,7 @@
-import { caseMulti, caseSimple } from "../../../../src/query/dsl/postgresql/conditional";
+import {
+	caseMulti,
+	caseSimple,
+} from "../../../../src/query/dsl/postgresql/conditional";
 import { QProject } from "../../../fixtures";
 import { constant } from "../../../../src/query/dsl";
 import { SqlAstWalker } from "../../../../src/query/walkers/sqlAstWalker";
@@ -9,8 +12,8 @@ describe(`Conditional Expressions`, function () {
 		it(`generates expected nodes`, () => {
 			// Execute
 			const node = caseMulti()
-				.when(QProject.status.eq(constant('Active')), constant('Ready to Go'))
-				.else(constant('Requires work'))
+				.when(QProject.status.eq(constant("Active")), constant("Ready to Go"))
+				.else(constant("Requires work"))
 				.end();
 			const actual = new SqlAstWalker(node).toSql();
 
@@ -24,8 +27,8 @@ describe(`Conditional Expressions`, function () {
 		it(`generates expected nodes`, () => {
 			// Execute
 			const node = caseSimple(QProject.status.scol())
-				.when(constant('Active'), constant('Ready to Go'))
-				.else(constant('Requires work'))
+				.when(constant("Active"), constant("Ready to Go"))
+				.else(constant("Requires work"))
 				.end();
 			const actual = new SqlAstWalker(node).toSql();
 

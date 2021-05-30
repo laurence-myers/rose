@@ -6,7 +6,7 @@ import {
 	SelectLockingNode,
 	SubSelectNode,
 	TableReferenceNode,
-	WithNode
+	WithNode,
 } from "../ast";
 import { difference } from "../../lang";
 import { SkippingWalker } from "./skippingWalker";
@@ -19,8 +19,10 @@ import { TableMap } from "../../data";
 class SelectRectifyingWalker extends SkippingWalker {
 	protected readonly referencedTables: Set<string> = new Set<string>();
 	protected readonly specifiedTables: Set<string> = new Set<string>();
-	protected readonly columnReferences: Set<ColumnReferenceNode> = new Set<ColumnReferenceNode>();
-	protected readonly tableReferences: Set<TableReferenceNode> = new Set<TableReferenceNode>();
+	protected readonly columnReferences: Set<ColumnReferenceNode> =
+		new Set<ColumnReferenceNode>();
+	protected readonly tableReferences: Set<TableReferenceNode> =
+		new Set<TableReferenceNode>();
 
 	constructor(
 		protected readonly ast: SelectCommandNode,
@@ -30,7 +32,10 @@ class SelectRectifyingWalker extends SkippingWalker {
 	}
 
 	protected walkAliasedExpressionNode(node: AnyAliasedExpressionNode) {
-		if (node.expression.type === "subSelectNode" || node.expression.type === 'tableReferenceNode') {
+		if (
+			node.expression.type === "subSelectNode" ||
+			node.expression.type === "tableReferenceNode"
+		) {
 			this.tableMap.set(node.alias, node.alias);
 			this.specifiedTables.add(node.alias);
 		}
@@ -73,7 +78,10 @@ class SelectRectifyingWalker extends SkippingWalker {
 		this.walk(this.ast);
 
 		// Automatically add any unspecified tables to the "from" clause
-		const unspecifiedTables = difference(this.referencedTables, this.specifiedTables);
+		const unspecifiedTables = difference(
+			this.referencedTables,
+			this.specifiedTables
+		);
 		for (const tableName of unspecifiedTables) {
 			const tableAlias = this.tableMap.get(tableName);
 			this.ast.fromItems.push({
@@ -83,7 +91,7 @@ class SelectRectifyingWalker extends SkippingWalker {
 				expression: {
 					type: "tableReferenceNode",
 					tableName,
-				}
+				},
 			});
 		}
 		// Update all column references to use the aliases.

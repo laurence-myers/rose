@@ -1,71 +1,89 @@
-import { QuerySelector, SelectorExpression, SelectorNestedMany, SelectorNestedOne } from "../querySelector";
+import {
+	QuerySelector,
+	SelectorExpression,
+	SelectorNestedMany,
+	SelectorNestedOne,
+} from "../querySelector";
 import {
 	AliasedSubQueryBuilder,
 	CommonTableExpressionBuilder,
 	SelectQueryBuilder,
 	SubQueryBuilder,
-	SubSelectExpression
+	SubSelectExpression,
 } from "../builders/select";
 import { ParameterOrValueExpressionNode } from "../ast";
 import { exists } from "./postgresql";
 import { constant } from "./core";
 
-export function selectCte<TQuerySelector extends QuerySelector>(alias: string, querySelector: TQuerySelector) {
+export function selectCte<TQuerySelector extends QuerySelector>(
+	alias: string,
+	querySelector: TQuerySelector
+) {
 	return new CommonTableExpressionBuilder(alias, querySelector);
 }
 
-export function selectExpression<T = never>(expression: ParameterOrValueExpressionNode): SelectorExpression<T> {
+export function selectExpression<T = never>(
+	expression: ParameterOrValueExpressionNode
+): SelectorExpression<T> {
 	return {
-		$selectorKind: 'expression',
-		expression
+		$selectorKind: "expression",
+		expression,
 	};
 }
 
 interface SelectExistsQuerySelector extends QuerySelector {
 	exists: {
-		readonly $selectorKind: 'expression';
+		readonly $selectorKind: "expression";
 		readonly expression: ParameterOrValueExpressionNode;
-	}
+	};
 }
 
 export function selectExists(
-	subQueryBuilderCallback: <TParams>(builder: SubQueryBuilder<TParams>) => SubQueryBuilder<TParams>
+	subQueryBuilderCallback: <TParams>(
+		builder: SubQueryBuilder<TParams>
+	) => SubQueryBuilder<TParams>
 ): SelectQueryBuilder<SelectExistsQuerySelector> {
 	return new SelectQueryBuilder<SelectExistsQuerySelector>({
 		exists: selectExpression(
-			exists(
-				subQueryBuilderCallback(subSelect(constant(1)))
-					.toSubQuery()
-			)
-		)
+			exists(subQueryBuilderCallback(subSelect(constant(1))).toSubQuery())
+		),
 	});
 }
 
-export function selectNestedMany<T extends QuerySelector>(querySelector: T): SelectorNestedMany<T> {
+export function selectNestedMany<T extends QuerySelector>(
+	querySelector: T
+): SelectorNestedMany<T> {
 	return {
-		$selectorKind: 'nestedMany',
+		$selectorKind: "nestedMany",
 		nestedSelector: {
-			querySelector
-		}
+			querySelector,
+		},
 	};
 }
 
-export function selectNestedOne<T extends QuerySelector>(querySelector: T): SelectorNestedOne<T> {
+export function selectNestedOne<T extends QuerySelector>(
+	querySelector: T
+): SelectorNestedOne<T> {
 	return {
-		$selectorKind: 'nestedOne',
+		$selectorKind: "nestedOne",
 		nestedSelector: {
-			querySelector
-		}
+			querySelector,
+		},
 	};
 }
 
-export function subSelect<TParams>(...outputExpressions: SubSelectExpression[]) {
+export function subSelect<TParams>(
+	...outputExpressions: SubSelectExpression[]
+) {
 	return new SubQueryBuilder<TParams>(outputExpressions);
 }
 
 /**
  * Creates an aliased sub-query
  */
-export function selectSubQuery<TQuerySelector extends QuerySelector>(alias: string, querySelector: TQuerySelector) {
+export function selectSubQuery<TQuerySelector extends QuerySelector>(
+	alias: string,
+	querySelector: TQuerySelector
+) {
 	return new AliasedSubQueryBuilder(alias, querySelector);
 }

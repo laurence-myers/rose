@@ -44,12 +44,14 @@ import {
 	TransactionModeNode,
 	UnaryOperationNode,
 	UpdateCommandNode,
-	WithNode
+	WithNode,
 } from "../ast";
 import { assertNever } from "../../lang";
 
 export abstract class BaseWalker {
-	protected abstract walkAliasedExpressionNode(node: AnyAliasedExpressionNode): void;
+	protected abstract walkAliasedExpressionNode(
+		node: AnyAliasedExpressionNode
+	): void;
 
 	protected abstract walkArrayConstructorNode(node: ArrayConstructorNode): void;
 
@@ -57,7 +59,9 @@ export abstract class BaseWalker {
 
 	protected abstract walkBinaryOperationNode(node: BinaryOperationNode): void;
 
-	protected abstract walkBooleanExpressionGroupNode(node: BooleanExpressionGroupNode): void;
+	protected abstract walkBooleanExpressionGroupNode(
+		node: BooleanExpressionGroupNode
+	): void;
 
 	protected abstract walkCastNode(node: CastNode): void;
 
@@ -71,9 +75,13 @@ export abstract class BaseWalker {
 
 	protected abstract walkExpressionListNode(node: ExpressionListNode): void;
 
-	protected abstract walkFunctionExpressionNode(node: FunctionExpressionNode): void;
+	protected abstract walkFunctionExpressionNode(
+		node: FunctionExpressionNode
+	): void;
 
-	protected abstract walkGroupByExpressionNode(node: GroupByExpressionNode): void;
+	protected abstract walkGroupByExpressionNode(
+		node: GroupByExpressionNode
+	): void;
 
 	protected abstract walkInsertCommandNode(node: InsertCommandNode): void;
 
@@ -83,29 +91,47 @@ export abstract class BaseWalker {
 
 	protected abstract walkLiteralNode(node: LiteralNode): void;
 
-	protected abstract walkNaturalSyntaxFunctionExpressionNode(node: NaturalSyntaxFunctionExpressionNode): void;
+	protected abstract walkNaturalSyntaxFunctionExpressionNode(
+		node: NaturalSyntaxFunctionExpressionNode
+	): void;
 
 	protected abstract walkNotExpressionNode(node: NotExpressionNode): void;
 
-	protected abstract walkOnConflictDoNothingNode(node: OnConflictDoNothingNode): void;
+	protected abstract walkOnConflictDoNothingNode(
+		node: OnConflictDoNothingNode
+	): void;
 
-	protected abstract walkOnConflictDoUpdateNode(node: OnConflictDoUpdateNode): void;
+	protected abstract walkOnConflictDoUpdateNode(
+		node: OnConflictDoUpdateNode
+	): void;
 
 	protected abstract walkOnConflictNode(node: OnConflictNode): void;
 
-	protected abstract walkOnConflictTargetIndexesNode(node: OnConflictTargetIndexesNode): void;
+	protected abstract walkOnConflictTargetIndexesNode(
+		node: OnConflictTargetIndexesNode
+	): void;
 
-	protected abstract walkOnConflictTargetIndexNode(node: OnConflictTargetIndexNode): void;
+	protected abstract walkOnConflictTargetIndexNode(
+		node: OnConflictTargetIndexNode
+	): void;
 
-	protected abstract walkOnConflictTargetOnConstraintNode(node: OnConflictTargetOnConstraintNode): void;
+	protected abstract walkOnConflictTargetOnConstraintNode(
+		node: OnConflictTargetOnConstraintNode
+	): void;
 
-	protected abstract walkOrderByExpressionNode(node: OrderByExpressionNode): void;
+	protected abstract walkOrderByExpressionNode(
+		node: OrderByExpressionNode
+	): void;
 
-	protected abstract walkReleaseSavepointCommandNode(node: ReleaseSavepointCommandNode): void;
+	protected abstract walkReleaseSavepointCommandNode(
+		node: ReleaseSavepointCommandNode
+	): void;
 
 	protected abstract walkRollbackCommandNode(node: RollbackCommandNode): void;
 
-	protected abstract walkRollbackToSavepointCommandNode(node: RollbackToSavepointCommandNode): void;
+	protected abstract walkRollbackToSavepointCommandNode(
+		node: RollbackToSavepointCommandNode
+	): void;
 
 	protected abstract walkRowConstructorNode(node: RowConstructorNode): void;
 
@@ -117,13 +143,21 @@ export abstract class BaseWalker {
 
 	protected abstract walkSetItemNode(node: SetItemNode): void;
 
-	protected abstract walkSetSessionsCharacteristicsAsTransactionCommandNode(node: SetSessionsCharacteristicsAsTransactionCommandNode): void;
+	protected abstract walkSetSessionsCharacteristicsAsTransactionCommandNode(
+		node: SetSessionsCharacteristicsAsTransactionCommandNode
+	): void;
 
-	protected abstract walkSetTransactionCommandNode(node: SetTransactionCommandNode): void;
+	protected abstract walkSetTransactionCommandNode(
+		node: SetTransactionCommandNode
+	): void;
 
-	protected abstract walkSetTransactionSnapshotCommandNode(node: SetTransactionSnapshotCommandNode): void;
+	protected abstract walkSetTransactionSnapshotCommandNode(
+		node: SetTransactionSnapshotCommandNode
+	): void;
 
-	protected abstract walkSimpleColumnReferenceNode(node: SimpleColumnReferenceNode): void;
+	protected abstract walkSimpleColumnReferenceNode(
+		node: SimpleColumnReferenceNode
+	): void;
 
 	protected abstract walkSubscriptNode(node: SubscriptNode): void;
 

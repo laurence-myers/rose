@@ -24,7 +24,8 @@ export interface QueryResultRow {
 	[column: string]: any;
 }
 
-export interface QueryResult<R extends QueryResultRow = any> extends QueryResultBase {
+export interface QueryResult<R extends QueryResultRow = any>
+	extends QueryResultBase {
 	rows: R[];
 }
 
@@ -46,7 +47,7 @@ export async function execute<T extends QuerySelector>(
 export async function executeNonReturning(
 	queryable: Queryable,
 	sql: string,
-	parameters: unknown[],
+	parameters: unknown[]
 ): Promise<void> {
 	await queryable.query(sql, parameters);
 }

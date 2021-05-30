@@ -1,5 +1,10 @@
 import { Clone } from "../../lang";
-import { AliasedExpressionNode, BooleanExpression, DeleteCommandNode, TableReferenceNode } from "../ast";
+import {
+	AliasedExpressionNode,
+	BooleanExpression,
+	DeleteCommandNode,
+	TableReferenceNode,
+} from "../ast";
 import { QueryTable } from "../metamodel";
 import { FinalisedQueryNonReturningWithParams } from "../finalisedQuery";
 import { aliasTable } from "../dsl/core";
@@ -10,17 +15,17 @@ export class DeleteQueryBuilder<TParams> {
 	protected tableMap = new TableMap();
 	protected queryAst: DeleteCommandNode;
 
-	constructor(
-		qtable: QueryTable
-	) {
+	constructor(qtable: QueryTable) {
 		this.queryAst = {
-			type: 'deleteCommandNode',
+			type: "deleteCommandNode",
 			from: this.from(qtable),
 			conditions: [],
 		};
 	}
 
-	protected from(qtable: QueryTable): AliasedExpressionNode<TableReferenceNode> {
+	protected from(
+		qtable: QueryTable
+	): AliasedExpressionNode<TableReferenceNode> {
 		const tableName = qtable.$table.name;
 		const alias = qtable.$table.alias || this.tableMap.get(tableName);
 		return aliasTable(tableName, alias);
@@ -32,7 +37,9 @@ export class DeleteQueryBuilder<TParams> {
 		return this;
 	}
 
-	finalise<TParams>(params: ParamsProxy<TParams> | ParamsWrapper<TParams>): FinalisedQueryNonReturningWithParams<TParams> {
+	finalise<TParams>(
+		params: ParamsProxy<TParams> | ParamsWrapper<TParams>
+	): FinalisedQueryNonReturningWithParams<TParams> {
 		return new FinalisedQueryNonReturningWithParams<TParams>(
 			this.queryAst,
 			this.tableMap,

@@ -3,7 +3,7 @@ import { param } from "./dsl";
 
 export type ParamsProxy<T> = {
 	readonly [K in keyof T]: ConstantNode<T[K]>;
-}
+};
 
 export class ParamsWrapper<P> {
 	get<R>(getter: (params: P) => R): ConstantNode<R> {
@@ -12,11 +12,14 @@ export class ParamsWrapper<P> {
 }
 
 export function params<T = never>(): ParamsProxy<T> {
-	return new Proxy({}, {
-		get(target: {}, key: keyof T): any {
-			return param((p: T) => p[key]);
+	return new Proxy(
+		{},
+		{
+			get(target: {}, key: keyof T): any {
+				return param((p: T) => p[key]);
+			},
 		}
-	}) as ParamsProxy<T>;
+	) as ParamsProxy<T>;
 }
 
 export function withParams<T = never>() {

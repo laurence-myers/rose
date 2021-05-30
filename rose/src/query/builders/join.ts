@@ -5,91 +5,87 @@ import { UnsupportedOperationError } from "../../errors";
 import { rectifyVariadicArgs } from "../../lang";
 
 export class InitialJoinBuilder {
-	constructor(
-		protected readonly qtable: QueryTable
-	) {}
+	constructor(protected readonly qtable: QueryTable) {}
 
 	inner(): OnOrUsingJoinBuilder {
-		return new OnOrUsingJoinBuilder(this.qtable, 'inner');
+		return new OnOrUsingJoinBuilder(this.qtable, "inner");
 	}
 
 	left(): OnOrUsingJoinBuilder {
-		return new OnOrUsingJoinBuilder(this.qtable, 'left');
+		return new OnOrUsingJoinBuilder(this.qtable, "left");
 	}
 
 	right(): OnOrUsingJoinBuilder {
-		return new OnOrUsingJoinBuilder(this.qtable, 'right');
+		return new OnOrUsingJoinBuilder(this.qtable, "right");
 	}
 
 	full(): OnOrUsingJoinBuilder {
-		return new OnOrUsingJoinBuilder(this.qtable, 'full');
+		return new OnOrUsingJoinBuilder(this.qtable, "full");
 	}
 
 	cross() {
-		return new BuildableJoin(this.qtable, 'cross');
+		return new BuildableJoin(this.qtable, "cross");
 	}
 }
 
 export class OnOrUsingJoinBuilder {
 	constructor(
 		protected readonly qtable: QueryTable,
-		protected readonly joinType: 'inner' | 'left' | 'right' | 'full'
+		protected readonly joinType: "inner" | "left" | "right" | "full"
 	) {}
 
-	on(expression: JoinNode['on']) {
-		return new BuildableJoin(
-			this.qtable,
-			this.joinType,
-			expression
-		);
+	on(expression: JoinNode["on"]) {
+		return new BuildableJoin(this.qtable, this.joinType, expression);
 	}
 
-	using(column: ColumnMetamodel<any> | readonly ColumnMetamodel<any>[], ...columns: readonly ColumnMetamodel<any>[]) {
-		const usingNodes = rectifyVariadicArgs(column, columns)
-			.map((columnToMap): SimpleColumnReferenceNode => ({
+	using(
+		column: ColumnMetamodel<any> | readonly ColumnMetamodel<any>[],
+		...columns: readonly ColumnMetamodel<any>[]
+	) {
+		const usingNodes = rectifyVariadicArgs(column, columns).map(
+			(columnToMap): SimpleColumnReferenceNode => ({
 				type: "simpleColumnReferenceNode",
-				columnName: columnToMap.name
-			}));
-		return new BuildableJoin(
-			this.qtable,
-			this.joinType,
-			undefined,
-			usingNodes
+				columnName: columnToMap.name,
+			})
 		);
+		return new BuildableJoin(this.qtable, this.joinType, undefined, usingNodes);
 	}
 }
 
 export class BuildableJoin {
 	constructor(
 		protected readonly qtable: QueryTable,
-		protected readonly joinType: JoinNode['joinType'],
-		protected readonly onNode?: JoinNode['on'],
-		protected readonly usingNodes?: JoinNode['using']
-	) {
-	}
+		protected readonly joinType: JoinNode["joinType"],
+		protected readonly onNode?: JoinNode["on"],
+		protected readonly usingNodes?: JoinNode["using"]
+	) {}
 
 	build(tableMap: TableMap) {
 		if (this.onNode && this.usingNodes) {
-			throw new UnsupportedOperationError(`Cannot join tables with both "on" and "using" criteria.`);
-		} else if (this.joinType == 'cross' && (this.onNode || this.usingNodes)) {
-			throw new UnsupportedOperationError(`Cannot make a cross join with "on" or "using" criteria.`);
+			throw new UnsupportedOperationError(
+				`Cannot join tables with both "on" and "using" criteria.`
+			);
+		} else if (this.joinType == "cross" && (this.onNode || this.usingNodes)) {
+			throw new UnsupportedOperationError(
+				`Cannot make a cross join with "on" or "using" criteria.`
+			);
 		}
 		const tableName = this.qtable.$table.name;
 		const alias = tableMap.get(tableName);
 		const joinNode: JoinNode = {
-			type: 'joinNode',
+			type: "joinNode",
 			joinType: this.joinType,
 			fromItem: {
-				type: 'aliasedExpressionNode',
+				type: "aliasedExpressionNode",
 				alias,
 				aliasPath: [alias],
 				expression: {
-					type: 'tableReferenceNode',
+					type: "tableReferenceNode",
 					tableName: tableName,
-				}
+				},
 			},
 			on: this.onNode,
-			using: this.usingNodes
+			using: this.usingNodes,
 		};
 		return joinNode;
 	}
