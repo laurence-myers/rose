@@ -4,7 +4,7 @@
 	"description": "Type-safe query builder DSL, data mapper, and mini ORM for PostgreSQL",
 	"main": "index.js",
 	"scripts": {
-		"check:all": "yarn run check:tsc && yarn run lint && yarn run test",
+		"check:all": "yarn run check:tsc && yarn run check:lint && yarn run check:prettier && yarn run test",
 		"check:lint": "eslint . --ext .ts --max-warnings=0 --report-unused-disable-directives",
 		"check:prettier": "prettier --check .",
 		"check:tsc": "yarn run compile --noEmit",
