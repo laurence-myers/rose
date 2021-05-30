@@ -1,4 +1,14 @@
-import { and, arrayConstructor, constant, isTrue, NotEnoughExpressionsError, or, row, subSelect } from "../../../src";
+import {
+	and,
+	arrayConstructor,
+	constant,
+	isTrue,
+	NotEnoughExpressionsError,
+	or,
+	row,
+	subscript,
+	subSelect
+} from "../../../src";
 import { doSimpleSqlTest } from "../../test-utils";
 import { QOrders } from "../../fixtures";
 import { SqlAstWalker } from "../../../src/query/walkers/sqlAstWalker";
@@ -150,6 +160,27 @@ describe(`core`, () => {
 				],
 				QOrders.amount.col()
 			);
+		});
+	});
+
+	describe(`subscript`, () => {
+		it(`accepts two arguments`, () => {
+			const astNode = subscript(
+				QOrders.region.col(),
+				constant(123)
+			)
+			const expected = `("t1"."region")[$1]`;
+			doSimpleSqlTest(astNode, expected);
+		});
+
+		it(`accepts an optional upper subscript`, () => {
+			const astNode = subscript(
+				QOrders.region.col(),
+				constant(123),
+				constant(456)
+			)
+			const expected = `("t1"."region")[$1:$2]`;
+			doSimpleSqlTest(astNode, expected);
 		});
 	});
 });

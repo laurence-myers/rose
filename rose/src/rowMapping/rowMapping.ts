@@ -1,6 +1,6 @@
 import { SelectOutputExpression } from "../query/ast";
 import { RowMappingError, UnsupportedOperationError } from "../errors";
-import { assertNever, DefaultMap, isMap, last, SettingMap } from "../lang";
+import { DefaultMap, isMap, last, SettingMap } from "../lang";
 import { MetroHash128 } from "metrohash";
 import { MappedQuerySelector, QueryOutput } from "../query/typeMapping";
 import { QuerySelector } from "../query/querySelector";
@@ -58,18 +58,7 @@ function processOutputExpression(expr: SelectOutputExpression, row: any, output:
 			}
 			break;
 
-		case "arrayConstructorNode":
-		case "binaryOperationNode":
-		case "castNode":
-		case "columnReferenceNode":
-		case "constantNode":
-		case "functionExpressionNode":
-		case "literalNode":
-		case "naturalSyntaxFunctionExpressionNode":
-		case "rowConstructorNode":
-		case "simpleColumnReferenceNode":
-		case "subSelectNode":
-		case "unaryOperationNode":
+		default:
 			if (!aliases || !aliases.input || !aliases.output) {
 				throw new UnsupportedOperationError("All output values must be aliased");
 			} else if (row[aliases.input] === undefined) {
@@ -80,9 +69,6 @@ function processOutputExpression(expr: SelectOutputExpression, row: any, output:
 				(<any> output)[outputKey] = row[inputKey];
 			}
 			break;
-
-		default:
-			assertNever(expr);
 	}
 }
 

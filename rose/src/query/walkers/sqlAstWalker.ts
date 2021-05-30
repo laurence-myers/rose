@@ -39,6 +39,7 @@ import {
 	SetTransactionCommandNode,
 	SetTransactionSnapshotCommandNode,
 	SimpleColumnReferenceNode,
+	SubscriptNode,
 	SubSelectNode,
 	TableReferenceNode,
 	TransactionModeNode,
@@ -547,6 +548,18 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += `"`;
 		this.sb += node.columnName;
 		this.sb += `"`;
+	}
+
+	protected walkSubscriptNode(node: SubscriptNode): void {
+		this.sb += `(`;
+		this.walk(node.expression);
+		this.sb += `)[`;
+		this.walk(node.lowerSubscript);
+		if (node.upperSubscript) {
+			this.sb += `:`;
+			this.walk(node.upperSubscript);
+		}
+		this.sb += `]`;
 	}
 
 	protected walkSubSelectNode(node: SubSelectNode): void {

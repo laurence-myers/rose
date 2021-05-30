@@ -37,6 +37,7 @@ import {
 	SetTransactionCommandNode,
 	SetTransactionSnapshotCommandNode,
 	SimpleColumnReferenceNode,
+	SubscriptNode,
 	SubSelectNode,
 	TableReferenceNode,
 	TransactionModeNode,
@@ -233,6 +234,14 @@ export class SkippingWalker extends BaseWalker {
 
 	protected walkSimpleColumnReferenceNode(node: SimpleColumnReferenceNode): void {
 
+	}
+
+	protected walkSubscriptNode(node: SubscriptNode): void {
+		this.walk(node.expression);
+		this.walk(node.lowerSubscript);
+		if (node.upperSubscript) {
+			this.walk(node.upperSubscript);
+		}
 	}
 
 	protected walkSubSelectNode(node: SubSelectNode): void {

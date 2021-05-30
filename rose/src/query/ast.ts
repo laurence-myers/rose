@@ -159,6 +159,13 @@ export interface RowConstructorNode {
 	expressionList: ExpressionListNode;
 }
 
+export interface SubscriptNode {
+	type: 'subscriptNode';
+	expression: ParameterOrValueExpressionNode;
+	lowerSubscript: ParameterOrValueExpressionNode;
+	upperSubscript?: ParameterOrValueExpressionNode;
+}
+
 /**
  * https://www.postgresql.org/docs/9.6/static/sql-expressions.html
  *
@@ -188,6 +195,7 @@ export type ValueExpressionNode =
 	| NaturalSyntaxFunctionExpressionNode
 	| RowConstructorNode
 	| SimpleColumnReferenceNode
+	| SubscriptNode
 	| SubSelectNode
 	| UnaryOperationNode;
 

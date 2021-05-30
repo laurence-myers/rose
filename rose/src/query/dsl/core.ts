@@ -10,6 +10,7 @@ import {
 	NotExpressionNode,
 	ParameterOrValueExpressionNode,
 	RowConstructorNode,
+	SubscriptNode,
 	SubSelectNode,
 	TableReferenceNode
 } from "../ast";
@@ -149,5 +150,14 @@ export function row(first: ParameterOrValueExpressionNode | readonly ParameterOr
 			type: "expressionListNode",
 			expressions: rectifyVariadicArgs(first, rest)
 		}
+	};
+}
+
+export function subscript(expression: ParameterOrValueExpressionNode, subscript: ParameterOrValueExpressionNode<number>, upperSubscript?: ParameterOrValueExpressionNode<number>): SubscriptNode {
+	return {
+		type: "subscriptNode",
+		expression,
+		lowerSubscript: subscript,
+		upperSubscript
 	};
 }

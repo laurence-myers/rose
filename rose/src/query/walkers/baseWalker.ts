@@ -38,6 +38,7 @@ import {
 	SetTransactionCommandNode,
 	SetTransactionSnapshotCommandNode,
 	SimpleColumnReferenceNode,
+	SubscriptNode,
 	SubSelectNode,
 	TableReferenceNode,
 	TransactionModeNode,
@@ -123,6 +124,8 @@ export abstract class BaseWalker {
 	protected abstract walkSetTransactionSnapshotCommandNode(node: SetTransactionSnapshotCommandNode): void;
 
 	protected abstract walkSimpleColumnReferenceNode(node: SimpleColumnReferenceNode): void;
+
+	protected abstract walkSubscriptNode(node: SubscriptNode): void;
 
 	protected abstract walkSubSelectNode(node: SubSelectNode): void;
 
@@ -257,6 +260,9 @@ export abstract class BaseWalker {
 				break;
 			case "simpleColumnReferenceNode":
 				this.walkSimpleColumnReferenceNode(node);
+				break;
+			case "subscriptNode":
+				this.walkSubscriptNode(node);
 				break;
 			case "subSelectNode":
 				this.walkSubSelectNode(node);
