@@ -8,7 +8,7 @@ import {
 } from "./ast";
 import { RectifyingWalker } from "./walkers/rectifyingWalker";
 import { SqlAstWalker } from "./walkers/sqlAstWalker";
-import { QuerySelectorProcessor } from "./metadata";
+import { QuerySelectMetadata, QuerySelectorProcessor } from "./metadata";
 import { ParamsProxy, ParamsWrapper } from "./params";
 import { TableMap } from "../data";
 
@@ -27,7 +27,8 @@ export abstract class FinalisedQuery<TQuerySelector extends QuerySelector> {
 		protected readonly queryAst: AnyCommandNode,
 		protected readonly tableMap: TableMap
 	) {
-		this.outputExpressions = this.processQuerySelector(querySelector); // must occur before rectifying
+		const querySelectMetadata = this.processQuerySelector(querySelector); // must occur before rectifying
+		this.outputExpressions = querySelectMetadata.outputExpressions;
 		// TODO: clone queryAst and tableMap so that we don't mutate the original values here.
 		if (queryAst.type === "selectCommandNode") {
 			queryAst.outputExpressions = this.outputExpressions;
@@ -57,7 +58,7 @@ export abstract class FinalisedQuery<TQuerySelector extends QuerySelector> {
 
 	protected processQuerySelector(
 		querySelector: QuerySelector
-	): Array<SelectOutputExpression> {
+	): QuerySelectMetadata {
 		const processor = new QuerySelectorProcessor(querySelector);
 		return processor.process();
 	}
@@ -155,7 +156,9 @@ export class FinalisedQueryNonReturningWithParams<
 
 	protected processQuerySelector(
 		querySelector: QuerySelector
-	): Array<SelectOutputExpression> {
-		return [];
+	): QuerySelectMetadata {
+		return {
+			outputExpressions: [],
+		};
 	}
 }

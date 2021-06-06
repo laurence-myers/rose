@@ -1,11 +1,9 @@
 import { SelectOutputExpression } from "../query/ast";
 import { RowMappingError, UnsupportedOperationError } from "../errors";
 import { DefaultMap, isMap, last, SettingMap } from "../lang";
-import { MetroHash128 } from "metrohash";
 import { MappedQuerySelector, QueryOutput } from "../query/typeMapping";
 import { QuerySelector } from "../query/querySelector";
-
-const HASH_SEED = Date.now();
+import { defaultRowHasher } from "./rowHasher";
 
 interface Aliases {
 	input: string;
@@ -52,7 +50,7 @@ function processOutputExpression(
 ): void {
 	switch (expr.type) {
 		case "aliasedExpressionNode":
-			if (expr.alias.indexOf(".") > -1) {
+			if (expr.aliasPath.length > 1) {
 				const { key, nestedObject } = processNestedPath(expr.aliasPath, output);
 				processOutputExpression(expr.expression, row, nestedObject, {
 					input: expr.alias,
@@ -96,17 +94,6 @@ export function mapRowToClass<T extends QuerySelector = never>(
 	return output as QueryOutput<T>;
 }
 
-function hashRow<TDataClass>(
-	row: TDataClass,
-	propertiesToHash: string[]
-): string {
-	const hash = new MetroHash128(HASH_SEED);
-	for (const key of propertiesToHash) {
-		hash.update(`${key}=${(<any>row)[key]};`);
-	}
-	return hash.digest();
-}
-
 type NestedObject = any;
 
 /**
@@ -115,13 +102,13 @@ type NestedObject = any;
  */
 function mergeNested(
 	objects: NestedObject[],
-	nestedSchema: NestedSchema,
+	parentNestedSchema: NestedSchema,
 	hashMap: SettingMap<string, any>
 ): void {
 	for (const obj of objects) {
-		const hash = hashRow(obj, nestedSchema.values);
+		const hash = defaultRowHasher(obj, parentNestedSchema.parentValues);
 		const objToUpdate = hashMap.getOrSet(hash, obj);
-		for (const [key, value] of nestedSchema.nested.entries()) {
+		for (const [key, value] of parentNestedSchema.nested.entries()) {
 			const propertyValue = obj[key];
 			let nestedMap = objToUpdate[key];
 			if (!isMap(nestedMap)) {
@@ -166,7 +153,8 @@ export function mapRowsToClass<T extends QuerySelector>(
 }
 
 class NestedSchema {
-	values: string[] = [];
+	aliasPath: string[] = [];
+	parentValues: string[] = [];
 	nested: DefaultMap<string, NestedSchema> = new DefaultMap<
 		string,
 		NestedSchema
@@ -184,8 +172,14 @@ function extractNestedSchema(
 				for (let i = 0; i < expr.aliasPath.length - 1; i++) {
 					const part = expr.aliasPath[i];
 					segment = segment.nested.get(part);
+					if (segment.aliasPath.length === 0) {
+						segment.aliasPath = expr.aliasPath.slice(
+							0,
+							expr.aliasPath.length - 1
+						);
+					}
 				}
-				segment.values.push(last(expr.aliasPath));
+				segment.parentValues.push(last(expr.aliasPath));
 				break;
 			}
 			default:

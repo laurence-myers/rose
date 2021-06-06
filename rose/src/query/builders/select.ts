@@ -209,7 +209,7 @@ export class SelectQueryBuilder<
 
 	protected processQuerySelector(): Array<SelectOutputExpression> {
 		const processor = new QuerySelectorProcessor(this.querySelector);
-		return processor.process();
+		return processor.process().outputExpressions;
 	}
 
 	protected select(): this {
@@ -301,7 +301,7 @@ export class AliasedSubQueryBuilder<
 
 	protected processQuerySelector(): Array<SelectOutputExpression> {
 		const processor = new QuerySelectorProcessor(this.querySelector);
-		return processor.process();
+		return processor.process().outputExpressions;
 	}
 
 	toMetamodel(): AliasedSubQueryMetamodel<TQuerySelector> {

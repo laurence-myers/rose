@@ -13,6 +13,10 @@ import {
 	SelectorColumnTypes,
 } from "./querySelector";
 
+export interface QuerySelectMetadata {
+	outputExpressions: Array<SelectOutputExpression>;
+}
+
 export class QuerySelectorProcessor {
 	protected outputExpressions: Array<SelectOutputExpression> = [];
 
@@ -43,10 +47,8 @@ export class QuerySelectorProcessor {
 		for (const entry of entries) {
 			const aliasPrefix: string = entry[0];
 			const nestedQuery: NestedQueryOne | NestedQueryMany = entry[1];
-			this.processSelectQueryClass(
-				nestedQuery.querySelector,
-				aliasPath.concat(aliasPrefix)
-			);
+			const fullAliasPath = aliasPath.concat(aliasPrefix);
+			this.processSelectQueryClass(nestedQuery.querySelector, fullAliasPath);
 		}
 	}
 
@@ -138,8 +140,10 @@ export class QuerySelectorProcessor {
 		}
 	}
 
-	process(): Array<SelectOutputExpression> {
+	process(): QuerySelectMetadata {
 		this.processSelectQueryClass(this.querySelector, []);
-		return this.outputExpressions;
+		return {
+			outputExpressions: this.outputExpressions,
+		};
 	}
 }
