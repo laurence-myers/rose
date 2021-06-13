@@ -99,10 +99,13 @@ export class SqlAstWalker extends BaseWalker {
 		};
 	}
 
-	protected doListWalk<N extends AstNode>(nodes: readonly N[]): void {
+	protected doListWalk<N extends AstNode>(
+		nodes: readonly N[],
+		separator = `, `
+	): void {
 		nodes.forEach((node, index): void => {
 			if (index > 0) {
-				this.sb += `, `;
+				this.sb += separator;
 			}
 			this.walk(node);
 		});
@@ -301,7 +304,6 @@ export class SqlAstWalker extends BaseWalker {
 			);
 		}
 
-		this.sb += ` `;
 		this.sb += joinText;
 		this.sb += ` JOIN `;
 		this.walk(node.fromItem);
@@ -510,7 +512,8 @@ export class SqlAstWalker extends BaseWalker {
 			this.doListWalk(node.fromItems);
 		}
 		if (node.joins.length > 0) {
-			this.walkNodes(node.joins);
+			this.sb += " ";
+			this.doListWalk(node.joins, ` `);
 		}
 		if (node.conditions.length > 0) {
 			this.sb += " WHERE ";

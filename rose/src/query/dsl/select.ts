@@ -22,6 +22,8 @@ export function selectCte<TQuerySelector extends QuerySelector>(
 	return new CommonTableExpressionBuilder(alias, querySelector);
 }
 
+export const with_ = selectCte;
+
 export function selectExpression<T = never>(
 	expression: ParameterOrValueExpressionNode
 ): SelectorExpression<T> {

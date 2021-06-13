@@ -104,8 +104,10 @@ abstract class BaseSelectQueryBuilder {
 
 	@Clone()
 	join(
-		joinBuilder: BuildableJoin | readonly BuildableJoin[],
-		...otherJoins: readonly BuildableJoin[]
+		joinBuilder:
+			| BuildableJoin<QuerySelector>
+			| readonly BuildableJoin<QuerySelector>[],
+		...otherJoins: readonly BuildableJoin<QuerySelector>[]
 	): this {
 		for (const builder of rectifyVariadicArgs(joinBuilder, otherJoins)) {
 			const joinNode = builder.build(this.tableMap);
@@ -242,7 +244,7 @@ export class SelectQueryBuilder<
 export class SubQueryBuilder<TParams> extends BaseSelectQueryBuilder {
 	constructor(subSelectExpressions: SubSelectExpression[]) {
 		super();
-		this.select(subSelectExpressions);
+		this.initialSelect(subSelectExpressions);
 	}
 
 	protected processSubSelectExpressions(
@@ -259,7 +261,7 @@ export class SubQueryBuilder<TParams> extends BaseSelectQueryBuilder {
 		}
 	}
 
-	protected select(subSelectExpressions: SubSelectExpression[]): this {
+	protected initialSelect(subSelectExpressions: SubSelectExpression[]): this {
 		this.queryAst = {
 			type: "selectCommandNode",
 			distinction: "all",
@@ -292,7 +294,7 @@ export class AliasedSubQueryBuilder<
 	TQuerySelector extends QuerySelector
 > extends BaseSelectQueryBuilder {
 	constructor(
-		protected readonly alias: string,
+		public readonly alias: string,
 		protected readonly querySelector: TQuerySelector
 	) {
 		super();
@@ -339,4 +341,12 @@ export class AliasedSubQueryBuilder<
 
 export class CommonTableExpressionBuilder<
 	TQuerySelector extends QuerySelector
-> extends AliasedSubQueryBuilder<TQuerySelector> {}
+> extends AliasedSubQueryBuilder<TQuerySelector> {
+	select(
+		callback: (
+			cteMetamodel: AliasedSubQueryMetamodel<TQuerySelector>
+		) => SelectQueryBuilder<TQuerySelector>
+	): SelectQueryBuilder<TQuerySelector> {
+		return callback(this.toMetamodel()).with(this);
+	}
+}
