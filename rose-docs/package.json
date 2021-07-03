@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build:antora": "antora antora-playbook.yml",
-    "build:typedoc": "typedoc --tsconfig ../rose/tsconfig.json --out build/site/api ../rose/src/index.ts",
+    "build:typedoc": "typedoc ../rose/src/index.ts",
     "link:rose": "yarn --cwd ./docs/modules/ROOT/examples/ link:rose",
     "lint": "yarn --cwd ./docs/modules/ROOT/examples/ lint",
     "postinstall": "yarn --cwd ./docs/modules/ROOT/examples/ install",

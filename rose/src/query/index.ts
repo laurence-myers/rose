@@ -1,4 +1,5 @@
 export * from "./ast";
+export * from "./builders";
 export * from "./dsl";
 export * from "./metadata";
 export * from "./metamodel";

@@ -1,0 +1,5 @@
+{
+  "categorizeByGroup": false,
+  "out": "build/site/api",
+  "tsconfig": "../rose/tsconfig.json"
+}
