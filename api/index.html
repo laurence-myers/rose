@@ -1,0 +1,1181 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>@rosepg/rose</title>
+	<meta name="description" content="Documentation for @rosepg/rose">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+	<script async src="assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">@rosepg/rose</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<h1>@rosepg/rose</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#rose" id="rose" style="color: inherit; text-decoration: none;">
+					<h1>rose</h1>
+				</a>
+				<p><img src="https://github.com/laurence-myers/rose/workflows/Rose%20CI/badge.svg" alt="">
+				<a href="https://codecov.io/gh/laurence-myers/rose"><img src="https://codecov.io/gh/laurence-myers/rose/branch/master/graph/badge.svg" alt="codecov"></a></p>
+				<p><code>rose</code> is a PostgreSQL query builder and row mapper for TypeScript.</p>
+				<p>To get started, please read the online documentation:</p>
+				<p><a href="https://laurence-myers.github.io/rose/">https://laurence-myers.github.io/rose/</a></p>
+				<a href="#goals" id="goals" style="color: inherit; text-decoration: none;">
+					<h2>Goals</h2>
+				</a>
+				<ul>
+					<li>Type safe interface between PostgreSQL and TypeScript (Node.js) applications.</li>
+					<li>Flexible query interface, that can return arbitrary objects, not restricted to a single object graph (i.e. one class).</li>
+					<li>Multiple layers of capabilities:<ul>
+							<li>Generating TypeScript interfaces from your database schema.</li>
+							<li>Type-safe query builder.</li>
+							<li>ORM layer on top of the query builder. (Not yet implemented.)</li>
+						</ul>
+					</li>
+					<li>Composable queries.</li>
+					<li>Reusable queries; support caching built queries and generated SQL, so application code just passes in parameters.</li>
+					<li>No chance for SQL injection, through the sole use of parameterised queries.</li>
+				</ul>
+				<a href="#out-of-scope" id="out-of-scope" style="color: inherit; text-decoration: none;">
+					<h2>Out of scope</h2>
+				</a>
+				<ul>
+					<li>DDL statements.<ul>
+							<li>You should construct your database outside of your consuming application, using SQL.</li>
+						</ul>
+					</li>
+					<li>Support for other databases.<ul>
+							<li>By focusing on PostgreSQL, we can provide more sophisticated capabilities, and we&#39;re not limited to only supporting
+							functionality common to all databases.</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="modules.html">Exports</a>
+					</li>
+					<li class=" tsd-kind-namespace">
+						<a href="modules/functionhelpers.html">function<wbr>Helpers</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/abstractconnectionmanager.html" class="tsd-kind-icon">Abstract<wbr>Connection<wbr>Manager</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/abstractdatabasecontext.html" class="tsd-kind-icon">Abstract<wbr>Database<wbr>Context</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/columnmetamodel.html" class="tsd-kind-icon">Column<wbr>Metamodel</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/finalisedquery.html" class="tsd-kind-icon">Finalised<wbr>Query</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/finalisedquerynoparams.html" class="tsd-kind-icon">Finalised<wbr>Query<wbr>NoParams</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/finalisedquerynonreturningwithparams.html" class="tsd-kind-icon">Finalised<wbr>Query<wbr>Non<wbr>Returning<wbr>With<wbr>Params</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/finalisedquerywithparams.html" class="tsd-kind-icon">Finalised<wbr>Query<wbr>With<wbr>Params</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/invalidinserterror.html" class="tsd-kind-icon">Invalid<wbr>Insert<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/invalidqueryselectorerror.html" class="tsd-kind-icon">Invalid<wbr>Query<wbr>Selector<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/invalidupdateerror.html" class="tsd-kind-icon">Invalid<wbr>Update<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/loggingclient.html" class="tsd-kind-icon">Logging<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/missingdependencyerror.html" class="tsd-kind-icon">Missing<wbr>Dependency<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/notenoughexpressionserror.html" class="tsd-kind-icon">Not<wbr>Enough<wbr>Expressions<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="classes/paramswrapper.html" class="tsd-kind-icon">Params<wbr>Wrapper</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/queryselectorprocessor.html" class="tsd-kind-icon">Query<wbr>Selector<wbr>Processor</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/querytable.html" class="tsd-kind-icon">Query<wbr>Table</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/roseerror.html" class="tsd-kind-icon">Rose<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/rowmappingerror.html" class="tsd-kind-icon">Row<wbr>Mapping<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/tablemetamodel.html" class="tsd-kind-icon">Table<wbr>Metamodel</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/transaction.html" class="tsd-kind-icon">Transaction</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/unrecognisedcolumnerror.html" class="tsd-kind-icon">Unrecognised<wbr>Column<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="classes/unsupportedoperationerror.html" class="tsd-kind-icon">Unsupported<wbr>Operation<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/aliasedexpressionnode.html" class="tsd-kind-icon">Aliased<wbr>Expression<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/arrayconstructornode.html" class="tsd-kind-icon">Array<wbr>Constructor<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/begincommandnode.html" class="tsd-kind-icon">Begin<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/binaryoperationnode.html" class="tsd-kind-icon">Binary<wbr>Operation<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/booleanbinaryoperationnode.html" class="tsd-kind-icon">Boolean<wbr>Binary<wbr>Operation<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/booleanexpressiongroupnode.html" class="tsd-kind-icon">Boolean<wbr>Expression<wbr>Group<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/booleanunaryoperationnode.html" class="tsd-kind-icon">Boolean<wbr>Unary<wbr>Operation<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/castnode.html" class="tsd-kind-icon">Cast<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/columnreferencenode.html" class="tsd-kind-icon">Column<wbr>Reference<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/commitcommandnode.html" class="tsd-kind-icon">Commit<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/constantnode.html" class="tsd-kind-icon">Constant<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/deletecommandnode.html" class="tsd-kind-icon">Delete<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/expressionlistnode.html" class="tsd-kind-icon">Expression<wbr>List<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/fielddef.html" class="tsd-kind-icon">Field<wbr>Def</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/functionexpressionnode.html" class="tsd-kind-icon">Function<wbr>Expression<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/generatedquery.html" class="tsd-kind-icon">Generated<wbr>Query</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/groupbyexpressionnode.html" class="tsd-kind-icon">Group<wbr>ByExpression<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/insertcommandnode.html" class="tsd-kind-icon">Insert<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/joinnode.html" class="tsd-kind-icon">Join<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/limitoffsetnode.html" class="tsd-kind-icon">Limit<wbr>Offset<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/literalnode.html" class="tsd-kind-icon">Literal<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/naturalsyntaxfunctionexpressionnode.html" class="tsd-kind-icon">Natural<wbr>Syntax<wbr>Function<wbr>Expression<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/naturalsyntaxfunctionexpressionnodeargument.html" class="tsd-kind-icon">Natural<wbr>Syntax<wbr>Function<wbr>Expression<wbr>Node<wbr>Argument</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/nestedquerymany.html" class="tsd-kind-icon">Nested<wbr>Query<wbr>Many</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/nestedqueryone.html" class="tsd-kind-icon">Nested<wbr>Query<wbr>One</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/notexpressionnode.html" class="tsd-kind-icon">Not<wbr>Expression<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/onconflictdonothingnode.html" class="tsd-kind-icon">On<wbr>Conflict<wbr>DoNothing<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/onconflictdoupdatenode.html" class="tsd-kind-icon">On<wbr>Conflict<wbr>DoUpdate<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/onconflictnode.html" class="tsd-kind-icon">On<wbr>Conflict<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/onconflicttargetindexnode.html" class="tsd-kind-icon">On<wbr>Conflict<wbr>Target<wbr>Index<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/onconflicttargetindexesnode.html" class="tsd-kind-icon">On<wbr>Conflict<wbr>Target<wbr>Indexes<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/onconflicttargetonconstraintnode.html" class="tsd-kind-icon">On<wbr>Conflict<wbr>Target<wbr>OnConstraint<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/orderbyexpressionnode.html" class="tsd-kind-icon">Order<wbr>ByExpression<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/pool.html" class="tsd-kind-icon">Pool</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/poolclient.html" class="tsd-kind-icon">Pool<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/queryresult.html" class="tsd-kind-icon">Query<wbr>Result</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/queryresultbase.html" class="tsd-kind-icon">Query<wbr>Result<wbr>Base</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/queryresultrow.html" class="tsd-kind-icon">Query<wbr>Result<wbr>Row</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/queryselectmetadata.html" class="tsd-kind-icon">Query<wbr>Select<wbr>Metadata</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/queryselector.html" class="tsd-kind-icon">Query<wbr>Selector</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/queryable.html" class="tsd-kind-icon">Queryable</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/releasesavepointcommandnode.html" class="tsd-kind-icon">Release<wbr>Savepoint<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/rollbackcommandnode.html" class="tsd-kind-icon">Rollback<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/rollbacktosavepointcommandnode.html" class="tsd-kind-icon">Rollback<wbr>ToSavepoint<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/rowconstructornode.html" class="tsd-kind-icon">Row<wbr>Constructor<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/savepointcommandnode.html" class="tsd-kind-icon">Savepoint<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/selectcommandnode.html" class="tsd-kind-icon">Select<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/selectlockingnode.html" class="tsd-kind-icon">Select<wbr>Locking<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/selectorexpression.html" class="tsd-kind-icon">Selector<wbr>Expression</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/selectornestedmany.html" class="tsd-kind-icon">Selector<wbr>Nested<wbr>Many</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter">
+						<a href="interfaces/selectornestedone.html" class="tsd-kind-icon">Selector<wbr>Nested<wbr>One</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/setitemnode.html" class="tsd-kind-icon">Set<wbr>Item<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/setsessionscharacteristicsastransactioncommandnode.html" class="tsd-kind-icon">Set<wbr>Sessions<wbr>Characteristics<wbr>AsTransaction<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/settransactioncommandnode.html" class="tsd-kind-icon">Set<wbr>Transaction<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/settransactionsnapshotcommandnode.html" class="tsd-kind-icon">Set<wbr>Transaction<wbr>Snapshot<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/simplecolumnreferencenode.html" class="tsd-kind-icon">Simple<wbr>Column<wbr>Reference<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/subselectnode.html" class="tsd-kind-icon">Sub<wbr>Select<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/subscriptnode.html" class="tsd-kind-icon">Subscript<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/tablereferencenode.html" class="tsd-kind-icon">Table<wbr>Reference<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/transactionmodenode.html" class="tsd-kind-icon">Transaction<wbr>Mode<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/transactionoptions.html" class="tsd-kind-icon">Transaction<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/unaryoperationnode.html" class="tsd-kind-icon">Unary<wbr>Operation<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/updatecommandnode.html" class="tsd-kind-icon">Update<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/withnode.html" class="tsd-kind-icon">With<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#aliasedfromexpressionnode" class="tsd-kind-icon">Aliased<wbr>From<wbr>Expression<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#aliasedselectexpressionnode" class="tsd-kind-icon">Aliased<wbr>Select<wbr>Expression<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#anyaliasedexpressionnode" class="tsd-kind-icon">Any<wbr>Aliased<wbr>Expression<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#anycommandnode" class="tsd-kind-icon">Any<wbr>Command<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#asqueryselector" class="tsd-kind-icon">As<wbr>Query<wbr>Selector</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#astmap" class="tsd-kind-icon">Ast<wbr>Map</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#astnode" class="tsd-kind-icon">Ast<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#booleanbinaryoperator" class="tsd-kind-icon">Boolean<wbr>Binary<wbr>Operator</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#booleanexpression" class="tsd-kind-icon">Boolean<wbr>Expression</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#fromexpressionnode" class="tsd-kind-icon">From<wbr>Expression<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#fromitemnode" class="tsd-kind-icon">From<wbr>Item<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#indexexpressionnode" class="tsd-kind-icon">Index<wbr>Expression<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#mappabletypes" class="tsd-kind-icon">Mappable<wbr>Types</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#mappedqueryselector" class="tsd-kind-icon">Mapped<wbr>Query<wbr>Selector</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#onconflicttargetnode" class="tsd-kind-icon">On<wbr>Conflict<wbr>Target<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#paramgetter" class="tsd-kind-icon">Param<wbr>Getter</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#parameterorvalueexpressionnode" class="tsd-kind-icon">Parameter<wbr>OrValue<wbr>Expression<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#paramsproxy" class="tsd-kind-icon">Params<wbr>Proxy</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#partialtablecolumns" class="tsd-kind-icon">Partial<wbr>Table<wbr>Columns</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#queryoutput" class="tsd-kind-icon">Query<wbr>Output</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#selectnodes" class="tsd-kind-icon">Select<wbr>Nodes</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#selectoutputexpression" class="tsd-kind-icon">Select<wbr>Output<wbr>Expression</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#selectorcolumntypes" class="tsd-kind-icon">Selector<wbr>Column<wbr>Types</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#selectorkind" class="tsd-kind-icon">Selector<wbr>Kind</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#selectortypes" class="tsd-kind-icon">Selector<wbr>Types</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#tablecolumns" class="tsd-kind-icon">Table<wbr>Columns</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#tablecolumnsforinsertcommand" class="tsd-kind-icon">Table<wbr>Columns<wbr>For<wbr>Insert<wbr>Command</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#tablecolumnsforinsertcommandfromrow" class="tsd-kind-icon">Table<wbr>Columns<wbr>For<wbr>Insert<wbr>Command<wbr>From<wbr>Row</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-has-type-parameter">
+						<a href="modules.html#tablecolumnsforupdatecommand" class="tsd-kind-icon">Table<wbr>Columns<wbr>For<wbr>Update<wbr>Command</a>
+					</li>
+					<li class=" tsd-kind-type-alias">
+						<a href="modules.html#valueexpressionnode" class="tsd-kind-icon">Value<wbr>Expression<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#abs" class="tsd-kind-icon">abs</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#absolute" class="tsd-kind-icon">absolute</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#acos" class="tsd-kind-icon">acos</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#add" class="tsd-kind-icon">add</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#alias" class="tsd-kind-icon">alias</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#aliascol" class="tsd-kind-icon">alias<wbr>Col</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#aliastable" class="tsd-kind-icon">alias<wbr>Table</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#all" class="tsd-kind-icon">all</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#and" class="tsd-kind-icon">and</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#any" class="tsd-kind-icon">any</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#arrayconstructor" class="tsd-kind-icon">array<wbr>Constructor</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#arraycontains" class="tsd-kind-icon">array<wbr>Contains</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#arrayiscontainedby" class="tsd-kind-icon">array<wbr>IsContained<wbr>By</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_" class="tsd-kind-icon">array_</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_agg" class="tsd-kind-icon">array_<wbr>agg</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_append" class="tsd-kind-icon">array_<wbr>append</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_cat" class="tsd-kind-icon">array_<wbr>cat</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_dims" class="tsd-kind-icon">array_<wbr>dims</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_fill" class="tsd-kind-icon">array_<wbr>fill</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_length" class="tsd-kind-icon">array_<wbr>length</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_lower" class="tsd-kind-icon">array_<wbr>lower</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_ndims" class="tsd-kind-icon">array_<wbr>ndims</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_position" class="tsd-kind-icon">array_<wbr>position</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_positions" class="tsd-kind-icon">array_<wbr>positions</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_prepend" class="tsd-kind-icon">array_<wbr>prepend</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_remove" class="tsd-kind-icon">array_<wbr>remove</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_replace" class="tsd-kind-icon">array_<wbr>replace</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_to_string" class="tsd-kind-icon">array_<wbr>to_<wbr>string</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#array_upper" class="tsd-kind-icon">array_<wbr>upper</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#arraysoverlap" class="tsd-kind-icon">arrays<wbr>Overlap</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#ascii" class="tsd-kind-icon">ascii</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#asin" class="tsd-kind-icon">asin</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#atan" class="tsd-kind-icon">atan</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#atan2" class="tsd-kind-icon">atan2</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#avg" class="tsd-kind-icon">avg</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#begin" class="tsd-kind-icon">begin</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#between" class="tsd-kind-icon">between</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#betweensymmetric" class="tsd-kind-icon">between<wbr>Symmetric</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#bit_and" class="tsd-kind-icon">bit_<wbr>and</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#bit_length" class="tsd-kind-icon">bit_<wbr>length</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#bit_or" class="tsd-kind-icon">bit_<wbr>or</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#bitwiseand" class="tsd-kind-icon">bitwise<wbr>And</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#bitwisenot" class="tsd-kind-icon">bitwise<wbr>Not</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#bitwiseor" class="tsd-kind-icon">bitwise<wbr>Or</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#bitwiseshiftleft" class="tsd-kind-icon">bitwise<wbr>Shift<wbr>Left</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#bitwiseshiftright" class="tsd-kind-icon">bitwise<wbr>Shift<wbr>Right</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#bitwisexor" class="tsd-kind-icon">bitwise<wbr>Xor</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#bool_and" class="tsd-kind-icon">bool_<wbr>and</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#bool_or" class="tsd-kind-icon">bool_<wbr>or</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#btrim" class="tsd-kind-icon">btrim</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#cardinality" class="tsd-kind-icon">cardinality</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#casemulti" class="tsd-kind-icon">case<wbr>Multi</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#casesimple" class="tsd-kind-icon">case<wbr>Simple</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#case_" class="tsd-kind-icon">case_</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#cast" class="tsd-kind-icon">cast</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#cbrt" class="tsd-kind-icon">cbrt</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#ceil" class="tsd-kind-icon">ceil</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#ceiling" class="tsd-kind-icon">ceiling</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#char_length" class="tsd-kind-icon">char_<wbr>length</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#character_length" class="tsd-kind-icon">character_<wbr>length</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#chr" class="tsd-kind-icon">chr</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#coalesce" class="tsd-kind-icon">coalesce</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#col" class="tsd-kind-icon">col</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#commit" class="tsd-kind-icon">commit</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#concat" class="tsd-kind-icon">concat</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#concatenatearray" class="tsd-kind-icon">concatenate<wbr>Array</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#constant" class="tsd-kind-icon">constant</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#convert" class="tsd-kind-icon">convert</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#convert_from" class="tsd-kind-icon">convert_<wbr>from</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#convert_to" class="tsd-kind-icon">convert_<wbr>to</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#cos" class="tsd-kind-icon">cos</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#cot" class="tsd-kind-icon">cot</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#count" class="tsd-kind-icon">count</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#createbinaryoperatornode" class="tsd-kind-icon">create<wbr>Binary<wbr>Operator<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#createbooleanbinaryoperatornode" class="tsd-kind-icon">create<wbr>Boolean<wbr>Binary<wbr>Operator<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#createbooleanunaryoperatornode" class="tsd-kind-icon">create<wbr>Boolean<wbr>Unary<wbr>Operator<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#createfunctionnode" class="tsd-kind-icon">create<wbr>Function<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#createnaturalsyntaxfunctionnode" class="tsd-kind-icon">create<wbr>Natural<wbr>Syntax<wbr>Function<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#createunaryoperatornode" class="tsd-kind-icon">create<wbr>Unary<wbr>Operator<wbr>Node</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#crossjoin" class="tsd-kind-icon">cross<wbr>Join</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#cuberoot" class="tsd-kind-icon">cube<wbr>Root</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#decode" class="tsd-kind-icon">decode</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#deepfreeze" class="tsd-kind-icon">deep<wbr>Freeze</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#default_" class="tsd-kind-icon">default_</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#degrees" class="tsd-kind-icon">degrees</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#deletefrom" class="tsd-kind-icon">delete<wbr>From</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#dflt" class="tsd-kind-icon">dflt</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#div" class="tsd-kind-icon">div</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#divide" class="tsd-kind-icon">divide</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#donothing" class="tsd-kind-icon">do<wbr>Nothing</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#doupdate" class="tsd-kind-icon">do<wbr>Update</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#encode" class="tsd-kind-icon">encode</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#eq" class="tsd-kind-icon">eq</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#equal" class="tsd-kind-icon">equal</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#every" class="tsd-kind-icon">every</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#execute" class="tsd-kind-icon">execute</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#executenonreturning" class="tsd-kind-icon">execute<wbr>Non<wbr>Returning</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#exists" class="tsd-kind-icon">exists</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#exp" class="tsd-kind-icon">exp</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#exponentiate" class="tsd-kind-icon">exponentiate</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#factorial" class="tsd-kind-icon">factorial</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#floor" class="tsd-kind-icon">floor</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#fulljoin" class="tsd-kind-icon">full<wbr>Join</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#greaterthan" class="tsd-kind-icon">greater<wbr>Than</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#greaterthanorequal" class="tsd-kind-icon">greater<wbr>Than<wbr>OrEqual</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#gt" class="tsd-kind-icon">gt</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#gte" class="tsd-kind-icon">gte</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#ilike" class="tsd-kind-icon">ilike</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#initcap" class="tsd-kind-icon">initcap</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#innerjoin" class="tsd-kind-icon">inner<wbr>Join</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#insert" class="tsd-kind-icon">insert</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#insertfromobject" class="tsd-kind-icon">insert<wbr>From<wbr>Object</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#isdistinctfrom" class="tsd-kind-icon">is<wbr>Distinct<wbr>From</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#isfalse" class="tsd-kind-icon">is<wbr>False</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#isnotdistinctfrom" class="tsd-kind-icon">is<wbr>Not<wbr>Distinct<wbr>From</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#isnotfalse" class="tsd-kind-icon">is<wbr>Not<wbr>False</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#isnotnull" class="tsd-kind-icon">is<wbr>Not<wbr>Null</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#isnottrue" class="tsd-kind-icon">is<wbr>Not<wbr>True</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#isnotunknown" class="tsd-kind-icon">is<wbr>Not<wbr>Unknown</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#isnull" class="tsd-kind-icon">is<wbr>Null</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#istrue" class="tsd-kind-icon">is<wbr>True</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#isunknown" class="tsd-kind-icon">is<wbr>Unknown</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#join" class="tsd-kind-icon">join</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#json_agg" class="tsd-kind-icon">json_<wbr>agg</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#json_object_agg" class="tsd-kind-icon">json_<wbr>object_<wbr>agg</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#jsonb_agg" class="tsd-kind-icon">jsonb_<wbr>agg</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#jsonb_object_agg" class="tsd-kind-icon">jsonb_<wbr>object_<wbr>agg</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#leftjoin" class="tsd-kind-icon">left<wbr>Join</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#length" class="tsd-kind-icon">length</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#lessthan" class="tsd-kind-icon">less<wbr>Than</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#lessthanorequal" class="tsd-kind-icon">less<wbr>Than<wbr>OrEqual</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#like" class="tsd-kind-icon">like</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#literal" class="tsd-kind-icon">literal</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#ln" class="tsd-kind-icon">ln</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#log" class="tsd-kind-icon">log</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#lower" class="tsd-kind-icon">lower</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#lpad" class="tsd-kind-icon">lpad</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#lt" class="tsd-kind-icon">lt</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#lte" class="tsd-kind-icon">lte</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#ltrim" class="tsd-kind-icon">ltrim</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#matchesregexp" class="tsd-kind-icon">matches<wbr>Regexp</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#matchesregexpinsensitive" class="tsd-kind-icon">matches<wbr>Regexp<wbr>Insensitive</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#max" class="tsd-kind-icon">max</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#md5" class="tsd-kind-icon">md5</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#min" class="tsd-kind-icon">min</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#mod" class="tsd-kind-icon">mod</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#modulo" class="tsd-kind-icon">modulo</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#multiply" class="tsd-kind-icon">multiply</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#neq" class="tsd-kind-icon">neq</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#not" class="tsd-kind-icon">not</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#notbetween" class="tsd-kind-icon">not<wbr>Between</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#notequal" class="tsd-kind-icon">not<wbr>Equal</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#notilike" class="tsd-kind-icon">not<wbr>Ilike</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#notlike" class="tsd-kind-icon">not<wbr>Like</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#notmatchesregexp" class="tsd-kind-icon">not<wbr>Matches<wbr>Regexp</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#notmatchesregexpinsensitive" class="tsd-kind-icon">not<wbr>Matches<wbr>Regexp<wbr>Insensitive</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#now" class="tsd-kind-icon">now</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#null_" class="tsd-kind-icon">null_</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#num_nonnulls" class="tsd-kind-icon">num_<wbr>nonnulls</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#num_nulls" class="tsd-kind-icon">num_<wbr>nulls</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#octet_length" class="tsd-kind-icon">octet_<wbr>length</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#or" class="tsd-kind-icon">or</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#overlaps" class="tsd-kind-icon">overlaps</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#overlay" class="tsd-kind-icon">overlay</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#param" class="tsd-kind-icon">param</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#params" class="tsd-kind-icon">params</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#pg_client_encoding" class="tsd-kind-icon">pg_<wbr>client_<wbr>encoding</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#pi" class="tsd-kind-icon">pi</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#position" class="tsd-kind-icon">position</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#power" class="tsd-kind-icon">power</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#quote_ident" class="tsd-kind-icon">quote_<wbr>ident</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#quote_literal" class="tsd-kind-icon">quote_<wbr>literal</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#quote_nullable" class="tsd-kind-icon">quote_<wbr>nullable</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#radians" class="tsd-kind-icon">radians</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#random" class="tsd-kind-icon">random</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#regexp_match" class="tsd-kind-icon">regexp_<wbr>match</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#regexp_matches" class="tsd-kind-icon">regexp_<wbr>matches</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#regexp_replace" class="tsd-kind-icon">regexp_<wbr>replace</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#regexp_split_to_array" class="tsd-kind-icon">regexp_<wbr>split_<wbr>to_<wbr>array</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#regexp_split_to_table" class="tsd-kind-icon">regexp_<wbr>split_<wbr>to_<wbr>table</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#repeat" class="tsd-kind-icon">repeat</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#replace" class="tsd-kind-icon">replace</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#rightjoin" class="tsd-kind-icon">right<wbr>Join</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#rollback" class="tsd-kind-icon">rollback</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#round" class="tsd-kind-icon">round</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#row" class="tsd-kind-icon">row</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#rpad" class="tsd-kind-icon">rpad</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#rtrim" class="tsd-kind-icon">rtrim</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#select" class="tsd-kind-icon">select</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#selectcte" class="tsd-kind-icon">select<wbr>Cte</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#selectexists" class="tsd-kind-icon">select<wbr>Exists</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#selectexpression" class="tsd-kind-icon">select<wbr>Expression</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#selectnestedmany" class="tsd-kind-icon">select<wbr>Nested<wbr>Many</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#selectnestedone" class="tsd-kind-icon">select<wbr>Nested<wbr>One</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#selectsubquery" class="tsd-kind-icon">select<wbr>Sub<wbr>Query</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#setseed" class="tsd-kind-icon">setseed</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#sign" class="tsd-kind-icon">sign</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#sin" class="tsd-kind-icon">sin</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#some" class="tsd-kind-icon">some</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#split_part" class="tsd-kind-icon">split_<wbr>part</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#sqrt" class="tsd-kind-icon">sqrt</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#squareroot" class="tsd-kind-icon">square<wbr>Root</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#string_agg" class="tsd-kind-icon">string_<wbr>agg</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#string_to_array" class="tsd-kind-icon">string_<wbr>to_<wbr>array</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#strpos" class="tsd-kind-icon">strpos</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#subselect" class="tsd-kind-icon">sub<wbr>Select</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#subscript" class="tsd-kind-icon">subscript</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#substr" class="tsd-kind-icon">substr</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#substring" class="tsd-kind-icon">substring</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#subtract" class="tsd-kind-icon">subtract</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#sum" class="tsd-kind-icon">sum</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#tan" class="tsd-kind-icon">tan</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#targetindex" class="tsd-kind-icon">target<wbr>Index</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#to_ascii" class="tsd-kind-icon">to_<wbr>ascii</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#to_hex" class="tsd-kind-icon">to_<wbr>hex</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#transaction" class="tsd-kind-icon">transaction</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#translate" class="tsd-kind-icon">translate</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#trim" class="tsd-kind-icon">trim</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#trunc" class="tsd-kind-icon">trunc</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#unnest" class="tsd-kind-icon">unnest</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#unnestinfrom" class="tsd-kind-icon">unnest<wbr>InFrom</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#update" class="tsd-kind-icon">update</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#updatefromobject" class="tsd-kind-icon">update<wbr>From<wbr>Object</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#upper" class="tsd-kind-icon">upper</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#width_bucket" class="tsd-kind-icon">width_<wbr>bucket</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#withparams" class="tsd-kind-icon">with<wbr>Params</a>
+					</li>
+					<li class=" tsd-kind-function tsd-has-type-parameter">
+						<a href="modules.html#with_" class="tsd-kind-icon">with_</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#xmlagg" class="tsd-kind-icon">xmlagg</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
