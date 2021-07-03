@@ -5,15 +5,19 @@
   "author": "Laurence Dougal Myers <laurencedougalmyers@gmail.com>",
   "license": "MIT",
   "scripts": {
+    "build:antora": "antora antora-playbook.yml",
+    "build:typedoc": "typedoc --tsconfig ../rose/tsconfig.json --out build/site/api ../rose/src/index.ts",
     "link:rose": "yarn --cwd ./docs/modules/ROOT/examples/ link:rose",
     "lint": "yarn --cwd ./docs/modules/ROOT/examples/ lint",
     "postinstall": "yarn --cwd ./docs/modules/ROOT/examples/ install",
-    "start": "rimraf ./build/ && antora antora-playbook.yml",
+    "start": "rimraf ./build/ && yarn build:antora && yarn build:typedoc",
     "test": "yarn --cwd ./docs/modules/ROOT/examples/ test"
   },
   "dependencies": {
     "@antora/cli": "2.3.4",
     "@antora/site-generator-default": "2.3.4",
-    "rimraf": "3.0.2"
+    "rimraf": "3.0.2",
+    "typedoc": "0.21.2",
+    "typescript": "4.1.2"
   }
 }
