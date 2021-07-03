@@ -98,12 +98,12 @@ To import the type from another file:
 
 === Ignoring tables
 
-Add the property `ignored`, with an array of table names.
+Add the property `ignore`, with an array of table names.
 
 [source,json]
 ----
 {
-    "ignored": [
+    "ignore": [
         "audit_log",
         "statement_stats"
     ]
@@ -136,6 +136,8 @@ Here's one approach to consider:
 4. In your CI, repeat steps 1 and 2 (using a Docker container for the database).
 5. Check for any uncommitted change to the generated code, and if found, fail the build. For example, assuming your
    generated code lives in the director `generated/`, you can call Git like this: `git diff --exit-code generated/`.
+
+Another approach is to have a CI stage to generate the code as "artifacts", and pass those artifacts on to subsequent CI stages, which can use the generated code in tests, packaging the code, or building Docker images.
 
 == Generated code style conventions
 
