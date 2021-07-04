@@ -235,9 +235,10 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkExpressionListNode(node: ExpressionListNode): void {
-		// TODO: should this throw an error if the expressions array is empty?
 		this.sb += "(";
-		this.doListWalk(node.expressions);
+		if (node.expressions.length > 0) {
+			this.doListWalk(node.expressions);
+		}
 		this.sb += ")";
 	}
 

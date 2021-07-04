@@ -117,6 +117,12 @@ describe(`core`, () => {
 	});
 
 	describe(`row constructor`, () => {
+		it(`accepts zero arguments`, () => {
+			const astNode = row();
+			const expected = `ROW()`;
+			doSimpleSqlTest(astNode, expected);
+		});
+
 		it(`accepts one argument`, () => {
 			const astNode = row(constant(true));
 			const expected = `ROW($1)`;
