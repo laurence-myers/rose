@@ -7,6 +7,13 @@ import { AliasedSubQueryBuilder, CommonTableExpressionBuilder } from "./select";
 import { QuerySelector } from "../querySelector";
 import { aliasTable } from "../dsl";
 
+/**
+ * Something that can be joined:
+ *
+ * - A QueryTable instance
+ * - An aliased subquery builder
+ * - A common table expression builder
+ */
 export type Joinable<TQuerySelector extends QuerySelector> =
 	| AliasedSubQueryBuilder<QuerySelector>
 	| CommonTableExpressionBuilder<QuerySelector>
