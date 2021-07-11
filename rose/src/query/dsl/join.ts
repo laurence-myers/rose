@@ -4,23 +4,25 @@ import {
 	Joinable,
 	OnOrUsingJoinBuilder,
 } from "../builders/join";
-import { QuerySelector } from "../querySelector";
 
 /**
  * Starts building a join. The type of join is determined by the next method call.
  *
- * Joins can be used in some commands, e.g. {@link SelectQueryBuilder.join}.
+ * A join can be used as a "from item" in some commands, e.g.
+ * {@link SelectQueryBuilder.from}, {@link UpdateQueryBuilder.from}.
  *
  * @category DSL - Joins
- * @param joinable The target joinable.
+ * @param leftFrom The "left" from item.
+ * @param rightFrom The "right" from item.
+ * @see {@link Fromable}
  * @see {@link InitialJoinBuilder}
- * @see {@link Joinable}
  * @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
  */
-export function join<TQuerySelector extends QuerySelector>(
-	joinable: Joinable<TQuerySelector>
-): InitialJoinBuilder<TQuerySelector> {
-	return new InitialJoinBuilder(joinable);
+export function join(
+	leftFrom: Joinable,
+	rightFrom: Joinable
+): InitialJoinBuilder {
+	return new InitialJoinBuilder(leftFrom, rightFrom);
 }
 
 /**
@@ -29,15 +31,17 @@ export function join<TQuerySelector extends QuerySelector>(
  * Joins can be used in some commands, e.g. {@link SelectQueryBuilder.join}.
  *
  * @category DSL - Joins
- * @param joinable The target joinable.
- * @see {@link Joinable}
+ * @param leftFrom The "left" from item.
+ * @param rightFrom The "right" from item.
+ * @see {@link Fromable}
  * @see {@link OnOrUsingJoinBuilder}
  * @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
  */
-export function fullJoin<TQuerySelector extends QuerySelector>(
-	joinable: Joinable<TQuerySelector>
-): OnOrUsingJoinBuilder<TQuerySelector> {
-	return new InitialJoinBuilder(joinable).full();
+export function fullJoin(
+	leftFrom: Joinable,
+	rightFrom: Joinable
+): OnOrUsingJoinBuilder {
+	return join(leftFrom, rightFrom).full();
 }
 
 /**
@@ -46,15 +50,17 @@ export function fullJoin<TQuerySelector extends QuerySelector>(
  * Joins can be used in some commands, e.g. {@link SelectQueryBuilder.join}.
  *
  * @category DSL - Joins
- * @param joinable The target joinable.
- * @see {@link Joinable}
+ * @param leftFrom The "left" from item.
+ * @param rightFrom The "right" from item.
+ * @see {@link Fromable}
  * @see {@link OnOrUsingJoinBuilder}
  * @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
  */
-export function innerJoin<TQuerySelector extends QuerySelector>(
-	joinable: Joinable<TQuerySelector>
-): OnOrUsingJoinBuilder<TQuerySelector> {
-	return new InitialJoinBuilder(joinable).inner();
+export function innerJoin(
+	leftFrom: Joinable,
+	rightFrom: Joinable
+): OnOrUsingJoinBuilder {
+	return join(leftFrom, rightFrom).inner();
 }
 
 /**
@@ -63,15 +69,17 @@ export function innerJoin<TQuerySelector extends QuerySelector>(
  * Joins can be used in some commands, e.g. {@link SelectQueryBuilder.join}.
  *
  * @category DSL - Joins
- * @param joinable The target joinable.
- * @see {@link Joinable}
+ * @param leftFrom The "left" from item.
+ * @param rightFrom The "right" from item.
+ * @see {@link Fromable}
  * @see {@link OnOrUsingJoinBuilder}
  * @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
  */
-export function leftJoin<TQuerySelector extends QuerySelector>(
-	joinable: Joinable<TQuerySelector>
-): OnOrUsingJoinBuilder<TQuerySelector> {
-	return new InitialJoinBuilder(joinable).left();
+export function leftJoin(
+	leftFrom: Joinable,
+	rightFrom: Joinable
+): OnOrUsingJoinBuilder {
+	return join(leftFrom, rightFrom).left();
 }
 
 /**
@@ -80,15 +88,17 @@ export function leftJoin<TQuerySelector extends QuerySelector>(
  * Joins can be used in some commands, e.g. {@link SelectQueryBuilder.join}.
  *
  * @category DSL - Joins
- * @param joinable The target joinable.
- * @see {@link Joinable}
+ * @param leftFrom The "left" from item.
+ * @param rightFrom The "right" from item.
+ * @see {@link Fromable}
  * @see {@link OnOrUsingJoinBuilder}
  * @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
  */
-export function rightJoin<TQuerySelector extends QuerySelector>(
-	joinable: Joinable<TQuerySelector>
-): OnOrUsingJoinBuilder<TQuerySelector> {
-	return new InitialJoinBuilder(joinable).right();
+export function rightJoin(
+	leftFrom: Joinable,
+	rightFrom: Joinable
+): OnOrUsingJoinBuilder {
+	return join(leftFrom, rightFrom).right();
 }
 
 /**
@@ -97,13 +107,15 @@ export function rightJoin<TQuerySelector extends QuerySelector>(
  * Joins can be used in some commands, e.g. {@link SelectQueryBuilder.join}.
  *
  * @category DSL - Joins
- * @param joinable The target joinable.
+ * @param leftFrom The "left" from item.
+ * @param rightFrom The "right" from item.
  * @see {@link BuildableJoin}
- * @see {@link Joinable}
+ * @see {@link Fromable}
  * @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
  */
-export function crossJoin<TQuerySelector extends QuerySelector>(
-	joinable: Joinable<TQuerySelector>
-): BuildableJoin<TQuerySelector> {
-	return new InitialJoinBuilder(joinable).cross();
+export function crossJoin(
+	leftFrom: Joinable,
+	rightFrom: Joinable
+): BuildableJoin {
+	return join(leftFrom, rightFrom).cross();
 }

@@ -2,6 +2,10 @@ import {
 	AnyAliasedExpressionNode,
 	AstNode,
 	ColumnReferenceNode,
+	FromItemFunctionNode,
+	FromItemSubSelectNode,
+	FromItemTableNode,
+	FromItemWithNode,
 	SelectCommandNode,
 	SelectLockingNode,
 	SubSelectNode,
@@ -11,6 +15,7 @@ import {
 import { difference } from "../../lang";
 import { SkippingWalker } from "./skippingWalker";
 import { TableMap } from "../../data";
+import { from } from "../dsl";
 
 /**
  * Rectifies column references so they are always fully qualified, and all tables are aliased and also specified in a
@@ -32,12 +37,9 @@ class SelectRectifyingWalker extends SkippingWalker {
 	}
 
 	protected walkAliasedExpressionNode(node: AnyAliasedExpressionNode) {
-		if (
-			node.expression.type === "subSelectNode" ||
-			node.expression.type === "tableReferenceNode"
-		) {
-			this.tableMap.set(node.alias, node.alias);
-			this.specifiedTables.add(node.alias);
+		if (node.expression.type === "subSelectNode") {
+			this.tableMap.set(node.alias.name, node.alias.name);
+			this.specifiedTables.add(node.alias.name);
 		}
 		super.walkAliasedExpressionNode(node);
 	}
@@ -49,6 +51,35 @@ class SelectRectifyingWalker extends SkippingWalker {
 		}
 		this.columnReferences.add(node);
 		super.walkColumnReferenceNode(node);
+	}
+
+	protected walkFromItemFunctionNode(node: FromItemFunctionNode) {
+		if (node.alias) {
+			this.tableMap.set(node.alias.name, node.alias.name);
+			this.specifiedTables.add(node.alias.name);
+		}
+		super.walkFromItemFunctionNode(node);
+	}
+	protected walkFromItemSubSelectNode(node: FromItemSubSelectNode) {
+		this.tableMap.set(node.alias.name, node.alias.name);
+		this.specifiedTables.add(node.alias.name);
+		super.walkFromItemSubSelectNode(node);
+	}
+
+	protected walkFromItemTableNode(node: FromItemTableNode) {
+		if (node.alias) {
+			this.tableMap.set(node.alias.name, node.alias.name);
+			this.specifiedTables.add(node.alias.name);
+		}
+		super.walkFromItemTableNode(node);
+	}
+
+	protected walkFromItemWithNode(node: FromItemWithNode) {
+		if (node.alias) {
+			this.tableMap.set(node.alias.name, node.alias.name);
+			this.specifiedTables.add(node.alias.name);
+		}
+		super.walkFromItemWithNode(node);
 	}
 
 	protected walkSelectLockingNode(node: SelectLockingNode) {
@@ -84,15 +115,14 @@ class SelectRectifyingWalker extends SkippingWalker {
 		);
 		for (const tableName of unspecifiedTables) {
 			const tableAlias = this.tableMap.get(tableName);
-			this.ast.fromItems.push({
-				type: "aliasedExpressionNode",
-				alias: tableAlias,
-				aliasPath: [tableAlias],
-				expression: {
+			this.ast.fromItems.push(
+				from({
 					type: "tableReferenceNode",
 					tableName,
-				},
-			});
+				})
+					.alias(tableAlias)
+					.toNode()
+			);
 		}
 		// Update all column references to use the aliases.
 		for (const column of this.columnReferences.values()) {

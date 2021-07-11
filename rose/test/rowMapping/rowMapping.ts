@@ -19,8 +19,11 @@ function alias(
 ): AliasedSelectExpressionNode {
 	return {
 		type: "aliasedExpressionNode",
-		alias: aliasPath.join("."),
-		aliasPath: aliasPath,
+		alias: {
+			type: "aliasNode",
+			name: aliasPath.join("."),
+			path: aliasPath,
+		},
 		expression: node,
 	};
 }
@@ -264,8 +267,11 @@ describe("Row mapping", function () {
 			}),
 			{
 				type: "aliasedExpressionNode",
-				alias: "locations.id",
-				aliasPath: ["locations", "id"],
+				alias: {
+					type: "aliasNode",
+					name: "locations.id",
+					path: ["locations", "id"],
+				},
 				expression: {
 					type: "columnReferenceNode",
 					tableName: "Locations",
@@ -275,8 +281,11 @@ describe("Row mapping", function () {
 			},
 			{
 				type: "aliasedExpressionNode",
-				alias: "locations.users.id",
-				aliasPath: ["locations", "users", "id"],
+				alias: {
+					type: "aliasNode",
+					name: "locations.users.id",
+					path: ["locations", "users", "id"],
+				},
 				expression: {
 					type: "columnReferenceNode",
 					tableName: "Users",
@@ -388,8 +397,11 @@ describe("Row mapping", function () {
 			}),
 			{
 				type: "aliasedExpressionNode",
-				alias: "locations.id",
-				aliasPath: ["locations", "id"],
+				alias: {
+					type: "aliasNode",
+					name: "locations.id",
+					path: ["locations", "id"],
+				},
 				expression: {
 					type: "columnReferenceNode",
 					tableName: "Locations",
@@ -399,8 +411,11 @@ describe("Row mapping", function () {
 			},
 			{
 				type: "aliasedExpressionNode",
-				alias: "locations.users.id",
-				aliasPath: ["locations", "users", "id"],
+				alias: {
+					type: "aliasNode",
+					name: "locations.users.id",
+					path: ["locations", "users", "id"],
+				},
 				expression: {
 					type: "columnReferenceNode",
 					tableName: "Users",
@@ -695,8 +710,11 @@ describe("Row mapping", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			{
 				type: "aliasedExpressionNode",
-				alias: "countValue",
-				aliasPath: [],
+				alias: {
+					type: "aliasNode",
+					name: "countValue",
+					path: ["countValue"],
+				},
 				expression: {
 					type: "functionExpressionNode",
 					name: "count",

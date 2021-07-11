@@ -6,11 +6,11 @@ import { TableMap } from "../../../src/data";
 describe(`Joins`, () => {
 	describe(`leftJoin()`, () => {
 		it(`should accept a QueryTable`, () => {
-			const astNode = leftJoin(QProjectRole)
+			const astNode = leftJoin(QProject, QProjectRole)
 				.on(QProjectRole.projectId.eq(QProject.projectId))
-				.build(new TableMap());
+				.build();
 
-			const expected = `LEFT OUTER JOIN "project_role" as "t1" ON "t1"."project_id" = "t2"."project_id"`;
+			const expected = `"project" as "t1" LEFT OUTER JOIN "project_role" as "t2" ON "t2"."project_id" = "t1"."project_id"`;
 
 			doSimpleSqlTest(astNode, expected);
 		});
@@ -20,14 +20,13 @@ describe(`Joins`, () => {
 				projectId: QProjectRole.projectId,
 				role: QProjectRole.role,
 			});
-			const tableMap = new TableMap();
-			const astNode = leftJoin(sq)
+			const astNode = leftJoin(QProject, sq)
 				.on(sq.toMetamodel().projectId.eq(QProject.projectId))
-				.build(tableMap);
+				.build();
 
-			const expected = `LEFT OUTER JOIN (SELECT "t1"."project_id" as "projectId", "t1"."role" as "role" FROM "project_role" as "t1") as "sq1" ON "sq1"."projectId" = "t1"."project_id"`;
+			const expected = `"project" as "t1" LEFT OUTER JOIN (SELECT "t1"."project_id" as "projectId", "t1"."role" as "role" FROM "project_role" as "t1") as "sq1" ON "sq1"."projectId" = "t1"."project_id"`;
 
-			doSimpleSqlTest(astNode, expected, tableMap);
+			doSimpleSqlTest(astNode, expected);
 		});
 
 		it(`should accept a reference to a Common Table Expression (CTE)`, () => {
@@ -35,15 +34,14 @@ describe(`Joins`, () => {
 				projectId: QProjectRole.projectId,
 				role: QProjectRole.role,
 			});
-			const tableMap = new TableMap();
 			const cteMetamodel = cte.toMetamodel();
-			const astNode = leftJoin(cte)
+			const astNode = leftJoin(QProject, cte)
 				.on(cteMetamodel.projectId.eq(QProject.projectId))
-				.build(tableMap);
+				.build();
 
-			const expected = `LEFT OUTER JOIN "cte1" ON "cte1"."projectId" = "t1"."project_id"`;
+			const expected = `"project" as "t1" LEFT OUTER JOIN "cte1" ON "cte1"."projectId" = "t1"."project_id"`;
 
-			doSimpleSqlTest(astNode, expected, tableMap);
+			doSimpleSqlTest(astNode, expected);
 		});
 	});
 });

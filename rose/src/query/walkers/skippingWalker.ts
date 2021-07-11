@@ -1,19 +1,25 @@
 import {
+	AliasNode,
 	AnyAliasedExpressionNode,
 	ArrayConstructorNode,
 	BeginCommandNode,
 	BinaryOperationNode,
 	BooleanExpressionGroupNode,
 	CastNode,
+	ColumnDefinitionNode,
 	ColumnReferenceNode,
 	CommitCommandNode,
 	ConstantNode,
 	DeleteCommandNode,
 	ExpressionListNode,
+	FromItemFunctionNode,
+	FromItemJoinNode,
+	FromItemSubSelectNode,
+	FromItemTableNode,
+	FromItemWithNode,
 	FunctionExpressionNode,
 	GroupByExpressionNode,
 	InsertCommandNode,
-	JoinNode,
 	LimitOffsetNode,
 	LiteralNode,
 	NaturalSyntaxFunctionExpressionNode,
@@ -56,6 +62,8 @@ export class SkippingWalker extends BaseWalker {
 		this.walk(node.expression);
 	}
 
+	protected walkAliasNode(node: AliasNode) {}
+
 	protected walkArrayConstructorNode(node: ArrayConstructorNode): void {
 		this.walkNodes(node.expressions);
 	}
@@ -74,6 +82,8 @@ export class SkippingWalker extends BaseWalker {
 	protected walkCastNode(node: CastNode): void {
 		this.walk(node.expression);
 	}
+
+	protected walkColumnDefinitionNode(node: ColumnDefinitionNode): void {}
 
 	protected walkCommitCommandNode(node: CommitCommandNode): void {}
 
@@ -94,6 +104,53 @@ export class SkippingWalker extends BaseWalker {
 
 	protected walkExpressionListNode(node: ExpressionListNode): void {
 		this.walkNodes(node.expressions);
+	}
+
+	protected walkFromItemFunctionNode(node: FromItemFunctionNode): void {
+		for (const subNode of node.functionExpressions) {
+			this.walk(subNode.functionExpression);
+			if (subNode.columnDefinitions) {
+				this.walkNodes(subNode.columnDefinitions);
+			}
+		}
+		if (node.alias) {
+			this.walk(node.alias);
+		}
+	}
+
+	protected walkFromItemJoinNode(node: FromItemJoinNode): void {
+		this.walk(node.leftFromItem);
+		this.walk(node.rightFromItem);
+		if (node.on) {
+			this.walk(node.on);
+		}
+		if (node.using) {
+			this.walkNodes(node.using);
+		}
+	}
+
+	protected walkFromItemSubSelectNode(node: FromItemSubSelectNode): void {
+		this.walk(node.query);
+		this.walk(node.alias);
+	}
+
+	protected walkFromItemTableNode(node: FromItemTableNode): void {
+		this.walk(node.table);
+		if (node.alias) {
+			this.walk(node.alias);
+		}
+		if (node.tableSample) {
+			this.walkNodes(node.tableSample.arguments);
+			if (node.tableSample.repeatableSeed) {
+				this.walk(node.tableSample.repeatableSeed);
+			}
+		}
+	}
+
+	protected walkFromItemWithNode(node: FromItemWithNode): void {
+		if (node.alias) {
+			this.walk(node.alias);
+		}
 	}
 
 	protected walkFunctionExpressionNode(node: FunctionExpressionNode): void {
@@ -124,16 +181,6 @@ export class SkippingWalker extends BaseWalker {
 	protected walkLimitOffsetNode(node: LimitOffsetNode): void {}
 
 	protected walkLiteralNode(node: LiteralNode): void {}
-
-	protected walkJoinNode(node: JoinNode): void {
-		this.walk(node.fromItem);
-		if (node.on) {
-			this.walk(node.on);
-		}
-		if (node.using) {
-			this.walkNodes(node.using);
-		}
-	}
 
 	protected walkNaturalSyntaxFunctionExpressionNode(
 		node: NaturalSyntaxFunctionExpressionNode
@@ -211,7 +258,6 @@ export class SkippingWalker extends BaseWalker {
 	protected walkSelectCommandNode(node: SelectCommandNode): void {
 		this.walkNodes(node.outputExpressions);
 		this.walkNodes(node.fromItems);
-		this.walkNodes(node.joins);
 		this.walkNodes(node.conditions);
 		this.walkNodes(node.ordering);
 		this.walkNodes(node.grouping);

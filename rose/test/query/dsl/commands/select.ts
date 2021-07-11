@@ -303,7 +303,9 @@ describe(`SELECT commands`, () => {
 
 		it("can perform an inner join", function () {
 			const actual = select(querySelect)
-				.join(innerJoin(QUsers).on(QUsers.locationId.eq(QLocations.id)))
+				.from(
+					innerJoin(QLocations, QUsers).on(QUsers.locationId.eq(QLocations.id))
+				)
 				.finalise({})
 				.toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" INNER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
@@ -312,9 +314,11 @@ describe(`SELECT commands`, () => {
 
 		it("can perform multiple inner joins", function () {
 			const actual = select(querySelect)
-				.join(
-					innerJoin(QUsers).on(QUsers.locationId.eq(QLocations.id)),
-					innerJoin(QAgencies).on(QAgencies.id.eq(QLocations.agencyId))
+				.from(
+					innerJoin(QLocations, QUsers)
+						.on(QUsers.locationId.eq(QLocations.id))
+						.innerJoin(QAgencies)
+						.on(QAgencies.id.eq(QLocations.agencyId))
 				)
 				.finalise({})
 				.toSql({}).sql;
@@ -328,9 +332,12 @@ describe(`SELECT commands`, () => {
 				childName: QChild.name,
 				otherChildName: QOtherChild.name,
 			})
-				.join(
-					innerJoin(QChild).using(QChild.parentId),
-					innerJoin(QOtherChild).using(QOtherChild.parentId)
+				.from(
+					QParent.$table
+						.innerJoin(QChild)
+						.using(QChild.parentId)
+						.innerJoin(QOtherChild)
+						.using(QOtherChild.parentId)
 				)
 				.finalise({})
 				.toSql({}).sql;
@@ -340,7 +347,11 @@ describe(`SELECT commands`, () => {
 
 		it("can perform a left outer join", function () {
 			const actual = select(querySelect)
-				.join(leftJoin(QUsers).on(QUsers.locationId.eq(QLocations.id)))
+				.from(
+					QParent.$table
+						.leftJoin(QUsers)
+						.on(QUsers.locationId.eq(QLocations.id))
+				)
 				.finalise({})
 				.toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" LEFT OUTER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
@@ -349,7 +360,11 @@ describe(`SELECT commands`, () => {
 
 		it("can perform a right outer join", function () {
 			const actual = select(querySelect)
-				.join(rightJoin(QUsers).on(QUsers.locationId.eq(QLocations.id)))
+				.from(
+					QParent.$table
+						.rightJoin(QUsers)
+						.on(QUsers.locationId.eq(QLocations.id))
+				)
 				.finalise({})
 				.toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" RIGHT OUTER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
@@ -358,7 +373,11 @@ describe(`SELECT commands`, () => {
 
 		it("can perform a full outer join", function () {
 			const actual = select(querySelect)
-				.join(fullJoin(QUsers).on(QUsers.locationId.eq(QLocations.id)))
+				.from(
+					QParent.$table
+						.fullJoin(QUsers)
+						.on(QUsers.locationId.eq(QLocations.id))
+				)
 				.finalise({})
 				.toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" FULL OUTER JOIN "Users" as "t1" ON "t1"."locationId" = "t2"."id"`;
@@ -367,7 +386,7 @@ describe(`SELECT commands`, () => {
 
 		it("can perform a left outer join with 'using'", function () {
 			const actual = select(querySelect)
-				.join(leftJoin(QUsers).using(QLocations.id))
+				.from(QParent.$table.leftJoin(QUsers).using(QLocations.id))
 				.finalise({})
 				.toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" LEFT OUTER JOIN "Users" as "t1" USING ("id")`;
@@ -376,17 +395,19 @@ describe(`SELECT commands`, () => {
 
 		it("can perform a cross join", function () {
 			const actual = select(querySelect)
-				.join(crossJoin(QUsers))
+				.from(QParent.$table.crossJoin(QUsers))
 				.finalise({})
 				.toSql({}).sql;
 			const expected = `SELECT "t2"."id" as "id", "t1"."id" as "userId" FROM "Locations" as "t2" CROSS JOIN "Users" as "t1"`;
 			assert.deepEqual(actual, expected);
 		});
 
-		it("can perform multiple pre-defined joins using `joins()`", function () {
+		it("can perform multiple pre-defined joins", function () {
 			const joins = [
-				innerJoin(QChild).using(QChild.parentId),
-				innerJoin(QOtherChild).using(QOtherChild.parentId),
+				innerJoin(QParent, QChild)
+					.using(QChild.parentId)
+					.innerJoin(QOtherChild)
+					.using(QOtherChild.parentId),
 			];
 
 			const actual = select({
@@ -394,7 +415,7 @@ describe(`SELECT commands`, () => {
 				childName: QChild.name,
 				otherChildName: QOtherChild.name,
 			})
-				.join(joins)
+				.from(joins)
 				.finalise({})
 				.toSql({}).sql;
 			const expected = `SELECT "t3"."name" as "parentName", "t1"."name" as "childName", "t2"."name" as "otherChildName" FROM "Parent" as "t3" INNER JOIN "Child" as "t1" USING ("parentId") INNER JOIN "OtherChild" as "t2" USING ("parentId")`;
@@ -907,35 +928,28 @@ describe(`SELECT commands`, () => {
 			(builder3 as any).tableMap.size > 0,
 			"from() should populate the tableMap"
 		);
-		const builder4 = builder3.join(crossJoin(QUsers));
+		const builder4 = builder3.distinct();
 		assert.notStrictEqual(
 			builder3,
 			builder4,
-			"join() should create a new QueryBuilder"
+			"distinct() should create a new QueryBuilder"
 		);
-		// assert.ok((builder4 as any).tableMap.size > 0, "join() should populate the tableMap");
-		const builder5 = builder4.distinct();
+		const builder5 = builder4.distinctOn(col(QUsers.id));
 		assert.notStrictEqual(
 			builder4,
 			builder5,
-			"distinct() should create a new QueryBuilder"
+			"distinctOn() should create a new QueryBuilder"
 		);
-		const builder6 = builder5.distinctOn(col(QUsers.id));
+		const builder6 = builder5.limit(constant(10));
 		assert.notStrictEqual(
 			builder5,
 			builder6,
-			"distinctOn() should create a new QueryBuilder"
+			"limit() should create a new QueryBuilder"
 		);
-		const builder7 = builder6.limit(constant(10));
+		const builder7 = builder6.orderBy(QUsers.id.asc());
 		assert.notStrictEqual(
 			builder6,
 			builder7,
-			"limit() should create a new QueryBuilder"
-		);
-		const builder8 = builder7.orderBy(QUsers.id.asc());
-		assert.notStrictEqual(
-			builder7,
-			builder8,
 			"orderBy() should create a new QueryBuilder"
 		);
 	});

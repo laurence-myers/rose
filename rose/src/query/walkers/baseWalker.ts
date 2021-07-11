@@ -1,4 +1,5 @@
 import {
+	AliasNode,
 	AnyAliasedExpressionNode,
 	ArrayConstructorNode,
 	AstNode,
@@ -6,15 +7,20 @@ import {
 	BinaryOperationNode,
 	BooleanExpressionGroupNode,
 	CastNode,
+	ColumnDefinitionNode,
 	ColumnReferenceNode,
 	CommitCommandNode,
 	ConstantNode,
 	DeleteCommandNode,
 	ExpressionListNode,
+	FromItemFunctionNode,
+	FromItemJoinNode,
+	FromItemSubSelectNode,
+	FromItemTableNode,
+	FromItemWithNode,
 	FunctionExpressionNode,
 	GroupByExpressionNode,
 	InsertCommandNode,
-	JoinNode,
 	LimitOffsetNode,
 	LiteralNode,
 	NaturalSyntaxFunctionExpressionNode,
@@ -53,6 +59,8 @@ export abstract class BaseWalker {
 		node: AnyAliasedExpressionNode
 	): void;
 
+	protected abstract walkAliasNode(node: AliasNode): void;
+
 	protected abstract walkArrayConstructorNode(node: ArrayConstructorNode): void;
 
 	protected abstract walkBeginCommandNode(node: BeginCommandNode): void;
@@ -65,6 +73,8 @@ export abstract class BaseWalker {
 
 	protected abstract walkCastNode(node: CastNode): void;
 
+	protected abstract walkColumnDefinitionNode(node: ColumnDefinitionNode): void;
+
 	protected abstract walkColumnReferenceNode(node: ColumnReferenceNode): void;
 
 	protected abstract walkCommitCommandNode(node: CommitCommandNode): void;
@@ -75,6 +85,18 @@ export abstract class BaseWalker {
 
 	protected abstract walkExpressionListNode(node: ExpressionListNode): void;
 
+	protected abstract walkFromItemFunctionNode(node: FromItemFunctionNode): void;
+
+	protected abstract walkFromItemJoinNode(node: FromItemJoinNode): void;
+
+	protected abstract walkFromItemSubSelectNode(
+		node: FromItemSubSelectNode
+	): void;
+
+	protected abstract walkFromItemTableNode(node: FromItemTableNode): void;
+
+	protected abstract walkFromItemWithNode(node: FromItemWithNode): void;
+
 	protected abstract walkFunctionExpressionNode(
 		node: FunctionExpressionNode
 	): void;
@@ -84,8 +106,6 @@ export abstract class BaseWalker {
 	): void;
 
 	protected abstract walkInsertCommandNode(node: InsertCommandNode): void;
-
-	protected abstract walkJoinNode(node: JoinNode): void;
 
 	protected abstract walkLimitOffsetNode(node: LimitOffsetNode): void;
 
@@ -184,6 +204,9 @@ export abstract class BaseWalker {
 			case "aliasedExpressionNode":
 				this.walkAliasedExpressionNode(node);
 				break;
+			case "aliasNode":
+				this.walkAliasNode(node);
+				break;
 			case "arrayConstructorNode":
 				this.walkArrayConstructorNode(node);
 				break;
@@ -198,6 +221,9 @@ export abstract class BaseWalker {
 				break;
 			case "castNode":
 				this.walkCastNode(node);
+				break;
+			case "columnDefinitionNode":
+				this.walkColumnDefinitionNode(node);
 				break;
 			case "columnReferenceNode":
 				this.walkColumnReferenceNode(node);
@@ -214,6 +240,21 @@ export abstract class BaseWalker {
 			case "expressionListNode":
 				this.walkExpressionListNode(node);
 				break;
+			case "fromItemFunctionNode":
+				this.walkFromItemFunctionNode(node);
+				break;
+			case "fromItemJoinNode":
+				this.walkFromItemJoinNode(node);
+				break;
+			case "fromItemSubSelectNode":
+				this.walkFromItemSubSelectNode(node);
+				break;
+			case "fromItemTableNode":
+				this.walkFromItemTableNode(node);
+				break;
+			case "fromItemWithNode":
+				this.walkFromItemWithNode(node);
+				break;
 			case "functionExpressionNode":
 				this.walkFunctionExpressionNode(node);
 				break;
@@ -222,9 +263,6 @@ export abstract class BaseWalker {
 				break;
 			case "insertCommandNode":
 				this.walkInsertCommandNode(node);
-				break;
-			case "joinNode":
-				this.walkJoinNode(node);
 				break;
 			case "limitOffsetNode":
 				this.walkLimitOffsetNode(node);

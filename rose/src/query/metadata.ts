@@ -33,8 +33,11 @@ export class QuerySelectorProcessor {
 
 			this.outputExpressions.push({
 				type: "aliasedExpressionNode",
-				alias: columnAlias,
-				aliasPath: fullPath,
+				alias: {
+					type: "aliasNode",
+					name: columnAlias,
+					path: fullPath,
+				},
 				expression: columnMetamodel.toColumnReferenceNode(),
 			});
 		}
@@ -64,8 +67,11 @@ export class QuerySelectorProcessor {
 			// TODO: support the property name as the alias
 			const aliasedExpressionNode: AliasedSelectExpressionNode = {
 				type: "aliasedExpressionNode",
-				alias: columnAlias,
-				aliasPath: fullPath,
+				alias: {
+					type: "aliasNode",
+					name: columnAlias,
+					path: fullPath,
+				},
 				expression,
 			};
 			this.outputExpressions.push(aliasedExpressionNode);

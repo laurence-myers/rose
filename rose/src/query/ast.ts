@@ -1,26 +1,5 @@
 import { TableMap } from "../data";
 
-/**
- A value expression is one of the following:
-
- - A constant or literal value
- - A column reference
- - A positional parameter reference, in the body of a function definition or prepared statement
- - A subscripted expression
- - A field selection expression
- - An operator invocation
- - A function call
- - An aggregate expression
- - A window function call
- - A type cast
- - A collation expression
- - A scalar subquery
- - An array constructor
- - A row constructor
- - Another value expression in parentheses (used to group subexpressions and override precedence)
-
- In addition to this list, there are a number of constructs that can be classified as an expression but do not follow any general syntax rules. These generally have the semantics of a function or operator and are explained in the appropriate location in Chapter 9. An example is the IS NULL clause.
- */
 export interface ConstantNode<T> {
 	type: "constantNode";
 	getter: (params: any) => T;
@@ -177,21 +156,21 @@ export interface SubscriptNode {
 /**
  * https://www.postgresql.org/docs/9.6/static/sql-expressions.html
  *
- * ✔ A constant or literal value - LiteralNode
- * ✔ A column reference - ColumnReferenceNode
- * ✔ A positional parameter reference, in the body of a function definition or prepared statement - ConstantNode
- * x A subscripted expression
- * x A field selection expression
- * ✔ An operator invocation - BinaryOperationNode, UnaryOperationNode
- * ✔ A function call - FunctionExpressionNode, NaturalSyntaxFunctionExpressionNode
- * ~ An aggregate expression - partial support using FunctionExpressionNode, no support for FILTER or WITHIN GROUP
- * x A window function call
- * ✔ A type cast
- * x A collation expression
- * ✔ A scalar subquery - SubSelectNode
- * ✔ An array constructor
- * ✔ A row constructor
- * x Another value expression in parentheses (used to group subexpressions and override precedence)
+ * - ✔ A constant or literal value - LiteralNode
+ * - ✔ A column reference - ColumnReferenceNode
+ * - ✔ A positional parameter reference, in the body of a function definition or prepared statement - ConstantNode
+ * - ✔ A subscripted expression
+ * - x A field selection expression
+ * - ✔ An operator invocation - BinaryOperationNode, UnaryOperationNode
+ * - ✔ A function call - FunctionExpressionNode, NaturalSyntaxFunctionExpressionNode
+ * - ~ An aggregate expression - partial support using FunctionExpressionNode, no support for FILTER or WITHIN GROUP
+ * - x A window function call
+ * - ✔ A type cast
+ * - x A collation expression
+ * - ✔ A scalar subquery - SubSelectNode
+ * - ✔ An array constructor
+ * - ✔ A row constructor
+ * - x Another value expression in parentheses (used to group subexpressions and override precedence)
  */
 export type ValueExpressionNode =
 	| ArrayConstructorNode
@@ -216,37 +195,157 @@ export interface ExpressionListNode {
 	expressions: ParameterOrValueExpressionNode[];
 }
 
+export interface AliasNode {
+	type: "aliasNode";
+	name: string;
+	path: string[];
+}
+
 export interface AliasedExpressionNode<TNode> {
 	type: "aliasedExpressionNode";
-	alias: string;
-	aliasPath: string[];
+	alias: AliasNode;
 	expression: TNode;
 }
 
 export type AliasedSelectExpressionNode =
 	AliasedExpressionNode<ParameterOrValueExpressionNode>;
 
-export interface JoinNode {
-	type: "joinNode";
-	joinType: "inner" | "left" | "right" | "full" | "cross";
-	fromItem: FromItemNode;
-	on?: BooleanExpression;
-	using?: SimpleColumnReferenceNode[];
-	// TODO: support lateral
-	// TODO: support natural
+/**
+ * Used to define columns returned by function "from items" that return records.
+ *
+ * @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
+ */
+export interface ColumnDefinitionNode {
+	type: "columnDefinitionNode";
+	columnName: string;
+	dataType: string;
 }
 
-export type FromExpressionNode = TableReferenceNode | SubSelectNode;
+/**
+ * FromItemFunctionNode can have either one or more functions, each with their own
+ * column definitions.
+ */
+export interface FromItemFunctionExpressionNode {
+	functionExpression: FunctionExpressionNode;
+	columnDefinitions?: ColumnDefinitionNode[];
+}
 
-export type AliasedFromExpressionNode =
-	| AliasedExpressionNode<TableReferenceNode>
-	| AliasedExpressionNode<SubSelectNode>;
+/**
+ *
+ *  [ LATERAL ] function_name ( [ argument [, ...] ] )
+ *              [ WITH ORDINALITY ] [ [ AS ] alias [ ( column_alias [, ...] ) ] ]
+ *  [ LATERAL ] function_name ( [ argument [, ...] ] ) [ AS ] alias ( column_definition [, ...] )
+ *  [ LATERAL ] function_name ( [ argument [, ...] ] ) AS ( column_definition [, ...] )
+ *  [ LATERAL ] ROWS FROM( function_name ( [ argument [, ...] ] ) [ AS ( column_definition [, ...] ) ] [, ...] )
+ *              [ WITH ORDINALITY ] [ [ AS ] alias [ ( column_alias [, ...] ) ] ]
+ *
+ * @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
+ */
+export interface FromItemFunctionNode {
+	type: "fromItemFunctionNode";
+	alias?: AliasNode;
+	columnAliases?: string[];
+	functionExpressions: FromItemFunctionExpressionNode[];
+	lateral?: boolean;
+	withOrdinality?: boolean;
+}
 
-export type FromItemNode = AliasedFromExpressionNode | FromExpressionNode;
+/**
+ * from_item [ NATURAL ] join_type from_item [ ON join_condition | USING ( join_column [, ...] ) ]
+ *
+ * @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
+ */
+export interface FromItemJoinNode {
+	type: "fromItemJoinNode";
+	joinType: "inner" | "left" | "right" | "full" | "cross";
+	leftFromItem: FromItemNode;
+	natural?: boolean;
+	on?: BooleanExpression;
+	rightFromItem: FromItemNode;
+	using?: SimpleColumnReferenceNode[];
+}
 
-export type AnyAliasedExpressionNode =
-	| AliasedFromExpressionNode
-	| AliasedSelectExpressionNode;
+/**
+ *  [ LATERAL ] ( select ) [ AS ] alias [ ( column_alias [, ...] ) ]
+ *
+ *  @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
+ */
+export interface FromItemSubSelectNode {
+	type: "fromItemSubSelectNode";
+	alias: AliasNode;
+	columnAliases?: string[];
+	lateral?: boolean;
+	query: SubSelectNode;
+}
+
+/**
+ * Used in "from items" from a table.
+ *
+ * @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
+ */
+export interface TableSample {
+	arguments: ParameterOrValueExpressionNode[];
+	repeatableSeed?: ParameterOrValueExpressionNode;
+	samplingMethod: "BERNOULLI" | "SYSTEM" | string;
+}
+
+/**
+ *  [ ONLY ] table_name [ * ] [ [ AS ] alias [ ( column_alias [, ...] ) ] ]
+ *              [ TABLESAMPLE sampling_method ( argument [, ...] ) [ REPEATABLE ( seed ) ] ]
+ *
+ * @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
+ */
+export interface FromItemTableNode {
+	type: "fromItemTableNode";
+	alias?: AliasNode;
+	columnAliases?: string[];
+	only?: boolean;
+	table: TableReferenceNode;
+	tableSample?: TableSample;
+}
+
+/**
+ *  with_query_name [ [ AS ] alias [ ( column_alias [, ...] ) ] ]
+ *
+ * @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
+ */
+export interface FromItemWithNode {
+	type: "fromItemWithNode";
+	alias?: AliasNode;
+	columnAliases?: string[];
+	withQueryName: string;
+}
+
+/**
+ * from_item can be one of:
+ *
+ *  [ ONLY ] table_name [ * ] [ [ AS ] alias [ ( column_alias [, ...] ) ] ]
+ *              [ TABLESAMPLE sampling_method ( argument [, ...] ) [ REPEATABLE ( seed ) ] ]
+ *  [ LATERAL ] ( select ) [ AS ] alias [ ( column_alias [, ...] ) ]
+ *  with_query_name [ [ AS ] alias [ ( column_alias [, ...] ) ] ]
+ *  [ LATERAL ] function_name ( [ argument [, ...] ] )
+ *              [ WITH ORDINALITY ] [ [ AS ] alias [ ( column_alias [, ...] ) ] ]
+ *  [ LATERAL ] function_name ( [ argument [, ...] ] ) [ AS ] alias ( column_definition [, ...] )
+ *  [ LATERAL ] function_name ( [ argument [, ...] ] ) AS ( column_definition [, ...] )
+ *  [ LATERAL ] ROWS FROM( function_name ( [ argument [, ...] ] ) [ AS ( column_definition [, ...] ) ] [, ...] )
+ *              [ WITH ORDINALITY ] [ [ AS ] alias [ ( column_alias [, ...] ) ] ]
+ *  from_item [ NATURAL ] join_type from_item [ ON join_condition | USING ( join_column [, ...] ) ]
+ *
+ *  @see https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM
+ */
+export type FromItemNode =
+	| FromItemFunctionNode
+	| FromItemJoinNode
+	| FromItemSubSelectNode
+	| FromItemTableNode
+	| FromItemWithNode;
+
+/**
+ * Nodes that are only used by other "from item" nodes.
+ */
+type FromRelatedNode = ColumnDefinitionNode | FromItemNode | TableReferenceNode;
+
+export type AnyAliasedExpressionNode = AliasedSelectExpressionNode;
 
 export interface OrderByExpressionNode {
 	type: "orderByExpressionNode";
@@ -342,7 +441,6 @@ export interface SelectCommandNode {
 	distinctOn?: ParameterOrValueExpressionNode;
 	outputExpressions: Array<SelectOutputExpression>; // should we also support *?
 	fromItems: FromItemNode[];
-	joins: JoinNode[];
 	conditions: BooleanExpression[];
 	ordering: OrderByExpressionNode[];
 	grouping: GroupByExpressionNode[];
@@ -567,13 +665,13 @@ export type AnyCommandNode =
 	| TransactionCommandNodes;
 
 export type AstNode =
+	| AliasNode
 	| AliasedSelectExpressionNode
 	| AnyCommandNode
 	| BooleanExpressionGroupNode
 	| ExpressionListNode
-	| FromItemNode
+	| FromRelatedNode
 	| FunctionExpressionNode
-	| JoinNode
 	| NotExpressionNode
 	| OnConflictNodes
 	| ParameterOrValueExpressionNode

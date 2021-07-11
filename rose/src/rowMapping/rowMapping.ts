@@ -50,16 +50,19 @@ function processOutputExpression(
 ): void {
 	switch (expr.type) {
 		case "aliasedExpressionNode":
-			if (expr.aliasPath.length > 1) {
-				const { key, nestedObject } = processNestedPath(expr.aliasPath, output);
+			if (expr.alias.path.length > 1) {
+				const { key, nestedObject } = processNestedPath(
+					expr.alias.path,
+					output
+				);
 				processOutputExpression(expr.expression, row, nestedObject, {
-					input: expr.alias,
+					input: expr.alias.name,
 					output: key,
 				});
 			} else {
 				processOutputExpression(expr.expression, row, output, {
-					input: expr.alias,
-					output: expr.alias,
+					input: expr.alias.name,
+					output: expr.alias.name,
 				});
 			}
 			break;
@@ -169,17 +172,17 @@ function extractNestedSchema(
 		switch (expr.type) {
 			case "aliasedExpressionNode": {
 				let segment = output;
-				for (let i = 0; i < expr.aliasPath.length - 1; i++) {
-					const part = expr.aliasPath[i];
+				for (let i = 0; i < expr.alias.path.length - 1; i++) {
+					const part = expr.alias.path[i];
 					segment = segment.nested.get(part);
 					if (segment.aliasPath.length === 0) {
-						segment.aliasPath = expr.aliasPath.slice(
+						segment.aliasPath = expr.alias.path.slice(
 							0,
-							expr.aliasPath.length - 1
+							expr.alias.path.length - 1
 						);
 					}
 				}
-				segment.parentValues.push(last(expr.aliasPath));
+				segment.parentValues.push(last(expr.alias.path));
 				break;
 			}
 			default:

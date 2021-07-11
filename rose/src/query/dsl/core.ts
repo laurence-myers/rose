@@ -1,5 +1,6 @@
 import {
 	AliasedExpressionNode,
+	AliasNode,
 	ArrayConstructorNode,
 	BooleanExpression,
 	BooleanExpressionGroupNode,
@@ -29,21 +30,28 @@ type SupportedConstant =
 	| ReadonlyArray<Buffer>
 	| ReadonlyArray<null>;
 
+export function alias(aliasName: string): AliasNode {
+	return {
+		type: "aliasNode",
+		name: aliasName,
+		path: [aliasName],
+	};
+}
+
 /**
  * Assigns an alias to the given AST node.
  *
  * @category DSL - Core
  * @param aliasedNode The node to alias. This can be any type of AST node.
- * @param alias The name to use as the alias.
+ * @param aliasName The name to use as the alias.
  */
-export function alias<TNode>(
+export function aliasExpr<TNode>(
 	aliasedNode: TNode,
-	alias: string
+	aliasName: string
 ): AliasedExpressionNode<TNode> {
 	return {
 		type: "aliasedExpressionNode",
-		alias,
-		aliasPath: [alias],
+		alias: alias(aliasName),
 		expression: aliasedNode,
 	};
 }
@@ -55,17 +63,16 @@ export function alias<TNode>(
  *
  * @category DSL - Core
  * @param columnMetamodel The column metamodel to alias.
- * @param alias The name to use as the alias.
+ * @param aliasName The name to use as the alias.
  * @see {@link alias}
  */
 export function aliasCol(
 	columnMetamodel: ColumnMetamodel<unknown>,
-	alias: string
+	aliasName: string
 ): AliasedExpressionNode<ColumnReferenceNode> {
 	return {
 		type: "aliasedExpressionNode",
-		alias,
-		aliasPath: [alias],
+		alias: alias(aliasName),
 		expression: col(columnMetamodel),
 	};
 }
@@ -75,17 +82,16 @@ export function aliasCol(
  *
  * @category DSL - Core
  * @param table The table metamodel, or the name of the table to alias.
- * @param alias The name to use as the alias.
+ * @param aliasName The name to use as the alias.
  * @see {@link alias}
  */
 export function aliasTable(
 	table: TableMetamodel | string,
-	alias: string
+	aliasName: string
 ): AliasedExpressionNode<TableReferenceNode> {
 	return {
 		type: "aliasedExpressionNode",
-		alias,
-		aliasPath: [alias],
+		alias: alias(aliasName),
 		expression: {
 			type: "tableReferenceNode",
 			tableName: table instanceof TableMetamodel ? table.name : table,

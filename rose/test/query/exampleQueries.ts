@@ -58,7 +58,11 @@ describe(`Example queries`, function () {
 			const query = withParams<{ clientId: number }>()((p) =>
 				select(querySelect)
 					.distinctOn(col(QRP.locationId))
-					.join(innerJoin(QLocations).on(QLocations.id.eq(QRP.locationId)))
+					.from(
+						QRP.$table
+							.innerJoin(QLocations)
+							.on(QLocations.id.eq(QRP.locationId))
+					)
 					.where(
 						and(
 							QRP.nextDate.gte(now()),
@@ -251,20 +255,18 @@ describe(`Example queries`, function () {
 			const idSubQuery = idSubQueryBuilder.toSubQuery();
 
 			return select(BuilderTemplate)
-				.join(
-					innerJoin(QCategoryMap).on(
-						QCategoryMap.builderTemplateId.eq(QBuilderTemplates.id)
-					),
-					innerJoin(QCategories).on(
-						QCategories.id.eq(QCategoryMap.builderTemplateCategoryId)
-					),
-					innerJoin(QBuilderTemplateTags).on(
-						QBuilderTemplateTags.builderTemplateId.eq(QBuilderTemplates.id)
-					),
-					innerJoin(QTags).on(QTags.id.eq(QBuilderTemplateTags.tagId)),
-					innerJoin(QUploads).on(
-						QUploads.id.eq(QBuilderTemplates.compositeImageId)
-					)
+				.from(
+					QBuilderTemplates.$table
+						.innerJoin(QCategoryMap)
+						.on(QCategoryMap.builderTemplateId.eq(QBuilderTemplates.id))
+						.innerJoin(QCategories)
+						.on(QCategories.id.eq(QCategoryMap.builderTemplateCategoryId))
+						.innerJoin(QBuilderTemplateTags)
+						.on(QBuilderTemplateTags.builderTemplateId.eq(QBuilderTemplates.id))
+						.innerJoin(QTags)
+						.on(QTags.id.eq(QBuilderTemplateTags.tagId))
+						.innerJoin(QUploads)
+						.on(QUploads.id.eq(QBuilderTemplates.compositeImageId))
 				)
 				.where(QBuilderTemplates.id.in(idSubQuery))
 				.finalise({})

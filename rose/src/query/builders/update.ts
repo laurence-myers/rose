@@ -16,7 +16,7 @@ import {
 	QueryTable,
 	TableColumnsForUpdateCommand,
 } from "../metamodel";
-import { aliasTable } from "../dsl";
+import { aliasTable, from } from "../dsl";
 import {
 	FinalisedQueryNonReturningWithParams,
 	FinalisedQueryWithParams,
@@ -33,7 +33,7 @@ export class UpdateQueryBuilder<TQTable extends QueryTable> {
 	constructor(protected readonly qtable: TQTable) {
 		this.queryAst = {
 			type: "updateCommandNode",
-			table: this.fromSingleTable(qtable),
+			table: from(qtable).toNode(),
 			setItems: [],
 			fromItems: [],
 			conditions: [],
@@ -54,7 +54,7 @@ export class UpdateQueryBuilder<TQTable extends QueryTable> {
 		...rest: readonly QueryTable[]
 	): this {
 		for (const qtable of rectifyVariadicArgs(first, rest)) {
-			this.queryAst.fromItems.push(this.fromSingleTable(qtable));
+			this.queryAst.fromItems.push(from(qtable).toNode());
 		}
 		return this;
 	}

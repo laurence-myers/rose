@@ -1,13 +1,8 @@
 import { Clone } from "../../lang";
-import {
-	AliasedExpressionNode,
-	BooleanExpression,
-	DeleteCommandNode,
-	TableReferenceNode,
-} from "../ast";
+import { BooleanExpression, DeleteCommandNode } from "../ast";
 import { QueryTable } from "../metamodel";
 import { FinalisedQueryNonReturningWithParams } from "../finalisedQuery";
-import { aliasTable } from "../dsl/core";
+import { from } from "../dsl";
 import { TableMap } from "../../data";
 import { ParamsProxy, ParamsWrapper } from "../params";
 
@@ -18,17 +13,9 @@ export class DeleteQueryBuilder<TParams> {
 	constructor(qtable: QueryTable) {
 		this.queryAst = {
 			type: "deleteCommandNode",
-			from: this.from(qtable),
+			from: from(qtable).toNode(),
 			conditions: [],
 		};
-	}
-
-	protected from(
-		qtable: QueryTable
-	): AliasedExpressionNode<TableReferenceNode> {
-		const tableName = qtable.$table.name;
-		const alias = qtable.$table.alias || this.tableMap.get(tableName);
-		return aliasTable(tableName, alias);
 	}
 
 	@Clone()

@@ -1,4 +1,5 @@
 import {
+	AliasNode,
 	AnyAliasedExpressionNode,
 	ArrayConstructorNode,
 	AstNode,
@@ -7,15 +8,20 @@ import {
 	BooleanExpression,
 	BooleanExpressionGroupNode,
 	CastNode,
+	ColumnDefinitionNode,
 	ColumnReferenceNode,
 	CommitCommandNode,
 	ConstantNode,
 	DeleteCommandNode,
 	ExpressionListNode,
+	FromItemFunctionNode,
+	FromItemJoinNode,
+	FromItemSubSelectNode,
+	FromItemTableNode,
+	FromItemWithNode,
 	FunctionExpressionNode,
 	GroupByExpressionNode,
 	InsertCommandNode,
-	JoinNode,
 	LimitOffsetNode,
 	LiteralNode,
 	NaturalSyntaxFunctionExpressionNode,
@@ -53,29 +59,28 @@ import {
 	UnsupportedOperationError,
 } from "../../errors";
 import { BaseWalker } from "./baseWalker";
-import { TableMap } from "../../data";
+import { convertObjectToMap, TableMap } from "../../data";
 
 interface WalkedQueryData {
 	sql: string;
 	parameterGetters: Array<(params: unknown) => unknown>;
 }
 
-const JOIN_TEXT_MAP: {
-	[K in JoinNode["joinType"]]: string;
-} = {
+const JOIN_TEXT_MAP = convertObjectToMap<FromItemJoinNode["joinType"], string>({
 	inner: "INNER",
 	left: "LEFT OUTER",
 	right: "RIGHT OUTER",
 	full: "FULL OUTER",
 	cross: "CROSS",
-};
+});
 
-const BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP: {
-	[K in BooleanExpressionGroupNode["operator"]]: string;
-} = {
+const BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP = convertObjectToMap<
+	BooleanExpressionGroupNode["operator"],
+	string
+>({
 	and: "AND",
 	or: "OR",
-};
+});
 
 /**
  * Converts an AST to a SQL string.
@@ -99,22 +104,44 @@ export class SqlAstWalker extends BaseWalker {
 		};
 	}
 
+	protected doSeparatedList<T>(
+		values: readonly T[],
+		callback: (value: T) => void,
+		separator = ", "
+	): void {
+		values.forEach((value, index): void => {
+			if (index > 0) {
+				this.sb += separator;
+			}
+			callback(value);
+		});
+	}
+
 	protected doListWalk<N extends AstNode>(
 		nodes: readonly N[],
 		separator = `, `
 	): void {
-		nodes.forEach((node, index): void => {
-			if (index > 0) {
-				this.sb += separator;
-			}
-			this.walk(node);
-		});
+		this.doSeparatedList(nodes, (node) => this.walk(node), separator);
+	}
+
+	protected doStringList(values: string[], separator = ", "): void {
+		this.doSeparatedList(values, (value) => (this.sb += value), separator);
 	}
 	protected walkAliasedExpressionNode(node: AnyAliasedExpressionNode): void {
 		this.walk(node.expression);
 		this.sb += ` as "`;
 		this.sb += node.alias;
 		this.sb += `"`;
+	}
+
+	protected walkAliasNode(node: AliasNode): void {
+		this.sb += node.name;
+	}
+
+	protected walkColumnDefinitionNode(node: ColumnDefinitionNode): void {
+		this.sb += node.columnName;
+		this.sb += " ";
+		this.sb += node.dataType;
 	}
 
 	protected walkArrayConstructorNode(node: ArrayConstructorNode): void {
@@ -162,7 +189,7 @@ export class SqlAstWalker extends BaseWalker {
 				`Boolean expression group for "${node.operator}" does not have enough expressions. Needed: 2, found: ${node.expressions.length}`
 			);
 		}
-		const operator = BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP[node.operator];
+		const operator = BOOLEAN_EXPRESSION_GROUP_OPERATOR_MAP.get(node.operator);
 		this.sb += `(`;
 		node.expressions.forEach((node: BooleanExpression, index: number): void => {
 			if (index > 0) {
@@ -242,6 +269,164 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += ")";
 	}
 
+	protected walkFromItemFunctionNode(node: FromItemFunctionNode) {
+		if (node.lateral) {
+			this.sb += "LATERAL ";
+		}
+		const hasMultipleFunctions = node.functionExpressions.length > 0;
+
+		if (hasMultipleFunctions) {
+			// Multiple functions allow column definitions per function, plus
+			// an alias and column aliases.
+			this.sb += "ROWS FROM(";
+			this.doSeparatedList(node.functionExpressions, (fromFunctionNode) => {
+				this.walk(fromFunctionNode.functionExpression);
+				if (
+					fromFunctionNode.columnDefinitions !== undefined &&
+					fromFunctionNode.columnDefinitions.length > 0
+				) {
+					this.sb += " AS (";
+					this.doListWalk(fromFunctionNode.columnDefinitions);
+					this.sb += ")";
+					if (node.withOrdinality) {
+						this.sb += " WITH ORDINALITY";
+					}
+					if (node.alias) {
+						this.sb += " ";
+						this.walk(node.alias);
+
+						if (node.columnAliases) {
+							this.sb += "(";
+							this.doStringList(node.columnAliases);
+							this.sb += ")";
+						}
+					}
+				}
+			});
+		} else {
+			const { functionExpression, columnDefinitions } =
+				node.functionExpressions[0];
+			this.walk(functionExpression);
+			if (columnDefinitions) {
+				// If column definitions are provided, alias or "AS" must be set
+				if (node.alias) {
+					this.sb += " ";
+					this.walk(node.alias);
+					this.sb += " ";
+				} else {
+					this.sb += " AS ";
+				}
+
+				this.sb += "(";
+				this.doListWalk(columnDefinitions);
+				this.sb += ")";
+			} else {
+				// Other function calls can have ordinality, an alias, and column aliases
+				//  (if there's also an alias)
+				if (node.withOrdinality) {
+					this.sb += " WITH ORDINALITY";
+				}
+				if (node.alias) {
+					this.sb += " ";
+					this.walk(node.alias);
+
+					if (node.columnAliases) {
+						this.sb += "(";
+						this.doStringList(node.columnAliases);
+						this.sb += ")";
+					}
+				}
+			}
+		}
+	}
+
+	protected walkFromItemJoinNode(node: FromItemJoinNode): void {
+		const joinText = JOIN_TEXT_MAP.get(node.joinType);
+		const hasUsing = !!node.using && node.using.length > 0;
+		if (node.joinType == "cross" && (node.natural || node.on || hasUsing)) {
+			throw new UnsupportedOperationError(
+				`Cross joins cannot specify "on", "using", or "natural" conditions.`
+			);
+		}
+		if ((node.natural && (node.on || hasUsing)) || (node.on && hasUsing)) {
+			throw new UnsupportedOperationError(
+				`Joins cannot specify a combination of "on", "using", and/or "natural" conditions.`
+			);
+		}
+
+		this.walk(node.leftFromItem);
+		this.sb += ` `;
+		if (node.natural) {
+			this.sb += ` NATURAL `;
+		}
+		this.sb += joinText;
+		this.sb += ` JOIN `;
+		this.walk(node.rightFromItem);
+		if (node.on) {
+			this.sb += ` ON `;
+			this.walk(node.on);
+		} else if (node.using) {
+			this.sb += ` USING (`;
+			this.doListWalk(node.using);
+			this.sb += `)`;
+		}
+	}
+
+	protected walkFromItemSubSelectNode(node: FromItemSubSelectNode) {
+		if (node.lateral) {
+			this.sb += "LATERAL ";
+		}
+		this.walk(node.query);
+		this.sb += " ";
+		this.walk(node.alias);
+		if (node.columnAliases) {
+			this.sb += " (";
+			this.doStringList(node.columnAliases);
+			this.sb += ")";
+		}
+	}
+
+	protected walkFromItemTableNode(node: FromItemTableNode) {
+		if (node.only) {
+			this.sb += "ONLY ";
+		}
+		this.walk(node.table);
+		if (node.alias) {
+			this.sb += " ";
+			this.walk(node.alias);
+		}
+		if (node.columnAliases) {
+			this.sb += " (";
+			this.doStringList(node.columnAliases);
+			this.sb += ")";
+		}
+		if (node.tableSample) {
+			this.sb += " TABLESAMPLE ";
+			this.sb += node.tableSample.samplingMethod;
+			this.sb += " (";
+			this.walkNodes(node.tableSample.arguments);
+			this.sb += ")";
+			if (node.tableSample.repeatableSeed) {
+				this.sb += " REPEATABLE (";
+				this.walk(node.tableSample.repeatableSeed);
+				this.sb += ")";
+			}
+		}
+	}
+
+	protected walkFromItemWithNode(node: FromItemWithNode) {
+		this.sb += node.withQueryName;
+		if (node.alias) {
+			this.sb += " ";
+			this.walk(node.alias);
+		}
+		if (node.columnAliases) {
+			this.sb += " (";
+			this.doStringList(node.columnAliases);
+			this.sb += ")";
+		}
+	}
+
 	protected walkFunctionExpressionNode(node: FunctionExpressionNode): void {
 		this.sb += node.name;
 		this.sb += "(";
@@ -260,9 +445,7 @@ export class SqlAstWalker extends BaseWalker {
 		this.walk(node.table);
 		if (node.columns.length > 0) {
 			this.sb += " (";
-			if (node.columns.length > 0) {
-				this.doListWalk(node.columns);
-			}
+			this.doListWalk(node.columns);
 			this.sb += ")";
 		}
 		if (node.values.length > 0) {
@@ -287,36 +470,6 @@ export class SqlAstWalker extends BaseWalker {
 			this.sb += ` RETURNING `;
 			this.doListWalk(node.returning);
 		}
-	}
-
-	protected walkJoinNode(node: JoinNode): void {
-		const joinText = JOIN_TEXT_MAP[node.joinType];
-		if (
-			node.joinType == "cross" &&
-			(node.on || (node.using && node.using.length > 0))
-		) {
-			throw new UnsupportedOperationError(
-				`Cross joins cannot specify "on" or "using" conditions.`
-			);
-		}
-		if (node.on && node.using && node.using.length > 0) {
-			throw new UnsupportedOperationError(
-				`Joins cannot specify both "on" and "using" conditions.`
-			);
-		}
-
-		this.sb += joinText;
-		this.sb += ` JOIN `;
-		this.walk(node.fromItem);
-		if (node.on) {
-			this.sb += ` ON `;
-			this.walk(node.on);
-		} else if (node.using) {
-			this.sb += ` USING (`;
-			this.doListWalk(node.using);
-			this.sb += `)`;
-		}
-		// TODO: support "natural"
 	}
 
 	protected walkLimitOffsetNode(node: LimitOffsetNode): void {
@@ -511,10 +664,6 @@ export class SqlAstWalker extends BaseWalker {
 		if (node.fromItems.length > 0) {
 			this.sb += " FROM ";
 			this.doListWalk(node.fromItems);
-		}
-		if (node.joins.length > 0) {
-			this.sb += " ";
-			this.doListWalk(node.joins, ` `);
 		}
 		if (node.conditions.length > 0) {
 			this.sb += " WHERE ";

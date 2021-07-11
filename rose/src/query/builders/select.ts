@@ -3,6 +3,7 @@ import {
 	AliasedExpressionNode,
 	BooleanExpression,
 	ConstantNode,
+	FromItemNode,
 	GroupByExpressionNode,
 	OrderByExpressionNode,
 	ParameterOrValueExpressionNode,
@@ -17,7 +18,7 @@ import { ColumnMetamodel, QueryTable, TableMetamodel } from "../metamodel";
 import { UnsupportedOperationError } from "../../errors";
 import { Clone, rectifyVariadicArgs } from "../../lang";
 import { FinalisedQueryWithParams } from "../finalisedQuery";
-import { aliasTable, constant } from "../dsl/core";
+import { alias, constant } from "../dsl/core";
 import { RectifyingWalker } from "../walkers/rectifyingWalker";
 import { ParamsProxy, ParamsWrapper } from "../params";
 import { TableMap } from "../../data";
@@ -27,7 +28,11 @@ export type SubSelectExpression =
 	| SelectOutputExpression
 	| ColumnMetamodel<unknown>;
 
-type FromArg = QueryTable | AliasedSubQueryBuilder<QuerySelector>;
+type FromArg =
+	| AliasedSubQueryBuilder<QuerySelector>
+	| BuildableJoin
+	| FromItemNode
+	| QueryTable;
 type GroupByArg = GroupByExpressionNode | ColumnMetamodel<unknown>;
 type WithCteArg =
 	| AliasedExpressionNode<SubSelectNode>
@@ -40,7 +45,6 @@ abstract class BaseSelectQueryBuilder {
 		distinction: "all",
 		outputExpressions: [],
 		fromItems: [],
-		joins: [],
 		conditions: [],
 		ordering: [],
 		grouping: [],
@@ -91,27 +95,29 @@ abstract class BaseSelectQueryBuilder {
 	@Clone()
 	from(first: FromArg | FromArg[], ...rest: FromArg[]): this {
 		for (const item of rectifyVariadicArgs(first, rest)) {
+			let fromItemNode: FromItemNode;
 			if (item instanceof AliasedSubQueryBuilder) {
-				this.queryAst.fromItems.push(item.toNode());
-			} else {
+				this.queryAst.fromItems.push();
+				const node = item.toNode();
+				fromItemNode = {
+					type: "fromItemSubSelectNode",
+					alias: node.alias,
+					query: node.expression,
+				};
+			} else if (item instanceof QueryTable) {
 				const tableName = item.$table.name;
-				const alias = item.$table.alias || this.tableMap.get(tableName);
-				this.queryAst.fromItems.push(aliasTable(tableName, alias));
+				const tableAlias = item.$table.alias || this.tableMap.get(tableName);
+				fromItemNode = {
+					type: "fromItemTableNode",
+					alias: alias(tableAlias),
+					table: item.$table.toNode(),
+				};
+			} else if (item instanceof BuildableJoin) {
+				fromItemNode = item.build();
+			} else {
+				fromItemNode = item;
 			}
-		}
-		return this;
-	}
-
-	@Clone()
-	join(
-		joinBuilder:
-			| BuildableJoin<QuerySelector>
-			| readonly BuildableJoin<QuerySelector>[],
-		...otherJoins: readonly BuildableJoin<QuerySelector>[]
-	): this {
-		for (const builder of rectifyVariadicArgs(joinBuilder, otherJoins)) {
-			const joinNode = builder.build(this.tableMap);
-			this.queryAst.joins.push(joinNode);
+			this.queryAst.fromItems.push(fromItemNode);
 		}
 		return this;
 	}
@@ -220,7 +226,6 @@ export class SelectQueryBuilder<
 			distinction: "all",
 			outputExpressions: this.processQuerySelector(),
 			fromItems: [],
-			joins: [],
 			conditions: [],
 			ordering: [],
 			grouping: [],
@@ -267,7 +272,6 @@ export class SubQueryBuilder<TParams> extends BaseSelectQueryBuilder {
 			distinction: "all",
 			outputExpressions: [],
 			fromItems: [],
-			joins: [],
 			conditions: [],
 			ordering: [],
 			grouping: [],
@@ -313,7 +317,10 @@ export class AliasedSubQueryBuilder<
 		for (const expr of this.queryAst.outputExpressions) {
 			switch (expr.type) {
 				case "aliasedExpressionNode":
-					output[expr.alias] = new ColumnMetamodel<unknown>(table, expr.alias);
+					output[expr.alias.name] = new ColumnMetamodel<unknown>(
+						table,
+						expr.alias.name
+					);
 					break;
 				default:
 					throw new UnsupportedOperationError(
@@ -328,8 +335,7 @@ export class AliasedSubQueryBuilder<
 		this.rectifyTableReferences();
 		return {
 			type: "aliasedExpressionNode",
-			alias: this.alias,
-			aliasPath: [this.alias],
+			alias: alias(this.alias),
 			expression: {
 				type: "subSelectNode",
 				query: this.queryAst,

@@ -6,16 +6,50 @@ import {
 	OrderByExpressionNode,
 	ParameterOrValueExpressionNode,
 	SimpleColumnReferenceNode,
+	TableReferenceNode,
 	ValueExpressionNode,
 } from "./ast";
 import { OptionalNulls } from "../lang";
 import { any } from "./dsl/postgresql";
+import { InitialJoinBuilder, Joinable } from "./builders";
+import { join } from "./dsl";
 
 export class TableMetamodel {
 	constructor(
 		readonly name: string,
 		readonly alias: string | undefined // Not great having this here, since it conflates metamodel with stateful querying.
 	) {}
+
+	join(other: Joinable) {
+		return join(this.toNode(), other);
+	}
+
+	fullJoin(other: Joinable) {
+		return this.join(other).full();
+	}
+
+	innerJoin(other: Joinable) {
+		return this.join(other).inner();
+	}
+
+	leftJoin(other: Joinable) {
+		return this.join(other).left();
+	}
+
+	rightJoin(other: Joinable) {
+		return this.join(other).right();
+	}
+
+	crossJoin(other: Joinable) {
+		return this.join(other).cross();
+	}
+
+	toNode(): TableReferenceNode {
+		return {
+			type: "tableReferenceNode",
+			tableName: this.name,
+		};
+	}
 }
 
 export type ParamGetter<P, R> = (params: P) => R;

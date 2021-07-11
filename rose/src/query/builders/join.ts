@@ -1,11 +1,13 @@
-import { ColumnMetamodel, QueryTable } from "../metamodel";
-import { FromItemNode, JoinNode, SimpleColumnReferenceNode } from "../ast";
-import { TableMap } from "../../data";
+import { ColumnMetamodel } from "../metamodel";
+import {
+	FromItemJoinNode,
+	FromItemNode,
+	SimpleColumnReferenceNode,
+} from "../ast";
 import { UnsupportedOperationError } from "../../errors";
 import { rectifyVariadicArgs } from "../../lang";
-import { AliasedSubQueryBuilder, CommonTableExpressionBuilder } from "./select";
-import { QuerySelector } from "../querySelector";
-import { aliasTable } from "../dsl";
+import { BaseFromBuilder, Fromable } from "./from";
+import { from } from "../dsl";
 
 /**
  * Something that can be joined:
@@ -14,43 +16,83 @@ import { aliasTable } from "../dsl";
  * - An aliased subquery builder
  * - A common table expression builder
  */
-export type Joinable<TQuerySelector extends QuerySelector> =
-	| AliasedSubQueryBuilder<QuerySelector>
-	| CommonTableExpressionBuilder<QuerySelector>
-	| QueryTable;
+// export type Joinable<TQuerySelector extends QuerySelector> =
+// 	| AliasedSubQueryBuilder<TQuerySelector>
+// 	| CommonTableExpressionBuilder<TQuerySelector>
+// 	| QueryTable;
 
-export class InitialJoinBuilder<TQuerySelector extends QuerySelector> {
-	constructor(protected readonly joinable: Joinable<TQuerySelector>) {}
+export type Joinable = Fromable | BuildableJoin;
 
-	inner(): OnOrUsingJoinBuilder<TQuerySelector> {
-		return new OnOrUsingJoinBuilder(this.joinable, "inner");
+export class InitialJoinBuilder {
+	protected readonly leftFrom: FromItemNode;
+	protected readonly rightFrom: FromItemNode;
+
+	constructor(leftFrom: Joinable, rightFrom: Joinable) {
+		this.leftFrom = this.rectifyJoinable(leftFrom);
+		this.rightFrom = this.rectifyJoinable(rightFrom);
 	}
 
-	left(): OnOrUsingJoinBuilder<TQuerySelector> {
-		return new OnOrUsingJoinBuilder(this.joinable, "left");
+	protected rectifyJoinable(joinable: Joinable): FromItemNode {
+		let fromNode;
+		if (joinable instanceof BuildableJoin) {
+			fromNode = joinable.build();
+		} else {
+			const leftNodeOrBuilder = from(joinable);
+			if (leftNodeOrBuilder instanceof BaseFromBuilder) {
+				fromNode = leftNodeOrBuilder.toNode();
+			} else {
+				fromNode = leftNodeOrBuilder;
+			}
+		}
+		return fromNode;
 	}
 
-	right(): OnOrUsingJoinBuilder<TQuerySelector> {
-		return new OnOrUsingJoinBuilder(this.joinable, "right");
+	inner(): OnOrUsingJoinBuilder {
+		return new OnOrUsingJoinBuilder(this.leftFrom, this.rightFrom, "inner");
 	}
 
-	full(): OnOrUsingJoinBuilder<TQuerySelector> {
-		return new OnOrUsingJoinBuilder(this.joinable, "full");
+	left(): OnOrUsingJoinBuilder {
+		return new OnOrUsingJoinBuilder(this.leftFrom, this.rightFrom, "left");
+	}
+
+	right(): OnOrUsingJoinBuilder {
+		return new OnOrUsingJoinBuilder(this.leftFrom, this.rightFrom, "right");
+	}
+
+	full(): OnOrUsingJoinBuilder {
+		return new OnOrUsingJoinBuilder(this.leftFrom, this.rightFrom, "full");
 	}
 
 	cross() {
-		return new BuildableJoin(this.joinable, "cross");
+		return new BuildableJoin(this.leftFrom, this.rightFrom, "cross");
 	}
 }
 
-export class OnOrUsingJoinBuilder<TQuerySelector extends QuerySelector> {
+export class OnOrUsingJoinBuilder {
 	constructor(
-		protected readonly joinable: Joinable<TQuerySelector>,
+		protected readonly leftFrom: FromItemNode,
+		protected readonly rightFrom: FromItemNode,
 		protected readonly joinType: "inner" | "left" | "right" | "full"
 	) {}
 
-	on(expression: JoinNode["on"]) {
-		return new BuildableJoin(this.joinable, this.joinType, expression);
+	natural() {
+		return new BuildableJoin(
+			this.leftFrom,
+			this.rightFrom,
+			this.joinType,
+			undefined,
+			undefined,
+			true
+		);
+	}
+
+	on(expression: FromItemJoinNode["on"]) {
+		return new BuildableJoin(
+			this.leftFrom,
+			this.rightFrom,
+			this.joinType,
+			expression
+		);
 	}
 
 	using(
@@ -64,7 +106,8 @@ export class OnOrUsingJoinBuilder<TQuerySelector extends QuerySelector> {
 			})
 		);
 		return new BuildableJoin(
-			this.joinable,
+			this.leftFrom,
+			this.rightFrom,
 			this.joinType,
 			undefined,
 			usingNodes
@@ -72,47 +115,65 @@ export class OnOrUsingJoinBuilder<TQuerySelector extends QuerySelector> {
 	}
 }
 
-export class BuildableJoin<TQuerySelector extends QuerySelector> {
+export class BuildableJoin {
 	constructor(
-		protected readonly joinable: Joinable<TQuerySelector>,
-		protected readonly joinType: JoinNode["joinType"],
-		protected readonly onNode?: JoinNode["on"],
-		protected readonly usingNodes?: JoinNode["using"]
+		protected readonly leftFrom: FromItemNode,
+		protected readonly rightFrom: FromItemNode,
+		protected readonly joinType: FromItemJoinNode["joinType"],
+		protected readonly onNode?: FromItemJoinNode["on"],
+		protected readonly usingNodes?: FromItemJoinNode["using"],
+		protected readonly natural?: FromItemJoinNode["natural"]
 	) {}
 
-	build(tableMap: TableMap) {
-		if (this.onNode && this.usingNodes) {
+	build(): FromItemJoinNode {
+		if (
+			(this.natural && (this.onNode || this.usingNodes)) ||
+			(this.onNode && this.usingNodes)
+		) {
 			throw new UnsupportedOperationError(
-				`Cannot join tables with both "on" and "using" criteria.`
+				`Tables can only be joined with one of "on", "using" or "natural" criteria, not a combination.`
 			);
-		} else if (this.joinType == "cross" && (this.onNode || this.usingNodes)) {
+		} else if (
+			this.joinType == "cross" &&
+			(this.onNode || this.usingNodes || this.natural)
+		) {
 			throw new UnsupportedOperationError(
-				`Cannot make a cross join with "on" or "using" criteria.`
+				`Cannot make a cross join with "on", "using" or "natural" criteria.`
 			);
 		}
-		let fromItem: FromItemNode;
-		if (this.joinable instanceof QueryTable) {
-			const tableName = this.joinable.$table.name;
-			const tableAlias = tableMap.get(tableName);
-			fromItem = aliasTable(tableName, tableAlias);
-		} else if (this.joinable instanceof CommonTableExpressionBuilder) {
-			const tableName = this.joinable.alias;
-			tableMap.set(this.joinable.alias, this.joinable.alias);
-			fromItem = {
-				type: "tableReferenceNode",
-				tableName,
-			};
-		} else {
-			tableMap.set(this.joinable.alias, this.joinable.alias);
-			fromItem = this.joinable.toNode();
-		}
-		const joinNode: JoinNode = {
-			type: "joinNode",
+		const joinNode: FromItemJoinNode = {
+			type: "fromItemJoinNode",
 			joinType: this.joinType,
-			fromItem: fromItem,
+			leftFromItem: this.leftFrom,
+			rightFromItem: this.rightFrom,
+			natural: this.natural,
 			on: this.onNode,
 			using: this.usingNodes,
 		};
 		return joinNode;
+	}
+
+	join(other: Joinable) {
+		return new InitialJoinBuilder(this.build(), other);
+	}
+
+	fullJoin(other: Joinable) {
+		return this.join(other).full();
+	}
+
+	innerJoin(other: Joinable) {
+		return this.join(other).inner();
+	}
+
+	leftJoin(other: Joinable) {
+		return this.join(other).left();
+	}
+
+	rightJoin(other: Joinable) {
+		return this.join(other).right();
+	}
+
+	crossJoin(other: Joinable) {
+		return this.join(other).cross();
 	}
 }

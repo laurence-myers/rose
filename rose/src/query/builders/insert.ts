@@ -13,7 +13,7 @@ import {
 	QueryTable,
 	TableColumnsForInsertCommand,
 } from "../metamodel";
-import { aliasTable } from "../dsl";
+import { aliasTable, from } from "../dsl";
 import {
 	FinalisedQueryNonReturningWithParams,
 	FinalisedQueryWithParams,
@@ -37,18 +37,10 @@ export class InsertQueryBuilder<
 	constructor(protected readonly qtable: TQTable) {
 		this.queryAst = {
 			type: "insertCommandNode",
-			table: this.fromSingleTable(qtable),
+			table: from(qtable).toNode(),
 			columns: [],
 			values: [],
 		};
-	}
-
-	protected fromSingleTable(
-		qtable: QueryTable
-	): AliasedExpressionNode<TableReferenceNode> {
-		const tableName = qtable.$table.name;
-		const alias = qtable.$table.alias || this.tableMap.get(tableName);
-		return aliasTable(tableName, alias);
 	}
 
 	protected extractColumnNamesFromObject(
@@ -116,7 +108,7 @@ export class InsertQueryBuilder<
 				case "aliasedExpressionNode":
 					outputNode = {
 						type: "simpleColumnReferenceNode",
-						columnName: node.alias,
+						columnName: node.alias.name,
 					};
 					break;
 				case "columnReferenceNode":
