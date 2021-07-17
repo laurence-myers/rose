@@ -13,7 +13,7 @@ import {
 	QueryTable,
 	TableColumnsForInsertCommand,
 } from "../metamodel";
-import { aliasTable, from } from "../dsl";
+import { from } from "../dsl";
 import {
 	FinalisedQueryNonReturningWithParams,
 	FinalisedQueryWithParams,

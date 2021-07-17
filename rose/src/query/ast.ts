@@ -13,10 +13,6 @@ export interface ColumnReferenceNode {
 	columnName: string;
 }
 
-/**
- * TODO: distinguish between "table references" and "table inclusions". The latter is used in FROM clauses, the former
- * are consumers of other definitions.
- */
 export interface TableReferenceNode {
 	type: "tableReferenceNode";
 	tableName: string;

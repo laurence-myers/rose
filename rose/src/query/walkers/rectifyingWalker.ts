@@ -67,10 +67,10 @@ class SelectRectifyingWalker extends SkippingWalker {
 	}
 
 	protected walkFromItemTableNode(node: FromItemTableNode) {
-		if (node.alias) {
-			this.tableMap.set(node.alias.name, node.alias.name);
-			this.specifiedTables.add(node.alias.name);
-		}
+		const tableName = node.alias?.name ?? node.table.tableName;
+		const alias = node.alias?.name ?? this.tableMap.get(tableName);
+		this.tableMap.set(tableName, alias);
+		this.specifiedTables.add(tableName);
 		super.walkFromItemTableNode(node);
 	}
 
