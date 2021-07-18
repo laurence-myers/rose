@@ -60,10 +60,6 @@ export class BeginCommandBuilder {
 	}
 
 	finalise(): FinalisedQueryNonReturningWithParams<{}> {
-		return new FinalisedQueryNonReturningWithParams<{}>(
-			this.queryAst,
-			new TableMap(),
-			{}
-		);
+		return new FinalisedQueryNonReturningWithParams<{}>(this.queryAst, {});
 	}
 }

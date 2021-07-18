@@ -27,7 +27,6 @@ import { TableMap } from "../../data";
 import { InvalidUpdateError, UnrecognisedColumnError } from "../../errors";
 
 export class UpdateQueryBuilder<TQTable extends QueryTable> {
-	protected tableMap = new TableMap();
 	protected queryAst: UpdateCommandNode;
 
 	constructor(protected readonly qtable: TQTable) {
@@ -38,14 +37,6 @@ export class UpdateQueryBuilder<TQTable extends QueryTable> {
 			fromItems: [],
 			conditions: [],
 		};
-	}
-
-	protected fromSingleTable(
-		qtable: QueryTable
-	): AliasedExpressionNode<TableReferenceNode> {
-		const tableName = qtable.$table.name;
-		const alias = qtable.$table.alias || this.tableMap.get(tableName);
-		return aliasTable(tableName, alias);
 	}
 
 	@Clone()
@@ -64,7 +55,6 @@ export class UpdateQueryBuilder<TQTable extends QueryTable> {
 	): UpdateReturningQueryBuilder<TQTable, TQuerySelector> {
 		return new UpdateReturningQueryBuilder<TQTable, TQuerySelector>(
 			this.qtable,
-			this.tableMap,
 			this.queryAst,
 			querySelector
 		);
@@ -127,7 +117,6 @@ export class UpdateQueryBuilder<TQTable extends QueryTable> {
 	): FinalisedQueryNonReturningWithParams<TParams> {
 		return new FinalisedQueryNonReturningWithParams<TParams>(
 			this.queryAst,
-			this.tableMap,
 			paramsProxy
 		);
 	}
@@ -139,7 +128,6 @@ export class UpdateReturningQueryBuilder<
 > {
 	constructor(
 		protected readonly qtable: TQTable,
-		protected readonly tableMap: TableMap,
 		protected readonly queryAst: UpdateCommandNode,
 		protected readonly querySelector: TQuerySelector
 	) {}
@@ -150,7 +138,6 @@ export class UpdateReturningQueryBuilder<
 		return new FinalisedQueryWithParams<TQuerySelector, TParams>(
 			this.querySelector,
 			this.queryAst,
-			this.tableMap,
 			paramsProxy
 		);
 	}

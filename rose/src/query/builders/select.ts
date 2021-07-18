@@ -19,10 +19,10 @@ import { UnsupportedOperationError } from "../../errors";
 import { Clone, rectifyVariadicArgs } from "../../lang";
 import { FinalisedQueryWithParams } from "../finalisedQuery";
 import { alias, constant } from "../dsl/core";
-import { RectifyingWalker } from "../walkers/rectifyingWalker";
 import { ParamsProxy, ParamsWrapper } from "../params";
-import { TableMap } from "../../data";
 import { BuildableJoin } from "./join";
+import { from } from "../dsl";
+import { BaseFromBuilder } from "./from";
 
 export type SubSelectExpression =
 	| SelectOutputExpression
@@ -39,7 +39,6 @@ type WithCteArg =
 	| CommonTableExpressionBuilder<QuerySelector>;
 
 abstract class BaseSelectQueryBuilder {
-	protected tableMap = new TableMap();
 	protected queryAst: SelectCommandNode = {
 		type: "selectCommandNode",
 		distinction: "all",
@@ -50,14 +49,6 @@ abstract class BaseSelectQueryBuilder {
 		grouping: [],
 		locking: [],
 	};
-
-	/**
-	 * Adds referenced tables as "FROM" clauses for any tables not explicitly joined/from-ed.
-	 */
-	protected rectifyTableReferences() {
-		const rectifier = new RectifyingWalker(this.queryAst, this.tableMap);
-		rectifier.rectify();
-	}
 
 	@Clone()
 	with(
@@ -95,27 +86,12 @@ abstract class BaseSelectQueryBuilder {
 	@Clone()
 	from(first: FromArg | FromArg[], ...rest: FromArg[]): this {
 		for (const item of rectifyVariadicArgs(first, rest)) {
+			const frommedItem = from(item);
 			let fromItemNode: FromItemNode;
-			if (item instanceof AliasedSubQueryBuilder) {
-				this.queryAst.fromItems.push();
-				const node = item.toNode();
-				fromItemNode = {
-					type: "fromItemSubSelectNode",
-					alias: node.alias,
-					query: node.expression,
-				};
-			} else if (item instanceof QueryTable) {
-				const tableName = item.$table.name;
-				const tableAlias = item.$table.alias || this.tableMap.get(tableName);
-				fromItemNode = {
-					type: "fromItemTableNode",
-					alias: alias(tableAlias),
-					table: item.$table.toNode(),
-				};
-			} else if (item instanceof BuildableJoin) {
-				fromItemNode = item.build();
+			if (frommedItem instanceof BaseFromBuilder) {
+				fromItemNode = frommedItem.toNode();
 			} else {
-				fromItemNode = item;
+				fromItemNode = frommedItem;
 			}
 			this.queryAst.fromItems.push(fromItemNode);
 		}
@@ -240,7 +216,6 @@ export class SelectQueryBuilder<
 		return new FinalisedQueryWithParams(
 			this.querySelector,
 			this.queryAst,
-			this.tableMap,
 			paramsProxy
 		);
 	}
@@ -285,7 +260,6 @@ export class SubQueryBuilder<TParams> extends BaseSelectQueryBuilder {
 		return {
 			type: "subSelectNode",
 			query: this.queryAst,
-			tableMap: this.tableMap,
 		};
 	}
 }
@@ -311,7 +285,6 @@ export class AliasedSubQueryBuilder<
 	}
 
 	toMetamodel(): AliasedSubQueryMetamodel<TQuerySelector> {
-		this.rectifyTableReferences();
 		const output: { [key: string]: ColumnMetamodel<unknown> } = {};
 		const table = new TableMetamodel(this.alias, undefined);
 		for (const expr of this.queryAst.outputExpressions) {
@@ -332,14 +305,12 @@ export class AliasedSubQueryBuilder<
 	}
 
 	toNode(): AliasedExpressionNode<SubSelectNode> {
-		this.rectifyTableReferences();
 		return {
 			type: "aliasedExpressionNode",
 			alias: alias(this.alias),
 			expression: {
 				type: "subSelectNode",
 				query: this.queryAst,
-				tableMap: this.tableMap,
 			},
 		};
 	}

@@ -924,10 +924,6 @@ describe(`SELECT commands`, () => {
 			builder3,
 			"from() should create a new QueryBuilder"
 		);
-		assert.ok(
-			(builder3 as any).tableMap.size > 0,
-			"from() should populate the tableMap"
-		);
 		const builder4 = builder3.distinct();
 		assert.notStrictEqual(
 			builder3,

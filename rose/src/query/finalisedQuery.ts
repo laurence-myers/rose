@@ -10,7 +10,6 @@ import { RectifyingWalker } from "./walkers/rectifyingWalker";
 import { SqlAstWalker } from "./walkers/sqlAstWalker";
 import { QuerySelectMetadata, QuerySelectorProcessor } from "./metadata";
 import { ParamsProxy, ParamsWrapper } from "./params";
-import { TableMap } from "../data";
 
 export interface GeneratedQuery {
 	sql: string;
@@ -24,33 +23,29 @@ export abstract class FinalisedQuery<TQuerySelector extends QuerySelector> {
 
 	constructor(
 		protected readonly querySelector: TQuerySelector,
-		protected readonly queryAst: AnyCommandNode,
-		protected readonly tableMap: TableMap
+		protected readonly queryAst: AnyCommandNode
 	) {
 		const querySelectMetadata = this.processQuerySelector(querySelector); // must occur before rectifying
 		this.outputExpressions = querySelectMetadata.outputExpressions;
-		// TODO: clone queryAst and tableMap so that we don't mutate the original values here.
+		// TODO: clone queryAst so that we don't mutate the original values here.
 		if (queryAst.type === "selectCommandNode") {
 			queryAst.outputExpressions = this.outputExpressions;
-			this.rectifyTableReferences(queryAst, tableMap);
+			this.rectifyTableReferences(queryAst);
 		} else if (queryAst.type === "insertCommandNode") {
 			if (this.outputExpressions.length > 0) {
 				queryAst.returning = this.outputExpressions;
 			}
 			if (queryAst.query?.query) {
-				this.rectifyTableReferences(
-					queryAst.query.query,
-					queryAst.query.tableMap
-				);
+				this.rectifyTableReferences(queryAst.query.query);
 			}
 		} else if (queryAst.type === "updateCommandNode") {
 			if (this.outputExpressions.length > 0) {
 				queryAst.returning = this.outputExpressions;
 			}
 		} else if (queryAst.type === "deleteCommandNode") {
-			this.rectifyTableReferences(queryAst, tableMap);
+			this.rectifyTableReferences(queryAst);
 		}
-		const walker = new SqlAstWalker(queryAst, tableMap);
+		const walker = new SqlAstWalker(queryAst);
 		const data = walker.toSql();
 		this.sql = data.sql;
 		this.paramGetters = data.parameterGetters;
@@ -64,10 +59,9 @@ export abstract class FinalisedQuery<TQuerySelector extends QuerySelector> {
 	}
 
 	protected rectifyTableReferences(
-		queryAst: SelectCommandNode | DeleteCommandNode,
-		tableMap: TableMap
+		queryAst: SelectCommandNode | DeleteCommandNode
 	) {
-		const rectifier = new RectifyingWalker(queryAst, tableMap);
+		const rectifier = new RectifyingWalker(queryAst);
 		rectifier.rectify();
 	}
 }
@@ -100,10 +94,9 @@ export class FinalisedQueryWithParams<
 	constructor(
 		querySelector: TQuerySelector,
 		queryAst: AnyCommandNode,
-		tableMap: TableMap,
 		paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams> // just used for inferring TParams
 	) {
-		super(querySelector, queryAst, tableMap);
+		super(querySelector, queryAst);
 	}
 
 	public toSql(params: TParams): GeneratedQuery {
@@ -133,10 +126,9 @@ export class FinalisedQueryNonReturningWithParams<
 > extends FinalisedQuery<{}> {
 	constructor(
 		queryAst: AnyCommandNode,
-		tableMap: TableMap,
 		paramsProxy: ParamsProxy<TParams> | ParamsWrapper<TParams> // just used for inferring TParams
 	) {
-		super({}, queryAst, tableMap);
+		super({}, queryAst);
 	}
 
 	public toSql(params: TParams): GeneratedQuery {

@@ -223,8 +223,7 @@ export class ColumnMetamodel<T> {
 		return {
 			type: "columnReferenceNode",
 			columnName: this.name,
-			tableName: this.table.name,
-			tableAlias: this.table.alias || undefined,
+			tableOrAlias: this.table.alias || this.table.name,
 		};
 	}
 
@@ -241,10 +240,7 @@ export class ColumnMetamodel<T> {
 }
 
 export abstract class QueryTable {
-	protected constructor(
-		readonly $table: TableMetamodel,
-		readonly $tableAlias?: string
-	) {
+	protected constructor(readonly $table: TableMetamodel) {
 		// TODO: validate that $tableAlias does not match the pattern of automatically generated aliases, e.g. "t1".
 	}
 }

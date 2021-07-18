@@ -17,6 +17,7 @@ import { AliasedSubQueryBuilder, CommonTableExpressionBuilder } from "./select";
 import { Clone, rectifyVariadicArgs } from "../../lang";
 import { alias, join } from "../dsl";
 import { UnsupportedOperationError } from "../../errors";
+import { BuildableJoin } from "./join";
 
 export type FromableNode =
 	| FunctionExpressionNode
@@ -25,11 +26,12 @@ export type FromableNode =
 	| AliasedExpressionNode<SubSelectNode>;
 
 export type Fromable =
+	| AliasedSubQueryBuilder<any>
+	| BuildableJoin
 	| CommonTableExpressionBuilder<any>
 	| FromItemNode
 	| FromableNode
-	| QueryTable
-	| AliasedSubQueryBuilder<any>;
+	| QueryTable;
 
 type ColumnDefinition = [string, string];
 
@@ -44,11 +46,12 @@ export abstract class BaseFromBuilder<TFromItemNode extends FromItemNode> {
 export class FromTableBuilder extends BaseFromBuilder<FromItemTableNode> {
 	protected readonly ast: FromItemTableNode;
 
-	constructor(protected readonly table: TableReferenceNode) {
+	constructor(table: TableReferenceNode, alias?: AliasNode) {
 		super();
 		this.ast = {
 			type: "fromItemTableNode",
-			table: table,
+			alias,
+			table: table.tableName,
 		};
 	}
 

@@ -1,8 +1,11 @@
 import {
+	BooleanExpression,
+	ColumnReferenceNode,
 	FromItemNode,
 	FromItemSubSelectNode,
 	FromItemTableNode,
 	SelectCommandNode,
+	SelectOutputExpression,
 	SubSelectNode,
 } from "../../../src/query/ast";
 import { RectifyingWalker } from "../../../src/query/walkers/rectifyingWalker";
@@ -10,12 +13,12 @@ import { deepEqual, equal, fail } from "assert";
 import { select } from "../../../src/query/dsl/commands";
 import {
 	constant,
+	from,
 	selectExpression,
 	selectSubQuery,
 } from "../../../src/query/dsl";
 import { sum } from "../../../src/query/dsl/postgresql/aggregate";
-import { QRecurringPayments, TLocations } from "../../fixtures";
-import { TableMap } from "../../../src/data";
+import { QRecurringPayments, QUsers, TLocations, TUsers } from "../../fixtures";
 
 function getFromItem(fromItem: FromItemNode): FromItemTableNode | never {
 	if (fromItem.type == "fromItemTableNode") {
@@ -31,93 +34,107 @@ function getFromItem(fromItem: FromItemNode): FromItemTableNode | never {
 }
 
 describe("Rectifying Walker", function () {
-	it("Rectifies a table referenced in a column reference node", function () {
-		const ast: SelectCommandNode = {
+	function buildSelectNode(
+		outputExpressions: SelectOutputExpression[],
+		fromItems: FromItemNode[],
+		conditions: BooleanExpression[] = []
+	): SelectCommandNode {
+		return {
 			type: "selectCommandNode",
-			outputExpressions: [
-				{
-					type: "columnReferenceNode",
-					tableName: "Users",
-					columnName: "id",
-				},
-			],
+			outputExpressions: outputExpressions,
 			distinction: "all",
-			fromItems: [],
-			conditions: [],
+			fromItems: fromItems,
+			conditions,
 			ordering: [],
 			grouping: [],
 			locking: [],
 		};
-		const tableMap = new TableMap();
-		const walker = new RectifyingWalker(ast, tableMap);
+	}
+
+	it("Rectifies a table referenced in a column reference node", function () {
+		// Setup
+		const ast: SelectCommandNode = buildSelectNode([QUsers.id.col()], []);
+
+		// Execute
+		const walker = new RectifyingWalker(ast);
 		walker.rectify();
+
+		// Verify
 		equal(ast.fromItems.length, 1);
 		const fromItem = getFromItem(ast.fromItems[0]);
-		equal(fromItem.table.tableName, "Users");
+		equal(fromItem.table, "Users");
 		equal(fromItem.alias?.name, "t1");
 	});
 
 	it("Does not rectify a table referenced in a column reference node and in a from item node", function () {
-		const ast: SelectCommandNode = {
-			type: "selectCommandNode",
-			outputExpressions: [
-				{
-					type: "columnReferenceNode",
-					tableName: "Users",
-					columnName: "id",
-				},
-			],
-			distinction: "all",
-			fromItems: [
-				{
-					type: "fromItemTableNode",
-					alias: {
-						type: "aliasNode",
-						name: "t1",
-						path: ["t1"],
-					},
-					table: {
-						type: "tableReferenceNode",
-						tableName: "Users",
-					},
-				},
-			],
-			conditions: [],
-			ordering: [],
-			grouping: [],
-			locking: [],
-		};
-		const tableMap = new TableMap();
-		const walker = new RectifyingWalker(ast, tableMap);
+		// Setup
+		const aliasedTable = new TUsers("explicitAlias");
+		const ast: SelectCommandNode = buildSelectNode(
+			[aliasedTable.id.col()],
+			[from(aliasedTable).toNode()]
+		);
+
+		// Execute
+		const walker = new RectifyingWalker(ast);
 		walker.rectify();
+
+		// Verify
 		equal(ast.fromItems.length, 1);
 		const fromItem = getFromItem(ast.fromItems[0]);
-		equal(fromItem.table.tableName, "Users");
-		equal(fromItem.alias?.name, "t1");
-		equal(fromItem.table.tableName, "Users");
-		equal(fromItem.alias?.name, "t1");
+		equal(fromItem.table, "Users");
+		equal(fromItem.alias?.name, "explicitAlias");
+		equal(
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			(ast.outputExpressions[0]! as ColumnReferenceNode).tableOrAlias,
+			"explicitAlias"
+		);
+	});
+
+	it("Rectifies a table referenced in a column reference node, when there is a from item node with a different alias", function () {
+		// Setup
+		const aliasedTable = new TUsers("explicitAlias");
+		const ast: SelectCommandNode = buildSelectNode(
+			[QUsers.id.col()],
+			[from(aliasedTable).toNode()]
+		);
+
+		// Execute
+		const walker = new RectifyingWalker(ast);
+		walker.rectify();
+
+		// Verify
+		equal(ast.fromItems.length, 2);
+		const fromItem = getFromItem(ast.fromItems[0]);
+		equal(fromItem.table, "Users");
+		equal(fromItem.alias?.name, "explicitAlias");
+		const fromItem2 = getFromItem(ast.fromItems[1]);
+		equal(fromItem2.table, "Users");
+		equal(fromItem2.alias?.name, "t1");
+		equal(
+			(ast.outputExpressions[0]! as ColumnReferenceNode).tableOrAlias,
+			"t1"
+		);
 	});
 
 	it("Rectifies nested sub-queries individually, separate from the outer query", function () {
+		// Setup
 		const subSelectNode: SubSelectNode = {
 			type: "subSelectNode",
-			query: {
-				type: "selectCommandNode",
-				outputExpressions: [
+			query: buildSelectNode(
+				[
 					{
 						type: "columnReferenceNode",
-						tableName: "Locations",
+						tableOrAlias: "Locations",
 						columnName: "id",
 					},
 				],
-				distinction: "all",
-				fromItems: [],
-				conditions: [
+				[],
+				[
 					{
 						type: "binaryOperationNode",
 						left: {
 							type: "columnReferenceNode",
-							tableName: "Locations",
+							tableOrAlias: "Locations",
 							columnName: "id",
 						},
 						operator: "=",
@@ -126,52 +143,46 @@ describe("Rectifying Walker", function () {
 							getter: (p: { locationId: number }) => p.locationId,
 						},
 					},
-				],
-				ordering: [],
-				grouping: [],
-				locking: [],
-			},
-			tableMap: new TableMap(),
+				]
+			),
 		};
 
-		const ast: SelectCommandNode = {
-			type: "selectCommandNode",
-			outputExpressions: [
+		const ast: SelectCommandNode = buildSelectNode(
+			[
 				{
 					type: "columnReferenceNode",
-					tableName: "Users",
+					tableOrAlias: "Users",
 					columnName: "id",
 				},
 			],
-			distinction: "all",
-			fromItems: [],
-			conditions: [
+			[],
+			[
 				{
 					type: "binaryOperationNode",
 					left: {
 						type: "columnReferenceNode",
-						tableName: "Users",
+						tableOrAlias: "Users",
 						columnName: "locationId",
 					},
 					operator: "=",
 					right: subSelectNode,
 				},
-			],
-			ordering: [],
-			grouping: [],
-			locking: [],
-		};
-		const tableMap = new TableMap();
-		const walker = new RectifyingWalker(ast, tableMap);
+			]
+		);
+
+		// Execute
+		const walker = new RectifyingWalker(ast);
 		walker.rectify();
+
+		// Verify
 		equal(ast.fromItems.length, 1);
 		const fromItem = getFromItem(ast.fromItems[0]);
-		equal(fromItem.table.tableName, "Users");
+		equal(fromItem.table, "Users");
 		equal(fromItem.alias?.name, "t1");
 		equal(ast.conditions.length, 1);
 		equal(subSelectNode.query.fromItems.length, 1);
 		const nestedFromItem = getFromItem(subSelectNode.query.fromItems[0]);
-		equal(nestedFromItem.table.tableName, "Locations");
+		equal(nestedFromItem.table, "Locations");
 		equal(nestedFromItem.alias?.name, "t1");
 	});
 
@@ -226,8 +237,7 @@ describe("Rectifying Walker", function () {
 					expression: {
 						type: "columnReferenceNode",
 						columnName: "region",
-						tableName: "orders",
-						tableAlias: undefined,
+						tableOrAlias: "orders",
 					},
 				},
 				{
@@ -244,8 +254,7 @@ describe("Rectifying Walker", function () {
 							{
 								type: "columnReferenceNode",
 								columnName: "amount",
-								tableName: "orders",
-								tableAlias: undefined,
+								tableOrAlias: "orders",
 							},
 						],
 					},
@@ -254,15 +263,8 @@ describe("Rectifying Walker", function () {
 			fromItems: [
 				{
 					type: "fromItemTableNode",
-					alias: {
-						type: "aliasNode",
-						name: "t1",
-						path: ["t1"],
-					},
-					table: {
-						type: "tableReferenceNode",
-						tableName: "orders",
-					},
+					alias: undefined,
+					table: "orders",
 				},
 			],
 			conditions: [],
@@ -273,15 +275,13 @@ describe("Rectifying Walker", function () {
 					expression: {
 						type: "columnReferenceNode",
 						columnName: "region",
-						tableName: "orders",
-						tableAlias: undefined,
+						tableOrAlias: "orders",
 					},
 				},
 			],
 			locking: [],
 		};
-		const tableMap = new TableMap();
-		const walker = new RectifyingWalker(ast, tableMap);
+		const walker = new RectifyingWalker(ast);
 		walker.rectify();
 
 		const expected: SelectCommandNode = {
@@ -298,8 +298,7 @@ describe("Rectifying Walker", function () {
 					expression: {
 						type: "columnReferenceNode",
 						columnName: "region",
-						tableName: "orders",
-						tableAlias: "t1",
+						tableOrAlias: "t1",
 					},
 				},
 				{
@@ -316,8 +315,7 @@ describe("Rectifying Walker", function () {
 							{
 								type: "columnReferenceNode",
 								columnName: "amount",
-								tableName: "orders",
-								tableAlias: "t1",
+								tableOrAlias: "t1",
 							},
 						],
 					},
@@ -331,10 +329,7 @@ describe("Rectifying Walker", function () {
 						name: "t1",
 						path: ["t1"],
 					},
-					table: {
-						type: "tableReferenceNode",
-						tableName: "orders",
-					},
+					table: "orders",
 				},
 			],
 			conditions: [],
@@ -345,8 +340,7 @@ describe("Rectifying Walker", function () {
 					expression: {
 						type: "columnReferenceNode",
 						columnName: "region",
-						tableName: "orders",
-						tableAlias: "t1",
+						tableOrAlias: "t1",
 					},
 				},
 			],

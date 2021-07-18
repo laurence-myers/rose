@@ -7,7 +7,6 @@ import { TableMap } from "../../data";
 import { ParamsProxy, ParamsWrapper } from "../params";
 
 export class DeleteQueryBuilder<TParams> {
-	protected tableMap = new TableMap();
 	protected queryAst: DeleteCommandNode;
 
 	constructor(qtable: QueryTable) {
@@ -29,7 +28,6 @@ export class DeleteQueryBuilder<TParams> {
 	): FinalisedQueryNonReturningWithParams<TParams> {
 		return new FinalisedQueryNonReturningWithParams<TParams>(
 			this.queryAst,
-			this.tableMap,
 			params
 		);
 	}

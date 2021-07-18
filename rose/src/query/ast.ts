@@ -1,5 +1,3 @@
-import { TableMap } from "../data";
-
 export interface ConstantNode<T> {
 	type: "constantNode";
 	getter: (params: any) => T;
@@ -8,8 +6,7 @@ export interface ConstantNode<T> {
 export interface ColumnReferenceNode {
 	type: "columnReferenceNode";
 	//schema? : string;
-	tableName: string;
-	tableAlias?: string;
+	tableOrAlias: string;
 	columnName: string;
 }
 
@@ -296,7 +293,7 @@ export interface FromItemTableNode {
 	alias?: AliasNode;
 	columnAliases?: string[];
 	only?: boolean;
-	table: TableReferenceNode;
+	table: string;
 	tableSample?: TableSample;
 }
 
@@ -448,7 +445,6 @@ export interface SelectCommandNode {
 export interface SubSelectNode {
 	type: "subSelectNode";
 	query: SelectCommandNode;
-	tableMap: TableMap;
 }
 
 /*
@@ -555,7 +551,7 @@ type OnConflictNodes =
 /*
 [ WITH [ RECURSIVE ] with_query [, ...] ]
 INSERT INTO table_name [ AS alias ] [ ( column_name [, ...] ) ]
-    [ OVERRIDING { SYSTEM | USER} VALUE ]
+    [ OVERRIDING { SYSTEM | USER } VALUE ]
     { DEFAULT VALUES | VALUES ( { expression | DEFAULT } [, ...] ) [, ...] | query }
     [ ON CONFLICT [ conflict_target ] conflict_action ]
     [ RETURNING * | output_expression [ [ AS ] output_name ] [, ...] ]

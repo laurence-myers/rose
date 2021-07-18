@@ -1,6 +1,7 @@
 import {
 	AliasedExpressionNode,
 	AstNode,
+	FromItemJoinNode,
 	FromItemNode,
 	FunctionExpressionNode,
 	SubSelectNode,
@@ -9,6 +10,7 @@ import {
 import { QueryTable } from "../metamodel";
 import {
 	AliasedSubQueryBuilder,
+	BuildableJoin,
 	CommonTableExpressionBuilder,
 } from "../builders";
 import {
@@ -18,6 +20,7 @@ import {
 	FromTableBuilder,
 	FromWithBuilder,
 } from "../builders/from";
+import { alias } from "./core";
 
 function isAliasedSubQuery(
 	aliasedExpression: AstNode
@@ -28,6 +31,7 @@ function isAliasedSubQuery(
 	);
 }
 
+export function from(fromable: BuildableJoin): FromItemJoinNode;
 export function from(
 	fromable: QueryTable | TableReferenceNode
 ): FromTableBuilder;
@@ -58,7 +62,10 @@ export function from(
 	| FromFunctionBuilder
 	| FromItemNode {
 	if (fromable instanceof QueryTable) {
-		return new FromTableBuilder(fromable.$table.toNode());
+		return new FromTableBuilder(
+			fromable.$table.toNode(),
+			fromable.$table.alias ? alias(fromable.$table.alias) : undefined
+		);
 	} else if (fromable instanceof CommonTableExpressionBuilder) {
 		return new FromWithBuilder(fromable.alias);
 	} else if (fromable instanceof AliasedSubQueryBuilder) {
@@ -67,6 +74,8 @@ export function from(
 	} else if (Array.isArray(fromable)) {
 		// assumes all items are function expressions
 		return new FromFunctionBuilder(fromable);
+	} else if (fromable instanceof BuildableJoin) {
+		return fromable.build();
 	} else if (fromable.type === "tableReferenceNode") {
 		return new FromTableBuilder(fromable);
 	} else if (isAliasedSubQuery(fromable)) {

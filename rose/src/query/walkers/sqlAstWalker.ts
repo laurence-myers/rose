@@ -129,13 +129,14 @@ export class SqlAstWalker extends BaseWalker {
 	}
 	protected walkAliasedExpressionNode(node: AnyAliasedExpressionNode): void {
 		this.walk(node.expression);
-		this.sb += ` as "`;
-		this.sb += node.alias;
-		this.sb += `"`;
+		this.sb += ` as `;
+		this.walk(node.alias);
 	}
 
 	protected walkAliasNode(node: AliasNode): void {
+		this.sb += `"`;
 		this.sb += node.name;
+		this.sb += `"`;
 	}
 
 	protected walkColumnDefinitionNode(node: ColumnDefinitionNode): void {
@@ -215,7 +216,7 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkColumnReferenceNode(node: ColumnReferenceNode): void {
-		const tableAlias = node.tableAlias || this.tableMap.get(node.tableName);
+		const tableAlias = node.tableOrAlias;
 		this.sb += `"`;
 		this.sb += tableAlias;
 		this.sb += `"."`;
@@ -390,9 +391,11 @@ export class SqlAstWalker extends BaseWalker {
 		if (node.only) {
 			this.sb += "ONLY ";
 		}
-		this.walk(node.table);
+		this.sb += `"`;
+		this.sb += node.table;
+		this.sb += `"`;
 		if (node.alias) {
-			this.sb += " ";
+			this.sb += " as ";
 			this.walk(node.alias);
 		}
 		if (node.columnAliases) {

@@ -19,10 +19,6 @@ export class CommitCommandBuilder {
 	}
 
 	finalise(): FinalisedQueryNonReturningWithParams<{}> {
-		return new FinalisedQueryNonReturningWithParams<{}>(
-			this.queryAst,
-			new TableMap(),
-			{}
-		);
+		return new FinalisedQueryNonReturningWithParams<{}>(this.queryAst, {});
 	}
 }

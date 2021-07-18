@@ -23,15 +23,16 @@ import { from } from "../dsl";
  */
 class SelectRectifyingWalker extends SkippingWalker {
 	protected readonly referencedTables: Set<string> = new Set<string>();
-	protected readonly specifiedTables: Set<string> = new Set<string>();
 	protected readonly columnReferences: Set<ColumnReferenceNode> =
 		new Set<ColumnReferenceNode>();
+	protected readonly subSelectNodes: SubSelectNode[] = [];
 	protected readonly tableReferences: Set<TableReferenceNode> =
 		new Set<TableReferenceNode>();
+	protected readonly tableMap: TableMap = new TableMap();
 
 	constructor(
 		protected readonly ast: SelectCommandNode,
-		protected readonly tableMap: TableMap = new TableMap()
+		protected readonly specifiedTables: Set<string> = new Set<string>()
 	) {
 		super();
 	}
@@ -45,10 +46,7 @@ class SelectRectifyingWalker extends SkippingWalker {
 	}
 
 	protected walkColumnReferenceNode(node: ColumnReferenceNode): void {
-		if (!node.tableAlias) {
-			// Assume any un-aliased table needs to be rectified.
-			this.referencedTables.add(node.tableName);
-		}
+		this.referencedTables.add(node.tableOrAlias);
 		this.columnReferences.add(node);
 		super.walkColumnReferenceNode(node);
 	}
@@ -60,6 +58,7 @@ class SelectRectifyingWalker extends SkippingWalker {
 		}
 		super.walkFromItemFunctionNode(node);
 	}
+
 	protected walkFromItemSubSelectNode(node: FromItemSubSelectNode) {
 		this.tableMap.set(node.alias.name, node.alias.name);
 		this.specifiedTables.add(node.alias.name);
@@ -67,10 +66,21 @@ class SelectRectifyingWalker extends SkippingWalker {
 	}
 
 	protected walkFromItemTableNode(node: FromItemTableNode) {
-		const tableName = node.alias?.name ?? node.table.tableName;
-		const alias = node.alias?.name ?? this.tableMap.get(tableName);
-		this.tableMap.set(tableName, alias);
-		this.specifiedTables.add(tableName);
+		let aliasNode = node.alias;
+		if (!aliasNode) {
+			const newAlias = this.tableMap.get(node.table);
+			aliasNode = {
+				type: "aliasNode",
+				name: newAlias,
+				path: [newAlias],
+			};
+			node.alias = aliasNode;
+			this.tableMap.set(node.table, newAlias);
+			this.specifiedTables.add(node.table);
+		} else {
+			this.tableMap.set(aliasNode.name, aliasNode.name);
+			this.specifiedTables.add(aliasNode.name);
+		}
 		super.walkFromItemTableNode(node);
 	}
 
@@ -92,8 +102,7 @@ class SelectRectifyingWalker extends SkippingWalker {
 	}
 
 	protected walkSubSelectNode(node: SubSelectNode): void {
-		const subWalker = new SelectRectifyingWalker(node.query, node.tableMap);
-		subWalker.rectify();
+		this.subSelectNodes.push(node);
 	}
 
 	protected walkTableReferenceNode(node: TableReferenceNode): void {
@@ -123,13 +132,12 @@ class SelectRectifyingWalker extends SkippingWalker {
 					.alias(tableAlias)
 					.toNode()
 			);
+			this.specifiedTables.add(tableAlias);
 		}
 		// Update all column references to use the aliases.
 		for (const column of this.columnReferences.values()) {
-			if (!column.tableAlias) {
-				const tableAlias = this.tableMap.get(column.tableName);
-				column.tableAlias = tableAlias;
-			}
+			const tableAlias = this.tableMap.get(column.tableOrAlias);
+			column.tableOrAlias = tableAlias;
 		}
 		// Update all table references to use the aliases.
 		for (const tableNode of this.tableReferences.values()) {
@@ -137,19 +145,25 @@ class SelectRectifyingWalker extends SkippingWalker {
 				tableNode.tableName = this.tableMap.get(tableNode.tableName);
 			}
 		}
+
+		// Now process nested sub-queries
+		for (const node of this.subSelectNodes) {
+			const subWalker = new SelectRectifyingWalker(
+				node.query,
+				this.specifiedTables
+			);
+			subWalker.rectify();
+		}
 	}
 }
 
 export class RectifyingWalker extends SkippingWalker {
-	constructor(
-		protected readonly ast: AstNode,
-		protected readonly tableMap: TableMap = new TableMap()
-	) {
+	constructor(protected readonly ast: AstNode) {
 		super();
 	}
 
 	protected walkSelectCommandNode(node: SelectCommandNode) {
-		const subWalker = new SelectRectifyingWalker(node, this.tableMap);
+		const subWalker = new SelectRectifyingWalker(node);
 		subWalker.rectify();
 	}
 

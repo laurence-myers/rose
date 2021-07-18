@@ -135,7 +135,6 @@ export class SkippingWalker extends BaseWalker {
 	}
 
 	protected walkFromItemTableNode(node: FromItemTableNode): void {
-		this.walk(node.table);
 		if (node.alias) {
 			this.walk(node.alias);
 		}

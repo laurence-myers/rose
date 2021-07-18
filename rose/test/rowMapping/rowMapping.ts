@@ -33,9 +33,8 @@ describe("Row mapping", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
-				tableName: "Users",
+				tableOrAlias: "t1",
 				columnName: "id",
-				tableAlias: "t1",
 			}),
 		];
 		const row = {
@@ -53,9 +52,8 @@ describe("Row mapping", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
-				tableName: "Users",
+				tableOrAlias: "t1",
 				columnName: "id",
-				tableAlias: "t1",
 			}),
 		];
 		const row = {
@@ -72,9 +70,8 @@ describe("Row mapping", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["userName"], {
 				type: "columnReferenceNode",
-				tableName: "Users",
+				tableOrAlias: "t1",
 				columnName: "name",
-				tableAlias: "t1",
 			}),
 		];
 		const row = {
@@ -99,15 +96,13 @@ describe("Row mapping", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
-				tableName: "Locations",
+				tableOrAlias: "t1",
 				columnName: "id",
-				tableAlias: "t2",
 			}),
 			alias(["users", "id"], {
 				type: "columnReferenceNode",
-				tableName: "Users",
+				tableOrAlias: "t1",
 				columnName: "id",
-				tableAlias: "t1",
 			}),
 		];
 		// TODO: map nested rows to a single outer object
@@ -144,21 +139,18 @@ describe("Row mapping", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
-				tableName: "Locations",
+				tableOrAlias: "t2",
 				columnName: "id",
-				tableAlias: "t2",
 			}),
 			alias(["users", "id"], {
 				type: "columnReferenceNode",
-				tableName: "Users",
+				tableOrAlias: "t1",
 				columnName: "id",
-				tableAlias: "t1",
 			}),
 			alias(["users", "userName"], {
 				type: "columnReferenceNode",
-				tableName: "Users",
+				tableOrAlias: "t1",
 				columnName: "id",
-				tableAlias: "t1",
 			}),
 		];
 		// TODO: map nested rows to a single outer object
@@ -201,21 +193,18 @@ describe("Row mapping", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
-				tableName: "Locations",
+				tableOrAlias: "t3",
 				columnName: "id",
-				tableAlias: "t3",
 			}),
 			alias(["locations", "id"], {
 				type: "columnReferenceNode",
-				tableName: "Locations",
+				tableOrAlias: "t2",
 				columnName: "id",
-				tableAlias: "t2",
 			}),
 			alias(["locations", "users", "id"], {
 				type: "columnReferenceNode",
-				tableName: "Users",
+				tableOrAlias: "t1",
 				columnName: "id",
-				tableAlias: "t1",
 			}),
 		];
 		const row = {
@@ -261,9 +250,8 @@ describe("Row mapping", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
-				tableName: "Locations",
+				tableOrAlias: "t3",
 				columnName: "id",
-				tableAlias: "t3",
 			}),
 			{
 				type: "aliasedExpressionNode",
@@ -274,9 +262,8 @@ describe("Row mapping", function () {
 				},
 				expression: {
 					type: "columnReferenceNode",
-					tableName: "Locations",
+					tableOrAlias: "t2",
 					columnName: "id",
-					tableAlias: "t2",
 				},
 			},
 			{
@@ -288,9 +275,8 @@ describe("Row mapping", function () {
 				},
 				expression: {
 					type: "columnReferenceNode",
-					tableName: "Users",
+					tableOrAlias: "t1",
 					columnName: "id",
-					tableAlias: "t1",
 				},
 			},
 		];
@@ -391,9 +377,8 @@ describe("Row mapping", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
-				tableName: "Locations",
+				tableOrAlias: "t3",
 				columnName: "id",
-				tableAlias: "t3",
 			}),
 			{
 				type: "aliasedExpressionNode",
@@ -404,9 +389,8 @@ describe("Row mapping", function () {
 				},
 				expression: {
 					type: "columnReferenceNode",
-					tableName: "Locations",
+					tableOrAlias: "t2",
 					columnName: "id",
-					tableAlias: "t2",
 				},
 			},
 			{
@@ -418,9 +402,8 @@ describe("Row mapping", function () {
 				},
 				expression: {
 					type: "columnReferenceNode",
-					tableName: "Users",
+					tableOrAlias: "t1",
 					columnName: "id",
-					tableAlias: "t1",
 				},
 			},
 		];
@@ -515,15 +498,13 @@ describe("Row mapping", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
-				tableName: "Locations",
+				tableOrAlias: "t2",
 				columnName: "id",
-				tableAlias: "t2",
 			}),
 			alias(["users", "id"], {
 				type: "columnReferenceNode",
-				tableName: "Users",
+				tableOrAlias: "t1",
 				columnName: "id",
-				tableAlias: "t1",
 			}),
 		];
 
@@ -581,15 +562,13 @@ describe("Row mapping", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
-				tableName: "Locations",
+				tableOrAlias: "t2",
 				columnName: "id",
-				tableAlias: "t2",
 			}),
 			alias(["users", "id"], {
 				type: "columnReferenceNode",
-				tableName: "Users",
+				tableOrAlias: "t1",
 				columnName: "id",
-				tableAlias: "t1",
 			}),
 		];
 
@@ -616,9 +595,8 @@ describe("Row mapping", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
-				tableName: "Users",
+				tableOrAlias: "t1",
 				columnName: "id",
-				tableAlias: "t1",
 			}),
 		];
 		const numToGenerate = 5;
@@ -665,15 +643,13 @@ describe("Row mapping", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
-				tableName: "Locations",
+				tableOrAlias: "t2",
 				columnName: "id",
-				tableAlias: "t2",
 			}),
 			alias(["users", "id"], {
 				type: "columnReferenceNode",
-				tableName: "Users",
+				tableOrAlias: "t1",
 				columnName: "id",
-				tableAlias: "t1",
 			}),
 		];
 		const numToGenerate = 5;

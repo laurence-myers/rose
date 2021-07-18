@@ -42,7 +42,7 @@ describe(`core`, () => {
 					isTrue(constant(true)),
 					QOrders.amount.gte(constant(10))
 				);
-				const expected = `($1 IS TRUE ${outputOperator} "t1"."amount" >= $2)`;
+				const expected = `($1 IS TRUE ${outputOperator} "orders"."amount" >= $2)`;
 				doSimpleSqlTest(astNode, expected);
 			});
 
@@ -52,7 +52,7 @@ describe(`core`, () => {
 					QOrders.amount.gte(constant(10)),
 					QOrders.product.eq(constant("foo"))
 				);
-				const expected = `($1 IS TRUE ${outputOperator} "t1"."amount" >= $2 ${outputOperator} "t1"."product" = $3)`;
+				const expected = `($1 IS TRUE ${outputOperator} "orders"."amount" >= $2 ${outputOperator} "orders"."product" = $3)`;
 				doSimpleSqlTest(astNode, expected);
 			});
 
@@ -62,7 +62,7 @@ describe(`core`, () => {
 					QOrders.amount.gte(constant(10)),
 					QOrders.product.eq(constant("foo")),
 				]);
-				const expected = `($1 IS TRUE ${outputOperator} "t1"."amount" >= $2 ${outputOperator} "t1"."product" = $3)`;
+				const expected = `($1 IS TRUE ${outputOperator} "orders"."amount" >= $2 ${outputOperator} "orders"."product" = $3)`;
 				doSimpleSqlTest(astNode, expected);
 			});
 
@@ -103,7 +103,7 @@ describe(`core`, () => {
 		it(`accepts a single subquery`, () => {
 			const astNode = arrayConstructor(subSelect(QOrders.product).toSubQuery());
 			// TODO: rectify table references in subqueries in array constructors
-			const expected = `ARRAY(SELECT "t1"."product")`;
+			const expected = `ARRAY(SELECT "orders"."product")`;
 			doSimpleSqlTest(astNode, expected);
 		});
 
@@ -131,13 +131,13 @@ describe(`core`, () => {
 
 		it(`accepts more than one argument`, () => {
 			const astNode = row(constant(true), QOrders.amount.col());
-			const expected = `ROW($1, "t1"."amount")`;
+			const expected = `ROW($1, "orders"."amount")`;
 			doSimpleSqlTest(astNode, expected);
 		});
 
 		it(`accepts one argument as an array`, () => {
 			const astNode = row([constant(true), QOrders.amount.col()]);
-			const expected = `ROW($1, "t1"."amount")`;
+			const expected = `ROW($1, "orders"."amount")`;
 			doSimpleSqlTest(astNode, expected);
 		});
 
@@ -153,7 +153,7 @@ describe(`core`, () => {
 	describe(`subscript`, () => {
 		it(`accepts two arguments`, () => {
 			const astNode = subscript(QOrders.region.col(), constant(123));
-			const expected = `("t1"."region")[$1]`;
+			const expected = `("orders"."region")[$1]`;
 			doSimpleSqlTest(astNode, expected);
 		});
 
@@ -163,7 +163,7 @@ describe(`core`, () => {
 				constant(123),
 				constant(456)
 			);
-			const expected = `("t1"."region")[$1:$2]`;
+			const expected = `("orders"."region")[$1:$2]`;
 			doSimpleSqlTest(astNode, expected);
 		});
 	});

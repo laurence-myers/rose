@@ -1,12 +1,10 @@
 import { Clone, sortedPopulatedKeys } from "../../lang";
 import {
-	AliasedExpressionNode,
 	InsertCommandNode,
 	ParameterOrValueExpressionNode,
 	SelectCommandNode,
 	SimpleColumnReferenceNode,
 	SubSelectNode,
-	TableReferenceNode,
 } from "../ast";
 import {
 	ColumnMetamodel,
@@ -21,17 +19,15 @@ import {
 import { InvalidInsertError } from "../../errors";
 import { QuerySelector } from "../querySelector";
 import { ParamsProxy, ParamsWrapper } from "../params";
-import { TableMap } from "../../data";
 import {
-	OnConflictDoUpdateWhereBuilder,
 	OnConflictDoNothingBuildable,
+	OnConflictDoUpdateWhereBuilder,
 } from "./onConflict";
 
 export class InsertQueryBuilder<
 	TQTable extends QueryTable,
 	TInsertRow extends TableColumnsForInsertCommand<TQTable>
 > {
-	protected readonly tableMap = new TableMap();
 	protected readonly queryAst: InsertCommandNode;
 
 	constructor(protected readonly qtable: TQTable) {
@@ -168,7 +164,6 @@ export class InsertQueryBuilder<
 	): InsertReturningQueryBuilder<TQTable, TQuerySelector> {
 		return new InsertReturningQueryBuilder<TQTable, TQuerySelector>(
 			this.qtable,
-			this.tableMap,
 			{
 				...this.queryAst, // shallow clone
 			},
@@ -181,7 +176,6 @@ export class InsertQueryBuilder<
 	): FinalisedQueryNonReturningWithParams<TParams> {
 		return new FinalisedQueryNonReturningWithParams<TParams>(
 			this.queryAst,
-			this.tableMap,
 			paramsProxy
 		);
 	}
@@ -193,7 +187,6 @@ export class InsertReturningQueryBuilder<
 > {
 	constructor(
 		protected readonly qtable: TQTable,
-		protected readonly tableMap: TableMap,
 		protected readonly queryAst: InsertCommandNode,
 		protected readonly querySelector: TQuerySelector
 	) {}
@@ -204,7 +197,6 @@ export class InsertReturningQueryBuilder<
 		return new FinalisedQueryWithParams<TQuerySelector, TParams>(
 			this.querySelector,
 			this.queryAst,
-			this.tableMap,
 			paramsProxy
 		);
 	}
