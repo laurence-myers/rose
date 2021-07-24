@@ -5,10 +5,8 @@ import {
 	sortedPopulatedKeys,
 } from "../../lang";
 import {
-	AliasedExpressionNode,
 	BooleanExpression,
 	ParameterOrValueExpressionNode,
-	TableReferenceNode,
 	UpdateCommandNode,
 } from "../ast";
 import {
@@ -16,14 +14,13 @@ import {
 	QueryTable,
 	TableColumnsForUpdateCommand,
 } from "../metamodel";
-import { aliasTable, from } from "../dsl";
+import { from } from "../dsl";
 import {
 	FinalisedQueryNonReturningWithParams,
 	FinalisedQueryWithParams,
 } from "../finalisedQuery";
 import { QuerySelector } from "../querySelector";
 import { ParamsProxy, ParamsWrapper } from "../params";
-import { TableMap } from "../../data";
 import { InvalidUpdateError, UnrecognisedColumnError } from "../../errors";
 
 export class UpdateQueryBuilder<TQTable extends QueryTable> {

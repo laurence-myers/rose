@@ -13,7 +13,7 @@ describe(`dateTime`, () => {
 					constant(1),
 					constant(2)
 				);
-				const expected = `("t1"."startDate", "t1"."endDate") OVERLAPS ($1, $2)`;
+				const expected = `("RecurringPayments"."startDate", "RecurringPayments"."endDate") OVERLAPS ($1, $2)`;
 				doSimpleSqlTest(astNode, expected);
 			});
 		});

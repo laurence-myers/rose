@@ -3,7 +3,6 @@ import { BooleanExpression, DeleteCommandNode } from "../ast";
 import { QueryTable } from "../metamodel";
 import { FinalisedQueryNonReturningWithParams } from "../finalisedQuery";
 import { from } from "../dsl";
-import { TableMap } from "../../data";
 import { ParamsProxy, ParamsWrapper } from "../params";
 
 export class DeleteQueryBuilder<TParams> {

@@ -47,7 +47,6 @@ import {
 	SimpleColumnReferenceNode,
 	SubscriptNode,
 	SubSelectNode,
-	TableReferenceNode,
 	TransactionModeNode,
 	UnaryOperationNode,
 	UpdateCommandNode,
@@ -59,7 +58,7 @@ import {
 	UnsupportedOperationError,
 } from "../../errors";
 import { BaseWalker } from "./baseWalker";
-import { convertObjectToMap, TableMap } from "../../data";
+import { convertObjectToMap } from "../../data";
 
 interface WalkedQueryData {
 	sql: string;
@@ -89,10 +88,7 @@ export class SqlAstWalker extends BaseWalker {
 	protected sb: string = "";
 	protected parameterGetters: Array<(p: unknown) => unknown> = [];
 
-	constructor(
-		protected queryAst: AstNode,
-		protected tableMap: TableMap = new TableMap()
-	) {
+	constructor(protected queryAst: AstNode) {
 		super();
 	}
 
@@ -137,12 +133,6 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += `"`;
 		this.sb += node.name;
 		this.sb += `"`;
-	}
-
-	protected walkColumnDefinitionNode(node: ColumnDefinitionNode): void {
-		this.sb += node.columnName;
-		this.sb += " ";
-		this.sb += node.dataType;
 	}
 
 	protected walkArrayConstructorNode(node: ArrayConstructorNode): void {
@@ -213,6 +203,12 @@ export class SqlAstWalker extends BaseWalker {
 		}
 		this.sb += "::";
 		this.sb += node.castType;
+	}
+
+	protected walkColumnDefinitionNode(node: ColumnDefinitionNode): void {
+		this.sb += node.columnName;
+		this.sb += " ";
+		this.sb += node.dataType;
 	}
 
 	protected walkColumnReferenceNode(node: ColumnReferenceNode): void {
@@ -286,7 +282,7 @@ export class SqlAstWalker extends BaseWalker {
 					fromFunctionNode.columnDefinitions !== undefined &&
 					fromFunctionNode.columnDefinitions.length > 0
 				) {
-					this.sb += " AS (";
+					this.sb += " as (";
 					this.doListWalk(fromFunctionNode.columnDefinitions);
 					this.sb += ")";
 					if (node.withOrdinality) {
@@ -315,7 +311,7 @@ export class SqlAstWalker extends BaseWalker {
 					this.walk(node.alias);
 					this.sb += " ";
 				} else {
-					this.sb += " AS ";
+					this.sb += " as ";
 				}
 
 				this.sb += "(";
@@ -379,7 +375,10 @@ export class SqlAstWalker extends BaseWalker {
 		}
 		this.walk(node.query);
 		this.sb += " ";
-		this.walk(node.alias);
+		if (node.alias) {
+			this.sb += "as ";
+			this.walk(node.alias);
+		}
 		if (node.columnAliases) {
 			this.sb += " (";
 			this.doStringList(node.columnAliases);
@@ -418,7 +417,9 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkFromItemWithNode(node: FromItemWithNode) {
+		this.sb += `"`;
 		this.sb += node.withQueryName;
+		this.sb += `"`;
 		if (node.alias) {
 			this.sb += " ";
 			this.walk(node.alias);
@@ -640,7 +641,9 @@ export class SqlAstWalker extends BaseWalker {
 
 	protected walkSelectCommandNode(node: SelectCommandNode): void {
 		if (node.with) {
-			this.walk(node.with);
+			this.sb += "WITH ";
+			this.doListWalk(node.with);
+			this.sb += " ";
 		}
 		this.sb += "SELECT ";
 		switch (node.distinction) {
@@ -704,7 +707,11 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += node.strength;
 		if (node.of.length > 0) {
 			this.sb += " OF ";
-			this.doListWalk(node.of);
+			this.doSeparatedList(node.of, (table) => {
+				this.sb += `"`;
+				this.sb += table;
+				this.sb += `"`;
+			});
 		}
 		if (node.wait) {
 			this.sb += " ";
@@ -765,12 +772,6 @@ export class SqlAstWalker extends BaseWalker {
 		this.sb += `)`;
 	}
 
-	protected walkTableReferenceNode(node: TableReferenceNode): void {
-		this.sb += `"`;
-		this.sb += node.tableName;
-		this.sb += `"`;
-	}
-
 	protected walkTransactionModeNode(node: TransactionModeNode): void {
 		const values = [];
 		if (node.isolationLevel) {
@@ -817,20 +818,25 @@ export class SqlAstWalker extends BaseWalker {
 	}
 
 	protected walkWithNode(node: WithNode): void {
-		if (node.selectNodes.length > 0) {
-			this.sb += `WITH `;
-			for (let i = 0; i < node.selectNodes.length; i++) {
-				const selectNode = node.selectNodes[i];
-				if (i > 0) {
-					this.sb += `, `;
-				}
-				// We can't use the normal alias expression walker, because CTEs specify the alias before the expression.
-				this.sb += `"`;
-				this.sb += selectNode.alias;
-				this.sb += `" as `;
-				this.walk(selectNode.expression);
-			}
-			this.sb += ` `;
+		this.sb += `"`;
+		this.sb += node.name;
+		this.sb += `"`;
+
+		if (node.columnNames && node.columnNames.length > 0) {
+			this.doStringList(node.columnNames);
 		}
+
+		this.sb += ` as `;
+
+		if (node.materialized !== undefined) {
+			if (node.materialized === false) {
+				this.sb += "NOT ";
+			}
+			this.sb += "MATERIALIZED ";
+		}
+
+		this.sb += `(`;
+		this.walk(node.query);
+		this.sb += `)`;
 	}
 }

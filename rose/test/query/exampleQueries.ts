@@ -19,14 +19,13 @@ import { exists } from "../../src/query/dsl/postgresql/subquery/expressions";
 import { sum } from "../../src/query/dsl/postgresql/aggregate/general";
 import { divide } from "../../src/query/dsl/postgresql/mathematical/operators";
 import {
-	selectCte,
 	selectExpression,
 	selectNestedMany,
 	subSelect,
 } from "../../src/query/dsl/select";
 import { and, col, constant, literal, or } from "../../src/query/dsl/core";
 import { params, withParams } from "../../src/query/params";
-import { innerJoin } from "../../src/query/dsl";
+import { withCte } from "../../src/query/dsl/with";
 
 describe(`Example queries`, function () {
 	describe(`Recurring payments`, function () {
@@ -78,16 +77,16 @@ describe(`Example queries`, function () {
 
 			const expected =
 				"SELECT DISTINCT ON " +
-				'("t2"."locationId") ' +
-				'"t2"."id" as "id", "t1"."id" as "locationId" ' +
-				'FROM "RecurringPayments" as "t2" ' +
-				'INNER JOIN "Locations" as "t1" ON "t1"."id" = "t2"."locationId" ' +
+				'("RecurringPayments"."locationId") ' +
+				'"RecurringPayments"."id" as "id", "Locations"."id" as "locationId" ' +
+				'FROM "RecurringPayments" ' +
+				'INNER JOIN "Locations" ON "Locations"."id" = "RecurringPayments"."locationId" ' +
 				"WHERE " +
-				'("t2"."nextDate" >= now() AND ' +
-				'"t1"."clientId" = $1 AND ' +
-				'("t2"."endDate" IS NULL OR ' +
-				'"t2"."endDate" > "t2"."nextDate")) ' +
-				'ORDER BY "t2"."locationId" ASC, "t2"."nextDate" ASC';
+				'("RecurringPayments"."nextDate" >= now() AND ' +
+				'"Locations"."clientId" = $1 AND ' +
+				'("RecurringPayments"."endDate" IS NULL OR ' +
+				'"RecurringPayments"."endDate" > "RecurringPayments"."nextDate")) ' +
+				'ORDER BY "RecurringPayments"."locationId" ASC, "RecurringPayments"."nextDate" ASC';
 			assert.equal(result.sql, expected);
 		});
 
@@ -139,7 +138,7 @@ describe(`Example queries`, function () {
 					)
 				)
 				.limit(constant(1))
-				.toSubQuery();
+				.toNode();
 			// Make the returned values type safe.
 			const querySelect = {
 				exists: selectExpression(exists(subQuery)),
@@ -155,11 +154,11 @@ describe(`Example queries`, function () {
 
 			const expected =
 				"SELECT EXISTS (" +
-				'SELECT "t1"."id" FROM "RecurringPayments" as "t1" ' +
-				'WHERE ("t1"."locationId" = $1 AND ' +
+				'SELECT "RecurringPayments"."id" FROM "RecurringPayments" ' +
+				'WHERE ("RecurringPayments"."locationId" = $1 AND ' +
 				"(" +
-				'("t1"."endDate" IS NULL AND "t1"."startDate" = $2) ' +
-				'OR ("t1"."startDate", "t1"."endDate") OVERLAPS ($3, $4))' +
+				'("RecurringPayments"."endDate" IS NULL AND "RecurringPayments"."startDate" = $2) ' +
+				'OR ("RecurringPayments"."startDate", "RecurringPayments"."endDate") OVERLAPS ($3, $4))' +
 				") " +
 				"LIMIT $5 OFFSET $6) " +
 				'as "exists"';
@@ -252,7 +251,7 @@ describe(`Example queries`, function () {
 					)
 				);
 			}
-			const idSubQuery = idSubQueryBuilder.toSubQuery();
+			const idSubQuery = idSubQueryBuilder.toNode();
 
 			return select(BuilderTemplate)
 				.from(
@@ -283,7 +282,26 @@ describe(`Example queries`, function () {
 			});
 			assert.equal(
 				result.sql,
-				`SELECT "t6"."id" as "id", "t6"."title" as "title", "t6"."createdAt" as "createdAt", "t6"."clientId" as "clientId", "t5"."id" as "compositeImage.id", "t4"."id" as "tags.id", "t4"."title" as "tags.title", "t2"."id" as "categories.id", "t2"."groupLabel" as "categories.groupLabel", "t2"."label" as "categories.label", "t2"."width" as "categories.width", "t2"."height" as "categories.height", "t2"."platformId" as "categories.platformId" FROM "BuilderTemplates" as "t6" INNER JOIN "BuilderTemplateToCategoryMap" as "t1" ON "t1"."builderTemplateId" = "t6"."id" INNER JOIN "BuilderTemplateCategories" as "t2" ON "t2"."id" = "t1"."builderTemplateCategoryId" INNER JOIN "BuilderTemplateTags" as "t3" ON "t3"."builderTemplateId" = "t6"."id" INNER JOIN "Tags" as "t4" ON "t4"."id" = "t3"."tagId" INNER JOIN "Uploads" as "t5" ON "t5"."id" = "t6"."compositeImageId" WHERE "t6"."id" IN (SELECT "t1"."id" FROM "BuilderTemplates" as "t1" WHERE "t1"."clientId" = ANY($1) ORDER BY "t1"."createdAt" DESC LIMIT $2 OFFSET $3)`
+				`SELECT "BuilderTemplates"."id" as "id", ` +
+					`"BuilderTemplates"."title" as "title", ` +
+					`"BuilderTemplates"."createdAt" as "createdAt", ` +
+					`"BuilderTemplates"."clientId" as "clientId", ` +
+					`"Uploads"."id" as "compositeImage.id", ` +
+					`"Tags"."id" as "tags.id", ` +
+					`"Tags"."title" as "tags.title", ` +
+					`"BuilderTemplateCategories"."id" as "categories.id", ` +
+					`"BuilderTemplateCategories"."groupLabel" as "categories.groupLabel", ` +
+					`"BuilderTemplateCategories"."label" as "categories.label", ` +
+					`"BuilderTemplateCategories"."width" as "categories.width", ` +
+					`"BuilderTemplateCategories"."height" as "categories.height", ` +
+					`"BuilderTemplateCategories"."platformId" as "categories.platformId" ` +
+					`FROM "BuilderTemplates" ` +
+					`INNER JOIN "BuilderTemplateToCategoryMap" ON "BuilderTemplateToCategoryMap"."builderTemplateId" = "BuilderTemplates"."id" ` +
+					`INNER JOIN "BuilderTemplateCategories" ON "BuilderTemplateCategories"."id" = "BuilderTemplateToCategoryMap"."builderTemplateCategoryId" ` +
+					`INNER JOIN "BuilderTemplateTags" ON "BuilderTemplateTags"."builderTemplateId" = "BuilderTemplates"."id" ` +
+					`INNER JOIN "Tags" ON "Tags"."id" = "BuilderTemplateTags"."tagId" ` +
+					`INNER JOIN "Uploads" ON "Uploads"."id" = "BuilderTemplates"."compositeImageId" ` +
+					`WHERE "BuilderTemplates"."id" IN (SELECT "BuilderTemplates"."id" FROM "BuilderTemplates" WHERE "BuilderTemplates"."clientId" = ANY($1) ORDER BY "BuilderTemplates"."createdAt" DESC LIMIT $2 OFFSET $3)`
 			);
 			assert.deepEqual(result.parameters, [[1], 10, 0]);
 		});
@@ -298,7 +316,35 @@ describe(`Example queries`, function () {
 			});
 			assert.equal(
 				result.sql,
-				`SELECT "t6"."id" as "id", "t6"."title" as "title", "t6"."createdAt" as "createdAt", "t6"."clientId" as "clientId", "t5"."id" as "compositeImage.id", "t4"."id" as "tags.id", "t4"."title" as "tags.title", "t2"."id" as "categories.id", "t2"."groupLabel" as "categories.groupLabel", "t2"."label" as "categories.label", "t2"."width" as "categories.width", "t2"."height" as "categories.height", "t2"."platformId" as "categories.platformId" FROM "BuilderTemplates" as "t6" INNER JOIN "BuilderTemplateToCategoryMap" as "t1" ON "t1"."builderTemplateId" = "t6"."id" INNER JOIN "BuilderTemplateCategories" as "t2" ON "t2"."id" = "t1"."builderTemplateCategoryId" INNER JOIN "BuilderTemplateTags" as "t3" ON "t3"."builderTemplateId" = "t6"."id" INNER JOIN "Tags" as "t4" ON "t4"."id" = "t3"."tagId" INNER JOIN "Uploads" as "t5" ON "t5"."id" = "t6"."compositeImageId" WHERE "t6"."id" IN (SELECT "t1"."id" FROM "BuilderTemplates" as "t1", "BuilderTemplateCategories" as "t2", "BuilderTemplateToCategoryMap" as "t3" WHERE ("t2"."platformId" = ANY($1) AND "t3"."builderTemplateId" = "t1"."id" AND "t3"."builderTemplateCategoryId" = "t2"."id") ORDER BY "t1"."createdAt" DESC LIMIT $2 OFFSET $3)`
+				`SELECT "BuilderTemplates"."id" as "id", ` +
+					`"BuilderTemplates"."title" as "title", ` +
+					`"BuilderTemplates"."createdAt" as "createdAt", ` +
+					`"BuilderTemplates"."clientId" as "clientId", ` +
+					`"Uploads"."id" as "compositeImage.id", ` +
+					`"Tags"."id" as "tags.id", ` +
+					`"Tags"."title" as "tags.title", ` +
+					`"BuilderTemplateCategories"."id" as "categories.id", ` +
+					`"BuilderTemplateCategories"."groupLabel" as "categories.groupLabel", ` +
+					`"BuilderTemplateCategories"."label" as "categories.label", ` +
+					`"BuilderTemplateCategories"."width" as "categories.width", ` +
+					`"BuilderTemplateCategories"."height" as "categories.height", ` +
+					`"BuilderTemplateCategories"."platformId" as "categories.platformId" ` +
+					`FROM "BuilderTemplates" ` +
+					`INNER JOIN "BuilderTemplateToCategoryMap" ON "BuilderTemplateToCategoryMap"."builderTemplateId" = "BuilderTemplates"."id" ` +
+					`INNER JOIN "BuilderTemplateCategories" ON "BuilderTemplateCategories"."id" = "BuilderTemplateToCategoryMap"."builderTemplateCategoryId" ` +
+					`INNER JOIN "BuilderTemplateTags" ON "BuilderTemplateTags"."builderTemplateId" = "BuilderTemplates"."id" ` +
+					`INNER JOIN "Tags" ON "Tags"."id" = "BuilderTemplateTags"."tagId" ` +
+					`INNER JOIN "Uploads" ON "Uploads"."id" = "BuilderTemplates"."compositeImageId" ` +
+					`WHERE "BuilderTemplates"."id" IN (` +
+					`SELECT "BuilderTemplates"."id" ` +
+					`FROM "BuilderTemplates", ` +
+					`"BuilderTemplateCategories", ` +
+					`"BuilderTemplateToCategoryMap" ` +
+					`WHERE ("BuilderTemplateCategories"."platformId" = ANY($1) ` +
+					`AND "BuilderTemplateToCategoryMap"."builderTemplateId" = "BuilderTemplates"."id" ` +
+					`AND "BuilderTemplateToCategoryMap"."builderTemplateCategoryId" = "BuilderTemplateCategories"."id") ` +
+					`ORDER BY "BuilderTemplates"."createdAt" DESC LIMIT $2 OFFSET $3` +
+					`)`
 			);
 			assert.deepEqual(result.parameters, [[123], 10, 0]);
 		});
@@ -324,18 +370,22 @@ describe(`Example queries`, function () {
 		 *	GROUP BY region, product;
 		 */
 		it(`can query a CTE`, function () {
-			const regionalSales = selectCte(`regional_sales`, {
+			const regionalSalesName = "regional_sales";
+			const regionalSales = select({
 				region: QOrders.region,
 				total_sales: selectExpression(sum(QOrders.amount.col())),
 			}).groupBy(QOrders.region);
-			const regionalSalesMetamodel = regionalSales.toMetamodel();
-			const topRegions = selectCte(`top_regions`, {
+			const regionalSalesMetamodel =
+				regionalSales.toMetamodel(regionalSalesName);
+
+			const topRegionsName = "top_regions";
+			const topRegions = select({
 				region: regionalSalesMetamodel.region,
 			}).where(
 				regionalSalesMetamodel.total_sales.gt(
 					subSelect(
 						divide(sum(regionalSalesMetamodel.total_sales.col()), literal("10"))
-					).toSubQuery()
+					).toNode()
 				)
 			);
 
@@ -345,10 +395,13 @@ describe(`Example queries`, function () {
 				product_units: selectExpression(sum(QOrders.quantity.col())),
 				product_sales: selectExpression(sum(QOrders.amount.col())),
 			})
-				.with(regionalSales, topRegions)
+				.with(
+					withCte(regionalSalesName, regionalSales),
+					withCte(topRegionsName, topRegions)
+				)
 				.where(
 					QOrders.region.in(
-						subSelect(topRegions.toMetamodel().region).toSubQuery()
+						subSelect(topRegions.toMetamodel(topRegionsName).region).toNode()
 					)
 				)
 				.groupBy(QOrders.region, QOrders.product);
@@ -356,7 +409,18 @@ describe(`Example queries`, function () {
 			const result = query.finalise({}).toSql({});
 			assert.equal(
 				result.sql,
-				`WITH "regional_sales" as (SELECT "t1"."region" as "region", sum("t1"."amount") as "total_sales" FROM "orders" as "t1" GROUP BY ("t1"."region")), "top_regions" as (SELECT "t1"."region" as "region" FROM "regional_sales" as "t1" WHERE "t1"."total_sales" > (SELECT sum("t1"."total_sales") / 10 FROM "regional_sales" as "t1")) SELECT "t1"."region" as "region", "t1"."product" as "product", sum("t1"."quantity") as "product_units", sum("t1"."amount") as "product_sales" FROM "orders" as "t1" WHERE "t1"."region" IN (SELECT "t1"."region" FROM "top_regions" as "t1") GROUP BY ("t1"."region", "t1"."product")`
+				`WITH "regional_sales" as (` +
+					`SELECT "orders"."region" as "region", ` +
+					`sum("orders"."amount") as "total_sales" ` +
+					`FROM "orders" ` +
+					`GROUP BY ("orders"."region")` +
+					`), "top_regions" as (` +
+					`SELECT "regional_sales"."region" as "region" ` +
+					`FROM "regional_sales" ` +
+					`WHERE "regional_sales"."total_sales" > (` +
+					`SELECT sum("regional_sales"."total_sales") / 10 ` +
+					`FROM "regional_sales")` +
+					`) SELECT "orders"."region" as "region", "orders"."product" as "product", sum("orders"."quantity") as "product_units", sum("orders"."amount") as "product_sales" FROM "orders" WHERE "orders"."region" IN (SELECT "top_regions"."region" FROM "top_regions") GROUP BY ("orders"."region", "orders"."product")`
 			);
 		});
 

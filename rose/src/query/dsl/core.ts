@@ -13,9 +13,8 @@ import {
 	RowConstructorNode,
 	SubscriptNode,
 	SubSelectNode,
-	TableReferenceNode,
 } from "../ast";
-import { ColumnMetamodel, TableMetamodel } from "../metamodel";
+import { ColumnMetamodel } from "../metamodel";
 import { rectifyVariadicArgs } from "../../lang";
 
 type SupportedConstant =
@@ -74,28 +73,6 @@ export function aliasCol(
 		type: "aliasedExpressionNode",
 		alias: alias(aliasName),
 		expression: col(columnMetamodel),
-	};
-}
-
-/**
- * Assigns an alias to a table. The table can be either a TableMetamodel, or a string.
- *
- * @category DSL - Core
- * @param table The table metamodel, or the name of the table to alias.
- * @param aliasName The name to use as the alias.
- * @see {@link alias}
- */
-export function aliasTable(
-	table: TableMetamodel | string,
-	aliasName: string
-): AliasedExpressionNode<TableReferenceNode> {
-	return {
-		type: "aliasedExpressionNode",
-		alias: alias(aliasName),
-		expression: {
-			type: "tableReferenceNode",
-			tableName: table instanceof TableMetamodel ? table.name : table,
-		},
 	};
 }
 

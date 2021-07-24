@@ -1,5 +1,4 @@
 import cloneDeep = require("lodash.clonedeep");
-import fs = require("fs");
 import * as util from "util";
 
 export class DefaultMap<K, V> extends Map<K, V> {
@@ -57,10 +56,6 @@ export function deepFreeze<T>(obj: T): Readonly<T> {
 	return Object.freeze(obj);
 }
 
-export function makeDirs(fullPath: string): void {
-	fs.mkdirSync(fullPath, { recursive: true });
-}
-
 export function assertNever(arg: never): never {
 	throw new Error(`Unexpected object: ${(<any>arg).constructor || arg}`);
 }
@@ -74,6 +69,10 @@ export function remove<T>(arr: T[], obj: T): void {
 
 export function difference<T>(setA: Set<T>, setB: Set<T>): Set<T> {
 	return new Set([...setA].filter((value) => !setB.has(value)));
+}
+
+export function union<TA, TB>(setA: Set<TA>, setB: Set<TB>): Set<TA | TB> {
+	return new Set([...setA, ...setB]);
 }
 
 export function keySet<T>(map: Map<T, any>): Set<T> {
@@ -139,7 +138,7 @@ export function Clone(): MethodDecorator {
 
 /**
  * Given an arg, which can be either a value or an array of values, and a second array of values,
- * returns a single (concatenated) array
+ * returns a single (concatenated) array.
  */
 export function rectifyVariadicArgs<T>(
 	first: T | readonly T[],

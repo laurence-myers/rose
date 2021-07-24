@@ -1,7 +1,6 @@
 import { doSimpleSqlTest } from "../../test-utils";
 import { QProject, QProjectRole } from "../../fixtures";
-import { leftJoin, selectCte, selectSubQuery } from "../../../src";
-import { TableMap } from "../../../src/data";
+import { leftJoin, withCte, selectSubQuery, select } from "../../../src";
 
 describe(`Joins`, () => {
 	describe(`leftJoin()`, () => {
@@ -10,7 +9,7 @@ describe(`Joins`, () => {
 				.on(QProjectRole.projectId.eq(QProject.projectId))
 				.build();
 
-			const expected = `"project" as "t1" LEFT OUTER JOIN "project_role" as "t2" ON "t2"."project_id" = "t1"."project_id"`;
+			const expected = `"project" LEFT OUTER JOIN "project_role" ON "project_role"."project_id" = "project"."project_id"`;
 
 			doSimpleSqlTest(astNode, expected);
 		});
@@ -19,27 +18,29 @@ describe(`Joins`, () => {
 			const sq = selectSubQuery("sq1", {
 				projectId: QProjectRole.projectId,
 				role: QProjectRole.role,
-			});
+			}).from(QProjectRole);
 			const astNode = leftJoin(QProject, sq)
 				.on(sq.toMetamodel().projectId.eq(QProject.projectId))
 				.build();
 
-			const expected = `"project" as "t1" LEFT OUTER JOIN (SELECT "t1"."project_id" as "projectId", "t1"."role" as "role" FROM "project_role" as "t1") as "sq1" ON "sq1"."projectId" = "t1"."project_id"`;
+			const expected = `"project" LEFT OUTER JOIN (SELECT "project_role"."project_id" as "projectId", "project_role"."role" as "role" FROM "project_role") as "sq1" ON "sq1"."projectId" = "project"."project_id"`;
 
 			doSimpleSqlTest(astNode, expected);
 		});
 
 		it(`should accept a reference to a Common Table Expression (CTE)`, () => {
-			const cte = selectCte("cte1", {
+			const selectQuery = select({
 				projectId: QProjectRole.projectId,
 				role: QProjectRole.role,
 			});
-			const cteMetamodel = cte.toMetamodel();
+			const cteName = "cte1";
+			const cte = withCte(cteName, selectQuery);
+			const cteMetamodel = selectQuery.toMetamodel(cteName);
 			const astNode = leftJoin(QProject, cte)
 				.on(cteMetamodel.projectId.eq(QProject.projectId))
 				.build();
 
-			const expected = `"project" as "t1" LEFT OUTER JOIN "cte1" ON "cte1"."projectId" = "t1"."project_id"`;
+			const expected = `"project" LEFT OUTER JOIN "cte1" ON "cte1"."projectId" = "project"."project_id"`;
 
 			doSimpleSqlTest(astNode, expected);
 		});

@@ -1,4 +1,4 @@
-import { QueryTable } from "../metamodel";
+import { QueryTable, TableMetamodel } from "../metamodel";
 import {
 	AliasedExpressionNode,
 	AliasNode,
@@ -10,28 +10,29 @@ import {
 	FunctionExpressionNode,
 	ParameterOrValueExpressionNode,
 	SubSelectNode,
-	TableReferenceNode,
 	TableSample,
 } from "../ast";
-import { AliasedSubQueryBuilder, CommonTableExpressionBuilder } from "./select";
+import { AliasedSubQueryBuilder } from "./select";
 import { Clone, rectifyVariadicArgs } from "../../lang";
 import { alias, join } from "../dsl";
 import { UnsupportedOperationError } from "../../errors";
 import { BuildableJoin } from "./join";
+import { CommonTableExpressionBuilder } from "./with";
 
 export type FromableNode =
+	| AliasedExpressionNode<SubSelectNode>
 	| FunctionExpressionNode
-	| FunctionExpressionNode[]
-	| TableReferenceNode
-	| AliasedExpressionNode<SubSelectNode>;
+	| FunctionExpressionNode[];
 
 export type Fromable =
 	| AliasedSubQueryBuilder<any>
 	| BuildableJoin
-	| CommonTableExpressionBuilder<any>
+	| CommonTableExpressionBuilder
 	| FromItemNode
 	| FromableNode
-	| QueryTable;
+	| QueryTable
+	| string // table name
+	| TableMetamodel;
 
 type ColumnDefinition = [string, string];
 
@@ -46,12 +47,12 @@ export abstract class BaseFromBuilder<TFromItemNode extends FromItemNode> {
 export class FromTableBuilder extends BaseFromBuilder<FromItemTableNode> {
 	protected readonly ast: FromItemTableNode;
 
-	constructor(table: TableReferenceNode, alias?: AliasNode) {
+	constructor(table: string, alias?: AliasNode) {
 		super();
 		this.ast = {
 			type: "fromItemTableNode",
 			alias,
-			table: table.tableName,
+			table: table,
 		};
 	}
 
@@ -197,26 +198,18 @@ export class FromFunctionBuilder extends BaseFromBuilder<FromItemFunctionNode> {
 		return this;
 	}
 
-	columnDefinitions(columnDefinitions: readonly ColumnDefinition[][]): this;
-	columnDefinitions(
-		first: ColumnDefinition[],
-		...rest: readonly ColumnDefinition[][]
-	): this;
 	@Clone()
-	columnDefinitions(
-		first: readonly ColumnDefinition[][] | ColumnDefinition[],
-		...rest: readonly ColumnDefinition[][]
-	): this {
+	columnDefinitions(columnDefinitions: readonly ColumnDefinition[][]): this {
+		// can't use variadic args because `rectifyVariadicArgs()` does not handle nested arrays properly
 		// TODO: make it easier to provide column definitions alongside the functions
-		const colDefs = rectifyVariadicArgs(first, rest);
-		if (colDefs.length !== this.ast.functionExpressions.length) {
+		if (columnDefinitions.length !== this.ast.functionExpressions.length) {
 			throw new UnsupportedOperationError(
-				`The number of column definitions must match the number of functions. Functions: ${this.ast.functionExpressions.length}, Column definitions: ${colDefs.length}`
+				`The number of column definitions must match the number of functions. Functions: ${this.ast.functionExpressions.length}, Column definitions: ${columnDefinitions.length}`
 			);
 		}
 		for (let i = 0; i < this.ast.functionExpressions.length; i++) {
 			const node = this.ast.functionExpressions[i];
-			const colDef = colDefs[i];
+			const colDef = columnDefinitions[i];
 			node.columnDefinitions = colDef.map(([columnName, dataType]) => ({
 				type: "columnDefinitionNode",
 				columnName,

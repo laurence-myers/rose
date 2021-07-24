@@ -5,3 +5,4 @@ export * from "./join";
 export * from "./onConflict";
 export * from "./select";
 export * from "./transaction";
+export * from "./with";

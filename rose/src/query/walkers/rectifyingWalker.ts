@@ -1,5 +1,4 @@
 import {
-	AnyAliasedExpressionNode,
 	AstNode,
 	ColumnReferenceNode,
 	FromItemFunctionNode,
@@ -7,14 +6,10 @@ import {
 	FromItemTableNode,
 	FromItemWithNode,
 	SelectCommandNode,
-	SelectLockingNode,
-	SubSelectNode,
-	TableReferenceNode,
 	WithNode,
 } from "../ast";
-import { difference } from "../../lang";
+import { difference, union } from "../../lang";
 import { SkippingWalker } from "./skippingWalker";
-import { TableMap } from "../../data";
 import { from } from "../dsl";
 
 /**
@@ -23,95 +18,74 @@ import { from } from "../dsl";
  */
 class SelectRectifyingWalker extends SkippingWalker {
 	protected readonly referencedTables: Set<string> = new Set<string>();
-	protected readonly columnReferences: Set<ColumnReferenceNode> =
-		new Set<ColumnReferenceNode>();
-	protected readonly subSelectNodes: SubSelectNode[] = [];
-	protected readonly tableReferences: Set<TableReferenceNode> =
-		new Set<TableReferenceNode>();
-	protected readonly tableMap: TableMap = new TableMap();
+	protected readonly specifiedTables: Set<string> = new Set<string>();
+	protected readonly subSelectNodes: SelectCommandNode[] = [];
 
 	constructor(
 		protected readonly ast: SelectCommandNode,
-		protected readonly specifiedTables: Set<string> = new Set<string>()
+		protected readonly specifiedAliases: Set<string> = new Set<string>()
 	) {
 		super();
 	}
 
-	protected walkAliasedExpressionNode(node: AnyAliasedExpressionNode) {
-		if (node.expression.type === "subSelectNode") {
-			this.tableMap.set(node.alias.name, node.alias.name);
-			this.specifiedTables.add(node.alias.name);
-		}
-		super.walkAliasedExpressionNode(node);
+	protected rectifySubQuery(node: SelectCommandNode) {
+		const subWalker = new SelectRectifyingWalker(node, this.specifiedAliases);
+		subWalker.rectify();
 	}
 
 	protected walkColumnReferenceNode(node: ColumnReferenceNode): void {
 		this.referencedTables.add(node.tableOrAlias);
-		this.columnReferences.add(node);
 		super.walkColumnReferenceNode(node);
 	}
 
 	protected walkFromItemFunctionNode(node: FromItemFunctionNode) {
 		if (node.alias) {
-			this.tableMap.set(node.alias.name, node.alias.name);
 			this.specifiedTables.add(node.alias.name);
+			this.specifiedAliases.add(node.alias.name);
 		}
 		super.walkFromItemFunctionNode(node);
 	}
 
 	protected walkFromItemSubSelectNode(node: FromItemSubSelectNode) {
-		this.tableMap.set(node.alias.name, node.alias.name);
 		this.specifiedTables.add(node.alias.name);
+		this.specifiedAliases.add(node.alias.name);
 		super.walkFromItemSubSelectNode(node);
 	}
 
 	protected walkFromItemTableNode(node: FromItemTableNode) {
-		let aliasNode = node.alias;
-		if (!aliasNode) {
-			const newAlias = this.tableMap.get(node.table);
-			aliasNode = {
-				type: "aliasNode",
-				name: newAlias,
-				path: [newAlias],
-			};
-			node.alias = aliasNode;
-			this.tableMap.set(node.table, newAlias);
-			this.specifiedTables.add(node.table);
-		} else {
-			this.tableMap.set(aliasNode.name, aliasNode.name);
-			this.specifiedTables.add(aliasNode.name);
+		this.specifiedTables.add(node.alias?.name || node.table);
+		if (node.alias) {
+			this.specifiedAliases.add(node.alias.name);
 		}
 		super.walkFromItemTableNode(node);
 	}
 
 	protected walkFromItemWithNode(node: FromItemWithNode) {
 		if (node.alias) {
-			this.tableMap.set(node.alias.name, node.alias.name);
 			this.specifiedTables.add(node.alias.name);
+			this.specifiedAliases.add(node.alias.name);
+		} else {
+			this.specifiedTables.add(node.withQueryName);
+			this.specifiedAliases.add(node.withQueryName);
 		}
 		super.walkFromItemWithNode(node);
 	}
 
-	protected walkSelectLockingNode(node: SelectLockingNode) {
-		// TODO: better walking of referenced tables
-		for (const tableNode of node.of) {
-			// NOTE: we don't want to add it to FROM automatically; let it error at runtime.
-			// this.referencedTables.add(tableNode.tableName);
-			this.tableReferences.add(tableNode);
+	protected walkSelectCommandNode(node: SelectCommandNode): void {
+		if (node !== this.ast) {
+			this.subSelectNodes.push(node);
+		} else {
+			super.walkSelectCommandNode(node);
 		}
 	}
 
-	protected walkSubSelectNode(node: SubSelectNode): void {
-		this.subSelectNodes.push(node);
-	}
-
-	protected walkTableReferenceNode(node: TableReferenceNode): void {
-		this.specifiedTables.add(node.tableName);
-		super.walkTableReferenceNode(node);
-	}
-
 	protected walkWithNode(node: WithNode): void {
-		// Do not process sub-nodes, they should be self-contained
+		if (node.query.type === "selectCommandNode") {
+			// Subqueries in WITH nodes should be processed immediately, as they provide context
+			//  required in the subsequent query.
+			this.rectifySubQuery(node.query);
+		}
+		// TODO: support other types of queries
 	}
 
 	rectify(): void {
@@ -120,39 +94,16 @@ class SelectRectifyingWalker extends SkippingWalker {
 		// Automatically add any unspecified tables to the "from" clause
 		const unspecifiedTables = difference(
 			this.referencedTables,
-			this.specifiedTables
+			union(this.specifiedAliases, this.specifiedTables)
 		);
 		for (const tableName of unspecifiedTables) {
-			const tableAlias = this.tableMap.get(tableName);
-			this.ast.fromItems.push(
-				from({
-					type: "tableReferenceNode",
-					tableName,
-				})
-					.alias(tableAlias)
-					.toNode()
-			);
-			this.specifiedTables.add(tableAlias);
-		}
-		// Update all column references to use the aliases.
-		for (const column of this.columnReferences.values()) {
-			const tableAlias = this.tableMap.get(column.tableOrAlias);
-			column.tableOrAlias = tableAlias;
-		}
-		// Update all table references to use the aliases.
-		for (const tableNode of this.tableReferences.values()) {
-			if (this.tableMap.has(tableNode.tableName)) {
-				tableNode.tableName = this.tableMap.get(tableNode.tableName);
-			}
+			this.ast.fromItems.push(from(tableName).toNode());
+			this.specifiedTables.add(tableName);
 		}
 
 		// Now process nested sub-queries
 		for (const node of this.subSelectNodes) {
-			const subWalker = new SelectRectifyingWalker(
-				node.query,
-				this.specifiedTables
-			);
-			subWalker.rectify();
+			this.rectifySubQuery(node);
 		}
 	}
 }

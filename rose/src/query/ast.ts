@@ -10,11 +10,6 @@ export interface ColumnReferenceNode {
 	columnName: string;
 }
 
-export interface TableReferenceNode {
-	type: "tableReferenceNode";
-	tableName: string;
-}
-
 export interface BinaryOperationNode {
 	type: "binaryOperationNode";
 	left: ParameterOrValueExpressionNode | ExpressionListNode;
@@ -336,7 +331,7 @@ export type FromItemNode =
 /**
  * Nodes that are only used by other "from item" nodes.
  */
-type FromRelatedNode = ColumnDefinitionNode | FromItemNode | TableReferenceNode;
+type FromRelatedNode = ColumnDefinitionNode | FromItemNode;
 
 export type AnyAliasedExpressionNode = AliasedSelectExpressionNode;
 
@@ -362,13 +357,27 @@ export interface LimitOffsetNode {
 export interface SelectLockingNode {
 	type: "selectLockingNode";
 	strength: "UPDATE" | "NO KEY UPDATE" | "SHARE" | "KEY SHARE";
-	of: TableReferenceNode[];
+	of: string[];
 	wait?: "NOWAIT" | "SKIP LOCKED";
 }
 
+/**
+ * with_query_name [ ( column_name [, ...] ) ] AS [ [ NOT ] MATERIALIZED ] ( select | values | insert | update | delete )
+ */
 export interface WithNode {
 	type: "withNode";
-	selectNodes: AliasedExpressionNode<SubSelectNode>[];
+	columnNames?: string[];
+	materialized?: boolean;
+	name: string;
+	recursive?: boolean;
+	/**
+	 * TODO: support TABLE, VALUES
+	 * TODO: proper support for non-select queries
+	 */
+	query: SelectCommandNode;
+	// | InsertCommandNode
+	// | UpdateCommandNode
+	// | DeleteCommandNode;
 }
 
 export type SelectNodes =
@@ -438,7 +447,7 @@ export interface SelectCommandNode {
 	ordering: OrderByExpressionNode[];
 	grouping: GroupByExpressionNode[];
 	limit?: LimitOffsetNode;
-	with?: WithNode;
+	with?: WithNode[];
 	locking: SelectLockingNode[];
 }
 
@@ -670,4 +679,5 @@ export type AstNode =
 	| SelectNodes
 	| SetItemNode
 	| SimpleColumnReferenceNode
-	| TransactionNodes;
+	| TransactionNodes
+	| WithNode;

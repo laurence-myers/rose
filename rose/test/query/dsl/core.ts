@@ -101,7 +101,7 @@ describe(`core`, () => {
 		});
 
 		it(`accepts a single subquery`, () => {
-			const astNode = arrayConstructor(subSelect(QOrders.product).toSubQuery());
+			const astNode = arrayConstructor(subSelect(QOrders.product).toNode());
 			// TODO: rectify table references in subqueries in array constructors
 			const expected = `ARRAY(SELECT "orders"."product")`;
 			doSimpleSqlTest(astNode, expected);
@@ -110,7 +110,7 @@ describe(`core`, () => {
 		it(`does not accept multiple arguments if one is a sub-query`, () => {
 			arrayConstructor(
 				// @ts-expect-error Arrays constructed from a sub-query don't accept multiple args
-				subSelect(QOrders.product).toSubQuery(),
+				subSelect(QOrders.product).toNode(),
 				constant(true)
 			);
 		});

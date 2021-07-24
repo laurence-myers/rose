@@ -1,7 +1,6 @@
 import { CommitCommandNode } from "../ast";
 import { Clone, coerceNullToUndefined } from "../../lang";
 import { FinalisedQueryNonReturningWithParams } from "../finalisedQuery";
-import { TableMap } from "../../data";
 
 export class CommitCommandBuilder {
 	protected readonly queryAst: CommitCommandNode;

@@ -7,3 +7,4 @@ export * from "./onConflict";
 export * from "./rollback";
 export * from "./select";
 export * from "./update";
+export * from "./with";

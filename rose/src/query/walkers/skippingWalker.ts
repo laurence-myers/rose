@@ -45,7 +45,6 @@ import {
 	SimpleColumnReferenceNode,
 	SubscriptNode,
 	SubSelectNode,
-	TableReferenceNode,
 	TransactionModeNode,
 	UnaryOperationNode,
 	UpdateCommandNode,
@@ -255,6 +254,9 @@ export class SkippingWalker extends BaseWalker {
 	}
 
 	protected walkSelectCommandNode(node: SelectCommandNode): void {
+		if (node.with) {
+			this.walkNodes(node.with);
+		}
 		this.walkNodes(node.outputExpressions);
 		this.walkNodes(node.fromItems);
 		this.walkNodes(node.conditions);
@@ -263,9 +265,7 @@ export class SkippingWalker extends BaseWalker {
 		this.walkNodes(node.locking);
 	}
 
-	protected walkSelectLockingNode(node: SelectLockingNode): void {
-		this.walkNodes(node.of);
-	}
+	protected walkSelectLockingNode(node: SelectLockingNode): void {}
 
 	protected walkSetItemNode(node: SetItemNode): void {}
 
@@ -303,8 +303,6 @@ export class SkippingWalker extends BaseWalker {
 		this.walk(node.query);
 	}
 
-	protected walkTableReferenceNode(node: TableReferenceNode): void {}
-
 	protected walkTransactionModeNode(node: TransactionModeNode): void {}
 
 	protected walkUnaryOperationNode(node: UnaryOperationNode): void {
@@ -322,6 +320,6 @@ export class SkippingWalker extends BaseWalker {
 	}
 
 	protected walkWithNode(node: WithNode): void {
-		this.walkNodes(node.selectNodes);
+		this.walk(node.query);
 	}
 }

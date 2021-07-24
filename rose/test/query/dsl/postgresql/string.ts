@@ -23,7 +23,7 @@ describe(`String functions`, function () {
 
 			const actual = wrapQuery(querySelect);
 			const expected = {
-				sql: `SELECT btrim("t1"."name") as "name" FROM "Users" as "t1"`,
+				sql: `SELECT btrim("Users"."name") as "name" FROM "Users"`,
 				parameters: [],
 			};
 			assert.deepEqual(actual, expected);
@@ -36,7 +36,7 @@ describe(`String functions`, function () {
 
 			const actual = wrapQuery(querySelect);
 			const expected = {
-				sql: `SELECT btrim("t1"."name", $1) as "name" FROM "Users" as "t1"`,
+				sql: `SELECT btrim("Users"."name", $1) as "name" FROM "Users"`,
 				parameters: ["abcd1234"],
 			};
 			assert.deepEqual(actual, expected);
@@ -64,7 +64,7 @@ describe(`String functions`, function () {
 
 			const actual = wrapQuery(querySelect);
 			const expected = {
-				sql: `SELECT trim($1 from "t1"."name") as "name" FROM "Users" as "t1"`,
+				sql: `SELECT trim($1 from "Users"."name") as "name" FROM "Users"`,
 				parameters: ["both"], // odd, "both" should be a keyword, but this seems to work in pgsql.
 			};
 			assert.deepEqual(actual, expected);
@@ -79,7 +79,7 @@ describe(`String functions`, function () {
 
 			const actual = wrapQuery(querySelect);
 			const expected = {
-				sql: `SELECT trim($1 $2 from "t1"."name") as "name" FROM "Users" as "t1"`,
+				sql: `SELECT trim($1 $2 from "Users"."name") as "name" FROM "Users"`,
 				parameters: ["both", "abcd1234"],
 			};
 			assert.deepEqual(actual, expected);

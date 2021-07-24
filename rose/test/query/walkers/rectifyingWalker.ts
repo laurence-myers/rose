@@ -1,4 +1,5 @@
 import {
+	BooleanBinaryOperationNode,
 	BooleanExpression,
 	ColumnReferenceNode,
 	FromItemNode,
@@ -9,27 +10,33 @@ import {
 	SubSelectNode,
 } from "../../../src/query/ast";
 import { RectifyingWalker } from "../../../src/query/walkers/rectifyingWalker";
-import { deepEqual, equal, fail } from "assert";
+import { deepStrictEqual, strictEqual } from "assert";
 import { select } from "../../../src/query/dsl/commands";
 import {
 	constant,
 	from,
+	param,
 	selectExpression,
 	selectSubQuery,
+	subSelect,
+	withCte,
 } from "../../../src/query/dsl";
 import { sum } from "../../../src/query/dsl/postgresql/aggregate";
-import { QRecurringPayments, QUsers, TLocations, TUsers } from "../../fixtures";
+import {
+	QLocations,
+	QOrders,
+	QRecurringPayments,
+	QUsers,
+	TLocations,
+	TUsers,
+} from "../../fixtures";
 
-function getFromItem(fromItem: FromItemNode): FromItemTableNode | never {
+function getFromItem(fromItem: FromItemNode): FromItemTableNode {
 	if (fromItem.type == "fromItemTableNode") {
 		return fromItem;
 	} else {
-		throw fail(
-			fromItem,
-			"FromItemTableNode",
-			"Expected a FromItemTableNode",
-			"!="
-		);
+		strictEqual(fromItem.type, "FromItemTableNode");
+		throw new Error(`Shouldn't get here`);
 	}
 }
 
@@ -60,10 +67,10 @@ describe("Rectifying Walker", function () {
 		walker.rectify();
 
 		// Verify
-		equal(ast.fromItems.length, 1);
+		strictEqual(ast.fromItems.length, 1);
 		const fromItem = getFromItem(ast.fromItems[0]);
-		equal(fromItem.table, "Users");
-		equal(fromItem.alias?.name, "t1");
+		strictEqual(fromItem.table, "Users");
+		strictEqual(fromItem.alias?.name, undefined);
 	});
 
 	it("Does not rectify a table referenced in a column reference node and in a from item node", function () {
@@ -79,11 +86,11 @@ describe("Rectifying Walker", function () {
 		walker.rectify();
 
 		// Verify
-		equal(ast.fromItems.length, 1);
+		strictEqual(ast.fromItems.length, 1);
 		const fromItem = getFromItem(ast.fromItems[0]);
-		equal(fromItem.table, "Users");
-		equal(fromItem.alias?.name, "explicitAlias");
-		equal(
+		strictEqual(fromItem.table, "Users");
+		strictEqual(fromItem.alias?.name, "explicitAlias");
+		strictEqual(
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			(ast.outputExpressions[0]! as ColumnReferenceNode).tableOrAlias,
 			"explicitAlias"
@@ -103,16 +110,17 @@ describe("Rectifying Walker", function () {
 		walker.rectify();
 
 		// Verify
-		equal(ast.fromItems.length, 2);
+		strictEqual(ast.fromItems.length, 2);
 		const fromItem = getFromItem(ast.fromItems[0]);
-		equal(fromItem.table, "Users");
-		equal(fromItem.alias?.name, "explicitAlias");
+		strictEqual(fromItem.table, "Users");
+		strictEqual(fromItem.alias?.name, "explicitAlias");
 		const fromItem2 = getFromItem(ast.fromItems[1]);
-		equal(fromItem2.table, "Users");
-		equal(fromItem2.alias?.name, "t1");
-		equal(
+		strictEqual(fromItem2.table, "Users");
+		strictEqual(fromItem2.alias?.name, undefined);
+		strictEqual(
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			(ast.outputExpressions[0]! as ColumnReferenceNode).tableOrAlias,
-			"t1"
+			"Users"
 		);
 	});
 
@@ -175,15 +183,15 @@ describe("Rectifying Walker", function () {
 		walker.rectify();
 
 		// Verify
-		equal(ast.fromItems.length, 1);
+		strictEqual(ast.fromItems.length, 1);
 		const fromItem = getFromItem(ast.fromItems[0]);
-		equal(fromItem.table, "Users");
-		equal(fromItem.alias?.name, "t1");
-		equal(ast.conditions.length, 1);
-		equal(subSelectNode.query.fromItems.length, 1);
+		strictEqual(fromItem.table, "Users");
+		strictEqual(fromItem.alias?.name, undefined);
+		strictEqual(ast.conditions.length, 1);
+		strictEqual(subSelectNode.query.fromItems.length, 1);
 		const nestedFromItem = getFromItem(subSelectNode.query.fromItems[0]);
-		equal(nestedFromItem.table, "Locations");
-		equal(nestedFromItem.alias?.name, "t1");
+		strictEqual(nestedFromItem.table, "Locations");
+		strictEqual(nestedFromItem.alias?.name, undefined);
 	});
 
 	it("Rectifies nested sub-queries individually, retaining aliased tables referenced from the outer query", function () {
@@ -207,22 +215,25 @@ describe("Rectifying Walker", function () {
 		walker.rectify();
 
 		// Verify
-		equal(ast.fromItems.length, 2);
+		strictEqual(ast.fromItems.length, 2);
 		const firstFromItem = getFromItem(ast.fromItems[0]);
-		equal(firstFromItem.alias?.name, "locations");
+		strictEqual(firstFromItem.alias?.name, "locations");
 		const secondFromItem = ast.fromItems[1];
-		equal((secondFromItem as FromItemSubSelectNode).alias?.name, "amountSumT");
+		strictEqual(
+			(secondFromItem as FromItemSubSelectNode).alias?.name,
+			"amountSumT"
+		);
 		const subQueryNode = (secondFromItem as FromItemSubSelectNode).query.query;
-		equal(
+		strictEqual(
 			subQueryNode.fromItems.length,
 			1,
 			'The inner query should not add "Locations" to its "from" clause'
 		);
 		const firstNestedFromItem = getFromItem(subQueryNode.fromItems[0]);
-		equal(firstNestedFromItem.alias?.name, "t1");
+		strictEqual(firstNestedFromItem.alias?.name, undefined);
 	});
 
-	it("Rectifies unaliased FROM locations", function () {
+	it("Does not change references to unaliased FROM items", function () {
 		const ast: SelectCommandNode = {
 			type: "selectCommandNode",
 			distinction: "all",
@@ -281,71 +292,87 @@ describe("Rectifying Walker", function () {
 			],
 			locking: [],
 		};
+
 		const walker = new RectifyingWalker(ast);
 		walker.rectify();
 
-		const expected: SelectCommandNode = {
-			type: "selectCommandNode",
-			distinction: "all",
-			outputExpressions: [
-				{
-					type: "aliasedExpressionNode",
-					alias: {
-						type: "aliasNode",
-						name: "region",
-						path: ["region"],
-					},
-					expression: {
-						type: "columnReferenceNode",
-						columnName: "region",
-						tableOrAlias: "t1",
-					},
-				},
-				{
-					type: "aliasedExpressionNode",
-					alias: {
-						type: "aliasNode",
-						name: "total_sales",
-						path: ["total_sales"],
-					},
-					expression: {
-						type: "functionExpressionNode",
-						name: "sum",
-						arguments: [
-							{
-								type: "columnReferenceNode",
-								columnName: "amount",
-								tableOrAlias: "t1",
-							},
-						],
-					},
-				},
-			],
-			fromItems: [
-				{
-					type: "fromItemTableNode",
-					alias: {
-						type: "aliasNode",
-						name: "t1",
-						path: ["t1"],
-					},
-					table: "orders",
-				},
-			],
-			conditions: [],
-			ordering: [],
-			grouping: [
-				{
-					type: "groupByExpressionNode",
-					expression: {
-						type: "columnReferenceNode",
-						columnName: "region",
-						tableOrAlias: "t1",
-					},
-				},
-			],
-			locking: [],
-		};
-		deepEqual(ast, expected);
+		const expected: SelectCommandNode = ast;
+		deepStrictEqual(ast, expected);
+	});
+
+	it(`Rectifies outer query and sub-query separately when referencing the same table`, function () {
+		// Setup
+		const query = select({
+			id: QLocations.id,
+		}).where(
+			QLocations.id.in(
+				subSelect(QLocations.id)
+					.where(QLocations.agencyId.eq(param(() => 1)))
+					.toNode()
+			)
+		);
+
+		const ast = (query as unknown as { queryAst: SelectCommandNode }).queryAst;
+
+		// Execute
+		const walker = new RectifyingWalker(ast);
+		walker.rectify();
+
+		// Verify
+		strictEqual(ast.fromItems.length, 1);
+		const firstFromItem = getFromItem(ast.fromItems[0]);
+		strictEqual(firstFromItem.alias, undefined);
+		strictEqual(firstFromItem.table, "Locations");
+		const subQueryNode = (
+			(ast.conditions[0] as BooleanBinaryOperationNode).right as SubSelectNode
+		).query;
+		strictEqual(
+			subQueryNode.fromItems.length,
+			1,
+			'The inner query should add "Locations" to its own "from" clause'
+		);
+		const firstNestedFromItem = getFromItem(subQueryNode.fromItems[0]);
+		strictEqual(firstNestedFromItem.alias, undefined);
+		strictEqual(firstNestedFromItem.table, "Locations");
+	});
+
+	it("Rectifies CTE references", function () {
+		// Setup
+		const regionalSalesName = `regional_sales`;
+		const regionalSalesQuery = select({
+			region: QOrders.region,
+		});
+		const regionalSales = withCte(regionalSalesName, regionalSalesQuery);
+		const regionalSalesMetamodel =
+			regionalSalesQuery.toMetamodel(regionalSalesName);
+
+		const topRegionsCteName = `top_regions`;
+		const topRegions = withCte(
+			topRegionsCteName,
+			select({
+				region: regionalSalesMetamodel.region,
+			})
+		);
+
+		const query = select({
+			region: regionalSalesMetamodel.region,
+		}).with(regionalSales, topRegions);
+
+		const ast = (query as unknown as { queryAst: SelectCommandNode }).queryAst;
+
+		// Execute
+		const walker = new RectifyingWalker(ast);
+		walker.rectify();
+
+		// Verify
+		strictEqual(
+			(ast.with?.[0]?.query.fromItems[0] as FromItemTableNode)?.table,
+			QOrders.$table.name
+		);
+		// Although the second FROM item should be a `FromItemWithNode`, the rectifier currently only produces table references.
+		strictEqual(
+			(ast.with?.[1]?.query.fromItems[0] as FromItemTableNode)?.table,
+			regionalSalesName
+		);
 	});
 });

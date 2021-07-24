@@ -6,7 +6,6 @@ import {
 } from "../querySelector";
 import {
 	AliasedSubQueryBuilder,
-	CommonTableExpressionBuilder,
 	SelectQueryBuilder,
 	SubQueryBuilder,
 	SubSelectExpression,
@@ -14,15 +13,6 @@ import {
 import { ParameterOrValueExpressionNode } from "../ast";
 import { exists } from "./postgresql";
 import { constant } from "./core";
-
-export function selectCte<TQuerySelector extends QuerySelector>(
-	alias: string,
-	querySelector: TQuerySelector
-) {
-	return new CommonTableExpressionBuilder(alias, querySelector);
-}
-
-export const with_ = selectCte;
 
 export function selectExpression<T = never>(
 	expression: ParameterOrValueExpressionNode
@@ -47,7 +37,7 @@ export function selectExists(
 ): SelectQueryBuilder<SelectExistsQuerySelector> {
 	return new SelectQueryBuilder<SelectExistsQuerySelector>({
 		exists: selectExpression(
-			exists(subQueryBuilderCallback(subSelect(constant(1))).toSubQuery())
+			exists(subQueryBuilderCallback(subSelect(constant(1))).toNode())
 		),
 	});
 }

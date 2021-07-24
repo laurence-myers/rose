@@ -86,84 +86,84 @@ describe(`comparison`, () => {
 				equal.name,
 				{
 					astNode: equal(constant("foo"), QUsers.name.col()),
-					expected: `$1 = "t1"."name"`,
+					expected: `$1 = "Users"."name"`,
 				},
 			],
 			[
 				"eq",
 				{
 					astNode: eq(constant("foo"), QUsers.name.col()),
-					expected: `$1 = "t1"."name"`,
+					expected: `$1 = "Users"."name"`,
 				},
 			],
 			[
 				greaterThan.name,
 				{
 					astNode: greaterThan(constant("foo"), QUsers.name.col()),
-					expected: `$1 > "t1"."name"`,
+					expected: `$1 > "Users"."name"`,
 				},
 			],
 			[
 				"gt",
 				{
 					astNode: gt(constant("foo"), QUsers.name.col()),
-					expected: `$1 > "t1"."name"`,
+					expected: `$1 > "Users"."name"`,
 				},
 			],
 			[
 				greaterThanOrEqual.name,
 				{
 					astNode: greaterThanOrEqual(constant("foo"), QUsers.name.col()),
-					expected: `$1 >= "t1"."name"`,
+					expected: `$1 >= "Users"."name"`,
 				},
 			],
 			[
 				"gte",
 				{
 					astNode: gte(constant("foo"), QUsers.name.col()),
-					expected: `$1 >= "t1"."name"`,
+					expected: `$1 >= "Users"."name"`,
 				},
 			],
 			[
 				lessThan.name,
 				{
 					astNode: lessThan(constant("foo"), QUsers.name.col()),
-					expected: `$1 < "t1"."name"`,
+					expected: `$1 < "Users"."name"`,
 				},
 			],
 			[
 				"lt",
 				{
 					astNode: lt(constant("foo"), QUsers.name.col()),
-					expected: `$1 < "t1"."name"`,
+					expected: `$1 < "Users"."name"`,
 				},
 			],
 			[
 				lessThanOrEqual.name,
 				{
 					astNode: lessThanOrEqual(constant("foo"), QUsers.name.col()),
-					expected: `$1 <= "t1"."name"`,
+					expected: `$1 <= "Users"."name"`,
 				},
 			],
 			[
 				"lte",
 				{
 					astNode: lte(constant("foo"), QUsers.name.col()),
-					expected: `$1 <= "t1"."name"`,
+					expected: `$1 <= "Users"."name"`,
 				},
 			],
 			[
 				notEqual.name,
 				{
 					astNode: notEqual(constant("foo"), QUsers.name.col()),
-					expected: `$1 != "t1"."name"`,
+					expected: `$1 != "Users"."name"`,
 				},
 			],
 			[
 				"neq",
 				{
 					astNode: neq(constant("foo"), QUsers.name.col()),
-					expected: `$1 != "t1"."name"`,
+					expected: `$1 != "Users"."name"`,
 				},
 			],
 		]);
@@ -181,7 +181,7 @@ describe(`comparison`, () => {
 				between.name,
 				{
 					astNode: between(QOrders.amount.col(), constant(1), constant(5)),
-					expected: `"t1"."amount" BETWEEN $1 AND $2`,
+					expected: `"orders"."amount" BETWEEN $1 AND $2`,
 				},
 			],
 			[
@@ -192,84 +192,84 @@ describe(`comparison`, () => {
 						constant(1),
 						constant(5)
 					),
-					expected: `"t1"."amount" BETWEEN SYMMETRIC $1 AND $2`,
+					expected: `"orders"."amount" BETWEEN SYMMETRIC $1 AND $2`,
 				},
 			],
 			[
 				isDistinctFrom.name,
 				{
 					astNode: isDistinctFrom(QOrders.amount.col(), constant(1)),
-					expected: `"t1"."amount" IS DISTINCT FROM $1`,
+					expected: `"orders"."amount" IS DISTINCT FROM $1`,
 				},
 			],
 			[
 				isFalse.name,
 				{
 					astNode: isFalse(QOrders.amount.col()),
-					expected: `"t1"."amount" IS FALSE`,
+					expected: `"orders"."amount" IS FALSE`,
 				},
 			],
 			[
 				isNotDistinctFrom.name,
 				{
 					astNode: isNotDistinctFrom(QOrders.amount.col(), constant(1)),
-					expected: `"t1"."amount" IS NOT DISTINCT FROM $1`,
+					expected: `"orders"."amount" IS NOT DISTINCT FROM $1`,
 				},
 			],
 			[
 				isNotFalse.name,
 				{
 					astNode: isNotFalse(QOrders.amount.col()),
-					expected: `"t1"."amount" IS NOT FALSE`,
+					expected: `"orders"."amount" IS NOT FALSE`,
 				},
 			],
 			[
 				isNotNull.name,
 				{
 					astNode: isNotNull(QOrders.amount.col()),
-					expected: `"t1"."amount" IS NOT NULL`,
+					expected: `"orders"."amount" IS NOT NULL`,
 				},
 			],
 			[
 				isNotTrue.name,
 				{
 					astNode: isNotTrue(QOrders.amount.col()),
-					expected: `"t1"."amount" IS NOT TRUE`,
+					expected: `"orders"."amount" IS NOT TRUE`,
 				},
 			],
 			[
 				isNotUnknown.name,
 				{
 					astNode: isNotUnknown(QOrders.amount.col()),
-					expected: `"t1"."amount" IS NOT UNKNOWN`,
+					expected: `"orders"."amount" IS NOT UNKNOWN`,
 				},
 			],
 			[
 				isNull.name,
 				{
 					astNode: isNull(QOrders.amount.col()),
-					expected: `"t1"."amount" IS NULL`,
+					expected: `"orders"."amount" IS NULL`,
 				},
 			],
 			[
 				isTrue.name,
 				{
 					astNode: isTrue(QOrders.amount.col()),
-					expected: `"t1"."amount" IS TRUE`,
+					expected: `"orders"."amount" IS TRUE`,
 				},
 			],
 			[
 				isUnknown.name,
 				{
 					astNode: isUnknown(QOrders.amount.col()),
-					expected: `"t1"."amount" IS UNKNOWN`,
+					expected: `"orders"."amount" IS UNKNOWN`,
 				},
 			],
 			[
 				notBetween.name,
 				{
 					astNode: notBetween(QOrders.amount.col(), constant(1), constant(5)),
-					expected: `"t1"."amount" NOT BETWEEN $1 AND $2`,
+					expected: `"orders"."amount" NOT BETWEEN $1 AND $2`,
 				},
 			],
 		]);
@@ -290,7 +290,7 @@ describe(`comparison`, () => {
 						QOrders.amount.col(),
 						all(array_(constant(1), constant(5)))
 					),
-					expected: `"t1"."amount" = ALL(ARRAY[$1, $2])`,
+					expected: `"orders"."amount" = ALL(ARRAY[$1, $2])`,
 				},
 			],
 			[
@@ -300,7 +300,7 @@ describe(`comparison`, () => {
 						QOrders.amount.col(),
 						any(array_(constant(1), constant(5)))
 					),
-					expected: `"t1"."amount" = ANY(ARRAY[$1, $2])`,
+					expected: `"orders"."amount" = ANY(ARRAY[$1, $2])`,
 				},
 			],
 			[
@@ -310,7 +310,7 @@ describe(`comparison`, () => {
 						QOrders.amount.col(),
 						some(array_(constant(1), constant(5)))
 					),
-					expected: `"t1"."amount" = ANY(ARRAY[$1, $2])`,
+					expected: `"orders"."amount" = ANY(ARRAY[$1, $2])`,
 				},
 			],
 		]);

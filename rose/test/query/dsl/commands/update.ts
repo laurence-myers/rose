@@ -31,7 +31,7 @@ describe(`UPDATE commands`, function () {
 
 		// Verify
 		const expected = {
-			sql: `UPDATE "Users" as "t1" SET "deleted_at" = now(), "name" = upper($1) WHERE "t1"."id" = $2`,
+			sql: `UPDATE "Users" SET "deleted_at" = now(), "name" = upper($1) WHERE "Users"."id" = $2`,
 			parameters: ["fred", 123],
 		};
 		assert.deepEqual(actual, expected);
@@ -63,7 +63,7 @@ describe(`UPDATE commands`, function () {
 
 		// Verify
 		const expected = {
-			sql: `UPDATE "Users" as "t1" SET "deletedAt" = $1, "name" = $2 WHERE "t1"."id" = $3`,
+			sql: `UPDATE "Users" SET "deletedAt" = $1, "name" = $2 WHERE "Users"."id" = $3`,
 			parameters: [now, "fred", 123],
 		};
 		assert.deepEqual(actual, expected);
@@ -85,7 +85,7 @@ describe(`UPDATE commands`, function () {
 
 		// Verify
 		const expected = {
-			sql: `UPDATE "Users" as "t1" SET "deletedAt" = now() FROM "Locations" as "t2" WHERE "t1"."locationId" = "t2"."id"`,
+			sql: `UPDATE "Users" SET "deletedAt" = now() FROM "Locations" WHERE "Users"."locationId" = "Locations"."id"`,
 			parameters: [],
 		};
 		assert.deepEqual(actual, expected);
@@ -120,7 +120,7 @@ describe(`UPDATE commands`, function () {
 
 		// Verify
 		const expected = {
-			sql: `UPDATE "Users" as "t1" SET "deletedAt" = $1, "name" = $2 WHERE "t1"."id" = $3 RETURNING "t1"."id" as "updatedId", "t1"."name" as "name"`,
+			sql: `UPDATE "Users" SET "deletedAt" = $1, "name" = $2 WHERE "Users"."id" = $3 RETURNING "Users"."id" as "updatedId", "Users"."name" as "name"`,
 			parameters: [now, "fred", 123],
 		};
 		assert.deepEqual(actual, expected);

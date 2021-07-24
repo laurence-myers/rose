@@ -6,12 +6,11 @@ import {
 	OrderByExpressionNode,
 	ParameterOrValueExpressionNode,
 	SimpleColumnReferenceNode,
-	TableReferenceNode,
 	ValueExpressionNode,
 } from "./ast";
 import { OptionalNulls } from "../lang";
 import { any } from "./dsl/postgresql";
-import { InitialJoinBuilder, Joinable } from "./builders";
+import { Joinable } from "./builders";
 import { join } from "./dsl";
 
 export class TableMetamodel {
@@ -21,7 +20,7 @@ export class TableMetamodel {
 	) {}
 
 	join(other: Joinable) {
-		return join(this.toNode(), other);
+		return join(this, other);
 	}
 
 	fullJoin(other: Joinable) {
@@ -42,13 +41,6 @@ export class TableMetamodel {
 
 	crossJoin(other: Joinable) {
 		return this.join(other).cross();
-	}
-
-	toNode(): TableReferenceNode {
-		return {
-			type: "tableReferenceNode",
-			tableName: this.name,
-		};
 	}
 }
 

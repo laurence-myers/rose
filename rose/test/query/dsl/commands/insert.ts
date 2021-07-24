@@ -52,7 +52,6 @@ import {
 import assert = require("assert");
 import { now } from "../../../../src/query/dsl/postgresql/dateTime";
 import { exists } from "../../../../src/query/dsl/postgresql";
-import { leftJoin } from "../../../../src";
 
 describe(`INSERT commands`, () => {
 	it(`supports inserting a single row`, function () {
@@ -83,7 +82,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" ("deletedAt", "id", "locationId", "name") VALUES ($1, $2, $3, $4)`,
+			sql: `INSERT INTO "Users" ("deletedAt", "id", "locationId", "name") VALUES ($1, $2, $3, $4)`,
 			parameters: [null, 123, 456, "Fred"], // In order of column name (sorted alphabetically)
 		};
 		assert.deepEqual(actual, expected);
@@ -124,7 +123,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" ("deleted_at", "id", "location_id", "name") VALUES ($1, $2, $3, $4)`,
+			sql: `INSERT INTO "Users" ("deleted_at", "id", "location_id", "name") VALUES ($1, $2, $3, $4)`,
 			parameters: [null, 123, 456, "Fred"], // In order of column name (sorted alphabetically)
 		};
 		assert.deepEqual(actual, expected);
@@ -154,7 +153,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES ($1, $2, $3)`,
+			sql: `INSERT INTO "Users" ("id", "locationId", "name") VALUES ($1, $2, $3)`,
 			parameters: [123, 456, "Fred"], // In order of column name (sorted alphabetically)
 		};
 		assert.deepEqual(actual, expected);
@@ -182,7 +181,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2)`,
+			sql: `INSERT INTO "Users" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2)`,
 			parameters: [456, "Fred"], // In order of column name (sorted alphabetically)
 		};
 		assert.deepEqual(actual, expected);
@@ -238,7 +237,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES ($1, $2, $3)`,
+			sql: `INSERT INTO "Users" ("id", "locationId", "name") VALUES ($1, $2, $3)`,
 			parameters: [123, 456, "Fred"], // In order of column name (sorted alphabetically)
 		};
 		assert.deepEqual(actual, expected);
@@ -249,7 +248,7 @@ describe(`INSERT commands`, () => {
 		const query = insert(QUsers).insertFromQuery(
 			subSelect(aliasExpr(col(QLocations.id), "locationId"))
 				.where(QLocations.name.eq(constant("Launceston")))
-				.toSubQuery(),
+				.toNode(),
 			[]
 		);
 
@@ -258,7 +257,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" (SELECT "t1"."id" as "locationId" FROM "Locations" as "t1" WHERE "t1"."name" = $1)`,
+			sql: `INSERT INTO "Users" (SELECT "Locations"."id" as "locationId" FROM "Locations" WHERE "Locations"."name" = $1)`,
 			parameters: ["Launceston"],
 		};
 		assert.deepEqual(actual, expected);
@@ -269,7 +268,7 @@ describe(`INSERT commands`, () => {
 		const query = insert(QUsers).insertFromQuery(
 			subSelect(QLocations.id)
 				.where(QLocations.name.eq(constant("Launceston")))
-				.toSubQuery(),
+				.toNode(),
 			["locationId"]
 		);
 
@@ -278,7 +277,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" ("locationId") (SELECT "t1"."id" FROM "Locations" as "t1" WHERE "t1"."name" = $1)`,
+			sql: `INSERT INTO "Users" ("locationId") (SELECT "Locations"."id" FROM "Locations" WHERE "Locations"."name" = $1)`,
 			parameters: ["Launceston"],
 		};
 		assert.deepEqual(actual, expected);
@@ -289,7 +288,7 @@ describe(`INSERT commands`, () => {
 		const query = insert(QUsers).insertFromQuery(
 			subSelect(QLocations.id)
 				.where(QLocations.name.eq(constant("Launceston")))
-				.toSubQuery()
+				.toNode()
 		);
 
 		// Execute
@@ -297,7 +296,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" ("id") (SELECT "t1"."id" FROM "Locations" as "t1" WHERE "t1"."name" = $1)`,
+			sql: `INSERT INTO "Users" ("id") (SELECT "Locations"."id" FROM "Locations" WHERE "Locations"."name" = $1)`,
 			parameters: ["Launceston"],
 		};
 		assert.deepEqual(actual, expected);
@@ -308,7 +307,7 @@ describe(`INSERT commands`, () => {
 		const query = insert(QUsers).insertFromQuery(
 			subSelect(aliasCol(QLocations.id, "locationId"))
 				.where(QLocations.name.eq(constant("Launceston")))
-				.toSubQuery()
+				.toNode()
 		);
 
 		// Execute
@@ -316,7 +315,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" ("locationId") (SELECT "t1"."id" as "locationId" FROM "Locations" as "t1" WHERE "t1"."name" = $1)`,
+			sql: `INSERT INTO "Users" ("locationId") (SELECT "Locations"."id" as "locationId" FROM "Locations" WHERE "Locations"."name" = $1)`,
 			parameters: ["Launceston"],
 		};
 		assert.deepEqual(actual, expected);
@@ -327,7 +326,7 @@ describe(`INSERT commands`, () => {
 		const query = insert(QUsers).insertFromQuery(
 			subSelect(QLocations.id)
 				.where(QLocations.name.eq(constant("Launceston")))
-				.toSubQuery(),
+				.toNode(),
 			[] // no column names
 		);
 
@@ -336,7 +335,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" (SELECT "t1"."id" FROM "Locations" as "t1" WHERE "t1"."name" = $1)`,
+			sql: `INSERT INTO "Users" (SELECT "Locations"."id" FROM "Locations" WHERE "Locations"."name" = $1)`,
 			parameters: ["Launceston"],
 		};
 		assert.deepEqual(actual, expected);
@@ -381,11 +380,11 @@ describe(`INSERT commands`, () => {
 									subSelect(constant(1))
 										.from(QProjectRole)
 										.where(projectRoleLookupCriteria(p))
-										.toSubQuery()
+										.toNode()
 								)
 							)
 						)
-						.toSubQuery(),
+						.toNode(),
 					["activeAt", "memberId", "inactiveAt", "projectId", "role"]
 				)
 				.finalise(p)
@@ -400,7 +399,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "project_role" as "t1" ("active_at", "member_id", "inactive_at", "project_id", "role") (SELECT now(), $1, NULL, "t2"."project_id", $2 FROM "project_role" as "t1" LEFT OUTER JOIN "project" as "t2" ON ("t2"."short_code" = $3 AND "t2"."project_id" = "t1"."project_id") WHERE NOT (EXISTS (SELECT $4 FROM "project_role" as "t1", "project" as "t2" WHERE ("t2"."short_code" = $5 AND "t1"."project_id" = "t2"."project_id" AND "t1"."member_id" = $6 AND "t1"."role" = $7 AND "t1"."inactive_at" IS NULL))))`,
+			sql: `INSERT INTO "project_role" ("active_at", "member_id", "inactive_at", "project_id", "role") (SELECT now(), $1, NULL, "project"."project_id", $2 FROM "project_role" LEFT OUTER JOIN "project" ON ("project"."short_code" = $3 AND "project"."project_id" = "project_role"."project_id") WHERE NOT (EXISTS (SELECT $4 FROM "project_role", "project" WHERE ("project"."short_code" = $5 AND "project_role"."project_id" = "project"."project_id" AND "project_role"."member_id" = $6 AND "project_role"."role" = $7 AND "project_role"."inactive_at" IS NULL))))`,
 			parameters: [
 				"13a1faee-6613-4f24-9cb4-2abcf296abb8",
 				"Supporter",
@@ -440,7 +439,7 @@ describe(`INSERT commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES ($1, $2, $3) RETURNING "t1"."id" as "newUserId", "t1"."name" as "name", "t1"."locationId" as "locationId"`,
+			sql: `INSERT INTO "Users" ("id", "locationId", "name") VALUES ($1, $2, $3) RETURNING "Users"."id" as "newUserId", "Users"."name" as "name", "Users"."locationId" as "locationId"`,
 			parameters: [123, 456, "Fred"], // In order of column name (sorted alphabetically)
 		};
 		assert.deepEqual(actual, expected);
@@ -468,7 +467,7 @@ describe(`INSERT commands`, () => {
 
 				// Verify
 				const expected = {
-					sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT ("name", "locationId") DO UPDATE SET "name" = $3`,
+					sql: `INSERT INTO "Users" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT ("name", "locationId") DO UPDATE SET "name" = $3`,
 					parameters: [123, "Fred", "Fred 2"],
 				};
 				assert.deepEqual(actual, expected);
@@ -494,7 +493,7 @@ describe(`INSERT commands`, () => {
 
 				// Verify
 				const expected = {
-					sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT ON CONSTRAINT "foo_constraint" DO UPDATE SET "name" = $3`,
+					sql: `INSERT INTO "Users" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT ON CONSTRAINT "foo_constraint" DO UPDATE SET "name" = $3`,
 					parameters: [123, "Fred", "Fred 2"],
 				};
 				assert.deepEqual(actual, expected);
@@ -532,7 +531,7 @@ describe(`INSERT commands`, () => {
 
 				// Verify
 				const expected = {
-					sql: `INSERT INTO "Users" as "t1" ("id", "location_id", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT (upper("name") COLLATE 'en_US' "text_pattern_ops") WHERE char_length("name") <= $3 DO UPDATE SET "deleted_at" = $4, "name" = $5 WHERE char_length("name") >= $6`,
+					sql: `INSERT INTO "Users" ("id", "location_id", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT (upper("name") COLLATE 'en_US' "text_pattern_ops") WHERE char_length("name") <= $3 DO UPDATE SET "deleted_at" = $4, "name" = $5 WHERE char_length("name") >= $6`,
 					parameters: [123, "Fred", 10, "2020-06-23T19:46:00Z", "Fred 2", 5],
 				};
 				assert.deepEqual(actual, expected);
@@ -561,7 +560,7 @@ describe(`INSERT commands`, () => {
 
 				// Verify
 				const expected = {
-					sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT ("name", "locationId") WHERE "deletedAt" IS NULL DO UPDATE SET "name" = $3`,
+					sql: `INSERT INTO "Users" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT ("name", "locationId") WHERE "deletedAt" IS NULL DO UPDATE SET "name" = $3`,
 					parameters: [123, "Fred", "Fred 2"],
 				};
 				assert.deepEqual(actual, expected);
@@ -593,7 +592,7 @@ describe(`INSERT commands`, () => {
 
 				// Verify
 				const expected = {
-					sql: `INSERT INTO "Users" as "t1" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT (upper("name") COLLATE 'en_US' "text_pattern_ops") WHERE char_length("name") <= $3 DO NOTHING`,
+					sql: `INSERT INTO "Users" ("id", "locationId", "name") VALUES (DEFAULT, $1, $2) ON CONFLICT (upper("name") COLLATE 'en_US' "text_pattern_ops") WHERE char_length("name") <= $3 DO NOTHING`,
 					parameters: [123, "Fred", 10],
 				};
 				assert.deepEqual(actual, expected);

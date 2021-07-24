@@ -1,7 +1,6 @@
 import { RollbackCommandNode } from "../ast";
 import { Clone, coerceNullToUndefined } from "../../lang";
 import { FinalisedQueryNonReturningWithParams } from "../finalisedQuery";
-import { TableMap } from "../../data";
 
 export class RollbackCommandBuilder {
 	protected readonly queryAst: RollbackCommandNode;

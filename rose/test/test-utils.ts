@@ -1,15 +1,10 @@
 import { AstNode } from "../src";
 import { SqlAstWalker } from "../src/query/walkers/sqlAstWalker";
 import * as assert from "assert";
-import { TableMap } from "../src/data";
 
-export function doSimpleSqlTest(
-	astNode: AstNode,
-	expectedSql: string,
-	tableMap?: TableMap | undefined
-) {
+export function doSimpleSqlTest(astNode: AstNode, expectedSql: string) {
 	// Execute
-	const result = new SqlAstWalker(astNode, tableMap).toSql().sql;
+	const result = new SqlAstWalker(astNode).toSql().sql;
 
 	// Verify
 	assert.deepEqual(result, expectedSql);

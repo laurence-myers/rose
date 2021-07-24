@@ -14,7 +14,7 @@ describe(`DELETE commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `DELETE FROM "Users" as "t1" WHERE "t1"."id" = $1`,
+			sql: `DELETE FROM "Users" WHERE "Users"."id" = $1`,
 			parameters: [123],
 		};
 		assert.deepEqual(actual, expected);
@@ -26,7 +26,7 @@ describe(`DELETE commands`, () => {
 			QUsers.locationId.eq(
 				subSelect(QLocations.id)
 					.where(QLocations.agencyId.eq(constant(123)))
-					.toSubQuery()
+					.toNode()
 			)
 		);
 
@@ -35,7 +35,7 @@ describe(`DELETE commands`, () => {
 
 		// Verify
 		const expected = {
-			sql: `DELETE FROM "Users" as "t1" WHERE "t1"."locationId" = (SELECT "t2"."id" FROM "Locations" as "t2" WHERE "t2"."agencyId" = $1)`,
+			sql: `DELETE FROM "Users" WHERE "Users"."locationId" = (SELECT "Locations"."id" FROM "Locations" WHERE "Locations"."agencyId" = $1)`,
 			parameters: [123],
 		};
 		assert.deepEqual(actual, expected);
