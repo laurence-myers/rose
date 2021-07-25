@@ -27,49 +27,63 @@ function generateInterfacesAndMetamodel(
 	}
 }
 
+enum CliOptionType {
+	String,
+	Boolean,
+}
+
 const cliOptionsConfig = [
 	{
 		long: "url",
 		short: "u",
 		description: "The database URL",
 		required: true,
+		type: CliOptionType.String,
 	},
 	{
 		long: "out",
 		short: "o",
 		description: "The output directory",
 		required: true,
+		type: CliOptionType.String,
 	},
 	{
 		long: "config",
 		short: "c",
 		description: "The config file",
 		required: false,
+		type: CliOptionType.String,
 	},
-	// {
-	// 	long: 'help',
-	// 	short: 'h',
-	// 	description: 'Print the help for this tool',
-	// 	required: false
-	// }
+	{
+		long: "help",
+		short: "h",
+		description: "Print this help text",
+		required: false,
+		type: CliOptionType.Boolean,
+	},
 ] as const;
 
 interface CliOptions {
-	url: string;
-	outDir: string;
 	configFileName?: string;
+	outDir: string;
+	help?: boolean;
+	url: string;
 }
 
 function parseArgs(args: string[]): CliOptions | Error {
 	let rawOptions: {
-		[K in typeof cliOptionsConfig[number]["long"]]?: string;
+		[K in typeof cliOptionsConfig[number]["long"]]?: string | boolean;
 	} = {};
 
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
 		for (const option of cliOptionsConfig) {
 			if (arg === "--" + option.long || arg === "-" + option.short) {
-				rawOptions[option.long] = args[++i];
+				if (option.type === CliOptionType.Boolean) {
+					rawOptions[option.long] = true;
+				} else {
+					rawOptions[option.long] = args[++i];
+				}
 			}
 		}
 	}
@@ -81,14 +95,23 @@ function parseArgs(args: string[]): CliOptions | Error {
 	}
 
 	return {
-		url: rawOptions.url!,
-		outDir: rawOptions.out!,
-		configFileName: rawOptions.config,
+		configFileName: rawOptions.config as string | undefined,
+		outDir: rawOptions.out! as string,
+		help: rawOptions.help as boolean | undefined,
+		url: rawOptions.url! as string,
 	};
 }
 
-function getHelpString() {
-	return `TODO`;
+function printHelp() {
+	for (const option of cliOptionsConfig
+		.slice()
+		.sort((a, b) => a.short.localeCompare(b.short))) {
+		console.log(`\t-${option.short}, --${option.long}`);
+		if (option.required) {
+			console.log(`\t\tREQUIRED`);
+		}
+		console.log(`\t\t${option.description}`);
+	}
 }
 
 function isCliOptions(value: CliOptions | Error): value is CliOptions {
@@ -134,7 +157,7 @@ async function main(rawArgs: string[]): Promise<ExitCode> {
 			return ExitCode.Okay;
 		} else {
 			console.error(`Invalid arguments: ${args.message}`);
-			console.log(getHelpString());
+			printHelp();
 			return ExitCode.InvalidArguments;
 		}
 	} catch (err) {
