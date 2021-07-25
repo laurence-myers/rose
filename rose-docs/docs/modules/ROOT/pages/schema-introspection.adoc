@@ -128,16 +128,10 @@ The following table names are always ignored:
 You'll need to decide how to incorporate `rose-cli` into your application's build process. The exact implementation
 depends on your application's structure, when database migrations are applied, and continuous integration setup.
 
-Here's one approach to consider:
+Some ideas:
 
-1. Apply any database migrations to your local database.
-2. Run `rose-cli`.
-3. Commit the generated code to Git.
-4. In your CI, repeat steps 1 and 2 (using a Docker container for the database).
-5. Check for any uncommitted change to the generated code, and if found, fail the build. For example, assuming your
-   generated code lives in the director `generated/`, you can call Git like this: `git diff --exit-code generated/`.
-
-Another approach is to have a CI stage to generate the code as "artifacts", and pass those artifacts on to subsequent CI stages, which can use the generated code in tests, packaging the code, or building Docker images.
+1. Have an initial CI stage to generate code as "artifacts", and pass those artifacts on to subsequent CI stages.
+2. Commit the generated code to your repository. Add a CI job that generates the code, and check that there's no changes.
 
 == Generated code style conventions
 

@@ -67,9 +67,12 @@ of objects containing `title`. (The rest of the query, to join and order the tab
 
 [WARNING]
 ====
-_rose_ does not know the relationships between selected columns. To work out the "parent"
+_rose_ does not know the relationships between selected columns. To work out the "parent", rose will attempt to hash
+all the other properties of the row object.
 
 This is not foolproof - if your query has not selected enough unique columns from the "parent" table, you might find
 data is grouped unexpectedly - and although a fast hashing algorithm is used, you may find it easier & faster to instead
 perform a second query to retrieve nested data, and join it with the parent data within your application code.
+
+Another option is to use PostgreSQL's JSON(B) functions to construct objects.
 ====

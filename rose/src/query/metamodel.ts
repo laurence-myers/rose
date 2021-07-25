@@ -232,9 +232,7 @@ export class ColumnMetamodel<T> {
 }
 
 export abstract class QueryTable {
-	protected constructor(readonly $table: TableMetamodel) {
-		// TODO: validate that $tableAlias does not match the pattern of automatically generated aliases, e.g. "t1".
-	}
+	protected constructor(readonly $table: TableMetamodel) {}
 }
 
 export type TableColumns<T extends QueryTable> = {

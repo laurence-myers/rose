@@ -10,6 +10,8 @@ _rose_ does not currently provide any Data Definition Language (DDL) commands. F
 write your DDL queries directly in SQL, as they are often executed in database migrations, separate from your
 application's main code.
 
+The API docs can help you explore the available commands and DSL functions.
+
 == `select()`
 
 A `SELECT` query. Pass it a "xref:query-selectors.adoc[query selector]" object.
@@ -22,31 +24,47 @@ A `SELECT` query. Pass it a "xref:query-selectors.adoc[query selector]" object.
    Note that for some queries, it's optional to specify this:  _rose_ can infer the selected tables from the column
    metamodels.
 - `groupBy()`: https://www.postgresql.org/docs/current/sql-select.html#SQL-GROUPBY[sets the "group by" clause].
-- `join()`: join from one or more tables. Arguments should be constructed using the join DSL functions, described in
-  <<Join DSL>>.
-- `joins()`: same as `join()`, but accepts an array.
 - `limit()`: https://www.postgresql.org/docs/current/sql-select.html#SQL-LIMIT[sets the "limit" clause].
 - `orderBy()`: https://www.postgresql.org/docs/current/sql-select.html#SQL-ORDERBY[sets the "order by" clause]. You can
   pass column metamodels by column their `asc()` or `desc()` methods, e.g. `select({...}).orderBy(QFilm.title.asc())`.
 - `where()`: https://www.postgresql.org/docs/current/sql-select.html#SQL-WHERE[sets the "where" clause].
 - `with()`: used for https://www.postgresql.org/docs/current/sql-select.html#SQL-WITH[common table expression queries].
-   Sub-queries can be created using the `selectCte()` DSL function.
+   Sub-queries can be created using the `select()` DSL function, wrapped in `withCte()`.
 
-=== Join DSL
+=== From and Join DSL
 
-You can construct a join clause using DSL functions.
+When calling `from()`, you can join "from" items in a few ways.
 
-- `cross()`
-- `full()`
-- `inner()`
-- `left()`
-- `right()`
+The most straightforward way is to call one of the join methods from the table metamodel. E.g.
++
+[source,typescript]
+----
+select(/* ... */).from(
+  QFilm.$table
+    .innerJoin(QFilmActor)
+    .on(QFilmActor.filmId.eq(QFilm.filmId))
+    .innerJoin(QActor)
+    .on(QActor.actorId.eq(QFilmActor.actorId))
+)
+----
+2. asdf
 
-You can also create any of the above joins by first calling `join()`, e.g. `join(QFilm).full()`
+There are also DSL functions to help you construct "from" and "join" items.
+
+- `from()` - converts and wraps elements (AST nodes, builder instances, or even just a string for the table name) for use as a "from" item.
+- `join()` - a starting point for any other type of join. E.g. `join(QFilm).innerJoin(...)`
+- `crossJoin()`
+- `fullJoin()`
+- `innerJoin()`
+- `leftJoin()`
+- `rightJoin()`
+
+=== With queries / common table expressions
+
+Wrap queries in `withCte()`
 
 === Other variations
 
-- `selectCte()`: builds a common table expression
 - `selectExists()`: a convenience function for querying the existence of a result in a query
 - `subSelect()`: builds a sub-query node
 - `selectSubQuery()`: builds an aliased sub-query

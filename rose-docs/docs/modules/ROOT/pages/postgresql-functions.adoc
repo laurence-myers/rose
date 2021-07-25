@@ -1,5 +1,9 @@
 = PostgreSQL Functions
 
+Below are some tables to help you map the names of PostgreSQL functions to rose DSL functions.
+
+The API docs can help you explore the DSL functions.
+
 :toc:
 
 == Built-in functions
@@ -487,5 +491,5 @@ Your query will look something like this:
 
 [source,postgresql]
 ----
-SELECT foo("t1"."name") from "film" as "t1";
+SELECT foo("film"."name") from "film";
 ----
