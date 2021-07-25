@@ -165,21 +165,18 @@ provide the following features:</p>
 <pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">// This is some sort of repository that provides an interface to your database.
 // The exact implementation is not important for this example.
 class FilmRepository {
-	protected static getFilmsByTitleQuery = withParams&lt;{ name: string }&gt;()((p) =&gt;
-		select(FilmAllColumns)
-			.where(
-				matchesRegexp(QFilm.title.col(), p.name)
-			)
-			.finalise(p)
-	)
+	protected static getFilmsByTitleQuery = withParams&lt;{ name: string }&gt;()(
+		(p) =&gt;
+			select(FilmAllColumns)
+				.where(matchesRegexp(QFilm.title.col(), p.name))
+				.finalise(p)
+	);
 
-	constructor(
-		protected readonly client: Queryable
-	) {}
+	constructor(protected readonly client: Queryable) {}
 
 	public getFilmsByName() {
 		return FilmRepository.getFilmsByTitleQuery.execute(this.client, {
-			name: 'red'
+			name: "red",
 		});
 	}
 }

@@ -111,8 +111,8 @@
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">const rows = await select(CustomerAllColumns) <i class="conum" data-value="1"></i><b>(1)</b>
-    .finalise({}) <i class="conum" data-value="2"></i><b>(2)</b>
-    .execute(client, {}); <i class="conum" data-value="3"></i><b>(3)</b></code></pre>
+	.finalise({}) <i class="conum" data-value="2"></i><b>(2)</b>
+	.execute(client, {}); <i class="conum" data-value="3"></i><b>(3)</b></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -143,11 +143,11 @@ library. We pass an object containing the query parameters; in this query, we ha
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">await select({
-    firstName: QCustomer.firstName,
-    lastName: QCustomer.lastName
+	firstName: QCustomer.firstName,
+	lastName: QCustomer.lastName,
 })
-    .finalise({})
-    .execute(client, {});</code></pre>
+	.finalise({})
+	.execute(client, {});</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -164,12 +164,12 @@ belongs to. The query builder will try to infer any tables that are not explicit
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">await select({
-    firstName: QCustomer.firstName,
-    lastName: QCustomer.lastName
+	firstName: QCustomer.firstName,
+	lastName: QCustomer.lastName,
 })
-    .from(QCustomer)
-    .finalise({})
-    .execute(client, {});</code></pre>
+	.from(QCustomer)
+	.finalise({})
+	.execute(client, {});</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -180,14 +180,17 @@ belongs to. The query builder will try to infer any tables that are not explicit
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">await withParams&lt;{ customerIdToFind: CustomerRow['customerId'] }&gt;()( <i class="conum" data-value="1"></i><b>(1)</b>
-    (p) =&gt; <i class="conum" data-value="2"></i><b>(2)</b>
-        select({
-            firstName: QCustomer.firstName,
-            lastName: QCustomer.lastName
-        })
-            .where(QCustomer.customerId.eq(p.customerIdToFind)) <i class="conum" data-value="3"></i><b>(3)</b>
-            .finalise(p) <i class="conum" data-value="4"></i><b>(4)</b>
+<pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">await withParams&lt;{ customerIdToFind: CustomerRow["customerId"] }&gt;()(
+	<i class="conum" data-value="1"></i><b>(1)</b>
+	(
+		p <i class="conum" data-value="2"></i><b>(2)</b>
+	) =&gt;
+		select({
+			firstName: QCustomer.firstName,
+			lastName: QCustomer.lastName,
+		})
+			.where(QCustomer.customerId.eq(p.customerIdToFind)) <i class="conum" data-value="3"></i><b>(3)</b>
+			.finalise(p) <i class="conum" data-value="4"></i><b>(4)</b>
 ).execute(client, { customerIdToFind: 1234 }); <i class="conum" data-value="5"></i><b>(5)</b></code></pre>
 </div>
 </div>

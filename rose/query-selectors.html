@@ -208,12 +208,16 @@ of objects containing <code>title</code>. (The rest of the query, to join and or
 </td>
 <td class="content">
 <div class="paragraph">
-<p><em>rose</em> does not know the relationships between selected columns. To work out the "parent"</p>
+<p><em>rose</em> does not know the relationships between selected columns. To work out the "parent", rose will attempt to hash
+all the other properties of the row object.</p>
 </div>
 <div class="paragraph">
 <p>This is not foolproof - if your query has not selected enough unique columns from the "parent" table, you might find
 data is grouped unexpectedly - and although a fast hashing algorithm is used, you may find it easier &amp; faster to instead
 perform a second query to retrieve nested data, and join it with the parent data within your application code.</p>
+</div>
+<div class="paragraph">
+<p>Another option is to use PostgreSQL&#8217;s JSON(B) functions to construct objects.</p>
 </div>
 </td>
 </tr>

@@ -105,6 +105,16 @@
   <div class="content">
 <article class="doc">
 <h1 class="page">PostgreSQL Functions</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Below are some tables to help you map the names of PostgreSQL functions to rose DSL functions.</p>
+</div>
+<div class="paragraph">
+<p>The API docs can help you explore the DSL functions.</p>
+</div>
+</div>
+</div>
 <div class="sect1">
 <h2 id="_built_in_functions"><a class="anchor" href="#_built_in_functions"></a>Built-in functions</h2>
 <div class="sectionbody">
@@ -922,7 +932,7 @@ AST nodes.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-postgresql hljs" data-lang="postgresql">SELECT foo("t1"."name") from "film" as "t1";</code></pre>
+<pre class="highlightjs highlight"><code class="language-postgresql hljs" data-lang="postgresql">SELECT foo("film"."name") from "film";</code></pre>
 </div>
 </div>
 </div>

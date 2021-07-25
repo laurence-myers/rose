@@ -343,30 +343,17 @@ a string)</p>
 depends on your application&#8217;s structure, when database migrations are applied, and continuous integration setup.</p>
 </div>
 <div class="paragraph">
-<p>Here&#8217;s one approach to consider:</p>
+<p>Some ideas:</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>Apply any database migrations to your local database.</p>
+<p>Have an initial CI stage to generate code as "artifacts", and pass those artifacts on to subsequent CI stages.</p>
 </li>
 <li>
-<p>Run <code>rose-cli</code>.</p>
-</li>
-<li>
-<p>Commit the generated code to Git.</p>
-</li>
-<li>
-<p>In your CI, repeat steps 1 and 2 (using a Docker container for the database).</p>
-</li>
-<li>
-<p>Check for any uncommitted change to the generated code, and if found, fail the build. For example, assuming your
-generated code lives in the director <code>generated/</code>, you can call Git like this: <code>git diff --exit-code generated/</code>.</p>
+<p>Commit the generated code to your repository. Add a CI job that generates the code, and check that there&#8217;s no changes.</p>
 </li>
 </ol>
-</div>
-<div class="paragraph">
-<p>Another approach is to have a CI stage to generate the code as "artifacts", and pass those artifacts on to subsequent CI stages, which can use the generated code in tests, packaging the code, or building Docker images.</p>
 </div>
 </div>
 </div>

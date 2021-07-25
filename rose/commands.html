@@ -120,6 +120,9 @@ methods, and provide a <code>finalise()</code> method, which converts <a href="h
 write your DDL queries directly in SQL, as they are often executed in database migrations, separate from your
 application&#8217;s main code.</p>
 </div>
+<div class="paragraph">
+<p>The API docs can help you explore the available commands and DSL functions.</p>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -147,13 +150,6 @@ metamodels.</p>
 <p><code>groupBy()</code>: <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-GROUPBY">sets the "group by" clause</a>.</p>
 </li>
 <li>
-<p><code>join()</code>: join from one or more tables. Arguments should be constructed using the join DSL functions, described in
-<a href="#_join_dsl">Join DSL</a>.</p>
-</li>
-<li>
-<p><code>joins()</code>: same as <code>join()</code>, but accepts an array.</p>
-</li>
-<li>
 <p><code>limit()</code>: <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-LIMIT">sets the "limit" clause</a>.</p>
 </li>
 <li>
@@ -165,46 +161,79 @@ pass column metamodels by column their <code>asc()</code> or <code>desc()</code>
 </li>
 <li>
 <p><code>with()</code>: used for <a href="https://www.postgresql.org/docs/current/sql-select.html#SQL-WITH">common table expression queries</a>.
-Sub-queries can be created using the <code>selectCte()</code> DSL function.</p>
+Sub-queries can be created using the <code>select()</code> DSL function, wrapped in <code>withCte()</code>.</p>
 </li>
 </ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_join_dsl"><a class="anchor" href="#_join_dsl"></a>Join DSL</h3>
+<h3 id="_from_and_join_dsl"><a class="anchor" href="#_from_and_join_dsl"></a>From and Join DSL</h3>
 <div class="paragraph">
-<p>You can construct a join clause using DSL functions.</p>
+<p>When calling <code>from()</code>, you can join "from" items in a few ways.</p>
+</div>
+<div class="paragraph">
+<p>The most straightforward way is to call one of the join methods from the table metamodel. E.g.</p>
+</div>
+<div class="paragraph">
+<p>+</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">select(/* ... */).from(
+  QFilm.$table
+    .innerJoin(QFilmActor)
+    .on(QFilmActor.filmId.eq(QFilm.filmId))
+    .innerJoin(QActor)
+    .on(QActor.actorId.eq(QFilmActor.actorId))
+)</code></pre>
+</div>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>asdf</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>There are also DSL functions to help you construct "from" and "join" items.</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><code>cross()</code></p>
+<p><code>from()</code> - converts and wraps elements (AST nodes, builder instances, or even just a string for the table name) for use as a "from" item.</p>
 </li>
 <li>
-<p><code>full()</code></p>
+<p><code>join()</code> - a starting point for any other type of join. E.g. <code>join(QFilm).innerJoin(&#8230;&#8203;)</code></p>
 </li>
 <li>
-<p><code>inner()</code></p>
+<p><code>crossJoin()</code></p>
 </li>
 <li>
-<p><code>left()</code></p>
+<p><code>fullJoin()</code></p>
 </li>
 <li>
-<p><code>right()</code></p>
+<p><code>innerJoin()</code></p>
+</li>
+<li>
+<p><code>leftJoin()</code></p>
+</li>
+<li>
+<p><code>rightJoin()</code></p>
 </li>
 </ul>
 </div>
+</div>
+<div class="sect2">
+<h3 id="_with_queries_common_table_expressions"><a class="anchor" href="#_with_queries_common_table_expressions"></a>With queries / common table expressions</h3>
 <div class="paragraph">
-<p>You can also create any of the above joins by first calling <code>join()</code>, e.g. <code>join(QFilm).full()</code></p>
+<p>Wrap queries in <code>withCte()</code></p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_other_variations"><a class="anchor" href="#_other_variations"></a>Other variations</h3>
 <div class="ulist">
 <ul>
-<li>
-<p><code>selectCte()</code>: builds a common table expression</p>
-</li>
 <li>
 <p><code>selectExists()</code>: a convenience function for querying the existence of a result in a query</p>
 </li>

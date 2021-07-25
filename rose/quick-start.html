@@ -126,17 +126,16 @@
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">import { params, select } from '@rosepg/rose';
-import { QStaff, StaffAllColumns, StaffRow } from '../generated/db/Staff';
+<pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">import { params, select } from "@rosepg/rose";
+import { QStaff, StaffAllColumns, StaffRow } from "../generated/db/Staff";
 
 interface Params {
-    staffId: number;
+	staffId: number;
 }
 const P = params&lt;Params&gt;();
 const query = select(StaffAllColumns)
-    .where(
-        QStaff.staffId.eq(P.staffId)
-    ).finalise(P);</code></pre>
+	.where(QStaff.staffId.eq(P.staffId))
+	.finalise(P);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -148,7 +147,7 @@ const query = select(StaffAllColumns)
 import { dummyClient } from "./fixtures";
 
 const client = new Client({
-    connectionString: 'postgresql://postgres:password@localhost:5432/yourdb'
+	connectionString: "postgresql://postgres:password@localhost:5432/yourdb",
 });
 await client.connect();</code></pre>
 </div>
@@ -159,11 +158,11 @@ await client.connect();</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">const rows = await query.execute(client, {
-    staffId: 1
+	staffId: 1,
 });
 if (rows.length &gt; 0) {
-    const row = rows[0];
-    console.log(`Retrieved staff member ${ row.firstName } ${ row.lastName }`);
+	const row = rows[0];
+	console.log(`Retrieved staff member ${row.firstName} ${row.lastName}`);
 }</code></pre>
 </div>
 </div>

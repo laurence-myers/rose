@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>JoinNode | @rosepg/rose</title>
+	<title>FromItemWithNode | @rosepg/rose</title>
 	<meta name="description" content="Documentation for @rosepg/rose">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="../assets/css/main.css">
@@ -55,21 +55,33 @@
 					<a href="../modules.html">@rosepg/rose</a>
 				</li>
 				<li>
-					<a href="joinnode.html">JoinNode</a>
+					<a href="fromitemwithnode.html">FromItemWithNode</a>
 				</li>
 			</ul>
-			<h1>Interface JoinNode</h1>
+			<h1>Interface FromItemWithNode</h1>
 		</div>
 	</div>
 </header>
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p> with_query_name [ [ AS ] alias [ ( column_alias [, ...] ) ] ]</p>
+					</div>
+					<dl class="tsd-comment-tags">
+						<dt>see</dt>
+						<dd><p><a href="https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM">https://www.postgresql.org/docs/13/sql-select.html#SQL-FROM</a></p>
+						</dd>
+					</dl>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
 					<li>
-						<span class="target">JoinNode</span>
+						<span class="target">FromItemWithNode</span>
 					</li>
 				</ul>
 			</section>
@@ -80,11 +92,10 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="joinnode.html#fromitem" class="tsd-kind-icon">from<wbr>Item</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="joinnode.html#jointype" class="tsd-kind-icon">join<wbr>Type</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="joinnode.html#on" class="tsd-kind-icon">on</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="joinnode.html#type" class="tsd-kind-icon">type</a></li>
-								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="joinnode.html#using" class="tsd-kind-icon">using</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fromitemwithnode.html#alias" class="tsd-kind-icon">alias</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fromitemwithnode.html#columnaliases" class="tsd-kind-icon">column<wbr>Aliases</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fromitemwithnode.html#type" class="tsd-kind-icon">type</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="fromitemwithnode.html#withqueryname" class="tsd-kind-icon">with<wbr>Query<wbr>Name</a></li>
 							</ul>
 						</section>
 					</div>
@@ -93,52 +104,42 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="fromitem" class="tsd-anchor"></a>
-					<h3>from<wbr>Item</h3>
-					<div class="tsd-signature tsd-kind-icon">from<wbr>Item<span class="tsd-signature-symbol">:</span> <a href="../modules.html#fromitemnode" class="tsd-signature-type" data-tsd-kind="Type alias">FromItemNode</a></div>
+					<a name="alias" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> alias</h3>
+					<div class="tsd-signature tsd-kind-icon">alias<span class="tsd-signature-symbol">:</span> <a href="aliasnode.html" class="tsd-signature-type" data-tsd-kind="Interface">AliasNode</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/laurence-myers/rose/blob/3e42445/rose/src/query/ast.ts#L232">rose/src/query/ast.ts:232</a></li>
+							<li>Defined in <a href="https://github.com/laurence-myers/rose/blob/73361d8/rose/src/query/ast.ts#L302">rose/src/query/ast.ts:302</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="jointype" class="tsd-anchor"></a>
-					<h3>join<wbr>Type</h3>
-					<div class="tsd-signature tsd-kind-icon">join<wbr>Type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;left&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;right&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;inner&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;full&quot;</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">&quot;cross&quot;</span></div>
+					<a name="columnaliases" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> column<wbr>Aliases</h3>
+					<div class="tsd-signature tsd-kind-icon">column<wbr>Aliases<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/laurence-myers/rose/blob/3e42445/rose/src/query/ast.ts#L231">rose/src/query/ast.ts:231</a></li>
-						</ul>
-					</aside>
-				</section>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="on" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> on</h3>
-					<div class="tsd-signature tsd-kind-icon">on<span class="tsd-signature-symbol">:</span> <a href="booleanbinaryoperationnode.html" class="tsd-signature-type" data-tsd-kind="Interface">BooleanBinaryOperationNode</a><span class="tsd-signature-symbol"> | </span><a href="booleanunaryoperationnode.html" class="tsd-signature-type" data-tsd-kind="Interface">BooleanUnaryOperationNode</a><span class="tsd-signature-symbol"> | </span><a href="booleanexpressiongroupnode.html" class="tsd-signature-type" data-tsd-kind="Interface">BooleanExpressionGroupNode</a><span class="tsd-signature-symbol"> | </span><a href="notexpressionnode.html" class="tsd-signature-type" data-tsd-kind="Interface">NotExpressionNode</a></div>
-					<aside class="tsd-sources">
-						<ul>
-							<li>Defined in <a href="https://github.com/laurence-myers/rose/blob/3e42445/rose/src/query/ast.ts#L233">rose/src/query/ast.ts:233</a></li>
+							<li>Defined in <a href="https://github.com/laurence-myers/rose/blob/73361d8/rose/src/query/ast.ts#L303">rose/src/query/ast.ts:303</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="type" class="tsd-anchor"></a>
 					<h3>type</h3>
-					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;joinNode&quot;</span></div>
+					<div class="tsd-signature tsd-kind-icon">type<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;fromItemWithNode&quot;</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/laurence-myers/rose/blob/3e42445/rose/src/query/ast.ts#L230">rose/src/query/ast.ts:230</a></li>
+							<li>Defined in <a href="https://github.com/laurence-myers/rose/blob/73361d8/rose/src/query/ast.ts#L301">rose/src/query/ast.ts:301</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
-					<a name="using" class="tsd-anchor"></a>
-					<h3><span class="tsd-flag ts-flagOptional">Optional</span> using</h3>
-					<div class="tsd-signature tsd-kind-icon">using<span class="tsd-signature-symbol">:</span> <a href="simplecolumnreferencenode.html" class="tsd-signature-type" data-tsd-kind="Interface">SimpleColumnReferenceNode</a><span class="tsd-signature-symbol">[]</span></div>
+					<a name="withqueryname" class="tsd-anchor"></a>
+					<h3>with<wbr>Query<wbr>Name</h3>
+					<div class="tsd-signature tsd-kind-icon">with<wbr>Query<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/laurence-myers/rose/blob/3e42445/rose/src/query/ast.ts#L234">rose/src/query/ast.ts:234</a></li>
+							<li>Defined in <a href="https://github.com/laurence-myers/rose/blob/73361d8/rose/src/query/ast.ts#L304">rose/src/query/ast.ts:304</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -157,22 +158,19 @@
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-interface">
-						<a href="joinnode.html" class="tsd-kind-icon">Join<wbr>Node</a>
+						<a href="fromitemwithnode.html" class="tsd-kind-icon">From<wbr>Item<wbr>With<wbr>Node</a>
 						<ul>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="joinnode.html#fromitem" class="tsd-kind-icon">from<wbr>Item</a>
+								<a href="fromitemwithnode.html#alias" class="tsd-kind-icon">alias</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="joinnode.html#jointype" class="tsd-kind-icon">join<wbr>Type</a>
+								<a href="fromitemwithnode.html#columnaliases" class="tsd-kind-icon">column<wbr>Aliases</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="joinnode.html#on" class="tsd-kind-icon">on</a>
+								<a href="fromitemwithnode.html#type" class="tsd-kind-icon">type</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="joinnode.html#type" class="tsd-kind-icon">type</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-interface">
-								<a href="joinnode.html#using" class="tsd-kind-icon">using</a>
+								<a href="fromitemwithnode.html#withqueryname" class="tsd-kind-icon">with<wbr>Query<wbr>Name</a>
 							</li>
 						</ul>
 					</li>
@@ -193,16 +191,20 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+			</ul>
+			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
-			</ul>
-			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
 				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
 			</ul>
 		</div>
 	</div>
