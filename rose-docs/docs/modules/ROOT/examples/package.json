@@ -13,10 +13,7 @@
     "test": "mocha"
   },
   "dependencies": {
-    "@antora/cli": "2.3.4",
-    "@antora/site-generator-default": "2.3.4",
-    "app-root-path": "3.0.0",
-    "asciidoctor": "2.2.0"
+    "app-root-path": "3.0.0"
   },
   "devDependencies": {
     "@types/app-root-path": "1.2.4",
