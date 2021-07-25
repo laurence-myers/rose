@@ -14,12 +14,7 @@ module.exports = {
 		"prettier",
 	],
 	rules: {
-		"@typescript-eslint/type-annotation-spacing": "warn",
 		"@typescript-eslint/no-for-in-array": "error",
-		"no-multiple-empty-lines": "warn",
-		"no-multi-spaces": "warn",
-		"object-curly-spacing": ["warn", "always"],
-		"template-curly-spacing": ["warn", "always"],
 		"unused-imports/no-unused-imports-ts": "warn",
 	},
 };
