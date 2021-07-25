@@ -7,8 +7,10 @@
   "scripts": {
     "build:antora": "antora antora-playbook.yml",
     "build:typedoc": "typedoc ../rose/src/index.ts",
+    "check:all": "yarn --cwd ./docs/modules/ROOT/examples/ check:all",
+    "check:lint": "yarn --cwd ./docs/modules/ROOT/examples/ check:lint",
+    "check:tsc": "yarn --cwd ./docs/modules/ROOT/examples/ check:tsc",
     "link:rose": "yarn --cwd ./docs/modules/ROOT/examples/ link:rose",
-    "lint": "yarn --cwd ./docs/modules/ROOT/examples/ lint",
     "postinstall": "yarn --cwd ./docs/modules/ROOT/examples/ install",
     "start": "rimraf ./build/ && yarn build:antora && yarn build:typedoc",
     "test": "yarn --cwd ./docs/modules/ROOT/examples/ test"

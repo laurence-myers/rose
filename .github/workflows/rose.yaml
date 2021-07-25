@@ -40,15 +40,15 @@ jobs:
         run: |
           cd rose-docs
           yarn run link:rose
-          yarn install
-          yarn run lint
+          yarn install --frozen-lockfile
+          yarn run check:all
           yarn run test
           yarn run start
       - name: Build rose-example
         run: |
           cd rose-example
           yarn run link:rose
-          yarn install
+          yarn install --frozen-lockfile
           yarn run check:tsc
       - name: Upload test coverage report artifacts
         uses: actions/upload-artifact@v2
