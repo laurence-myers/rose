@@ -10,21 +10,21 @@ export function sanitizeColumnName(columnName: string): string {
 }
 
 export function metamodelClassName(table: TableMetadata): string {
-	return 'T' + table.niceName;
+	return "T" + table.niceName;
 }
 
 export function metamodelInstanceName(table: TableMetadata): string {
-	return 'Q' + table.niceName;
+	return "Q" + table.niceName;
 }
 
 export function rowIfaceName(table: TableMetadata): string {
-	return table.niceName + 'Row';
+	return table.niceName + "Row";
 }
 
 export function insertRowIfaceName(table: TableMetadata): string {
-	return table.niceName + 'InsertRow';
+	return table.niceName + "InsertRow";
 }
 
 export function allColumnsName(table: TableMetadata): string {
-	return table.niceName + 'AllColumns';
+	return table.niceName + "AllColumns";
 }

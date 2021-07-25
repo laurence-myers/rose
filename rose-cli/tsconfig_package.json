@@ -1,10 +1,8 @@
 {
-    "extends": "./tsconfig.json",
-    "compilerOptions": {
-        "newLine": "lf",
-        "outDir": "package/"
-    },
-    "include": [
-        "src/cli/introspect.ts"
-    ]
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"newLine": "lf",
+		"outDir": "package/"
+	},
+	"include": ["src/cli/introspect.ts"]
 }

@@ -1,8 +1,11 @@
-import fs = require('fs');
+import fs = require("fs");
 
 export class DefaultMap<K, V> extends Map<K, V> {
-	constructor(private defaultValueFactory: (key: K, map: Map<K, V>) => V, iterable?: [K, V][] | Iterable<[K, V]>) {
-		super(<any> iterable); // have to cast to any; current ES6 type defs don't seem to support Iterable.
+	constructor(
+		private defaultValueFactory: (key: K, map: Map<K, V>) => V,
+		iterable?: [K, V][] | Iterable<[K, V]>
+	) {
+		super(<any>iterable); // have to cast to any; current ES6 type defs don't seem to support Iterable.
 	}
 
 	get(key: K): V {
@@ -11,7 +14,7 @@ export class DefaultMap<K, V> extends Map<K, V> {
 			this.set(key, value);
 			return value;
 		} else {
-			return <V> super.get(key); // should never be undefined
+			return <V>super.get(key); // should never be undefined
 		}
 	}
 }
@@ -25,10 +28,10 @@ export function deepFreeze<T>(obj: T): Readonly<T> {
 
 	// Freeze properties before freezing self
 	propNames.forEach((name: string) => {
-		const prop: any = (<any> obj)[name];
+		const prop: any = (<any>obj)[name];
 
 		// Freeze prop if it is an object
-		if (typeof prop == 'object' && prop !== null) {
+		if (typeof prop == "object" && prop !== null) {
 			deepFreeze(prop);
 		}
 	});
@@ -42,5 +45,5 @@ export function makeDirs(fullPath: string): void {
 }
 
 export function assertNever(arg: never): never {
-	throw new Error(`Unexpected object: ${ (<any> arg).constructor || arg }`);
+	throw new Error(`Unexpected object: ${(<any>arg).constructor || arg}`);
 }

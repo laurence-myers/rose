@@ -8,7 +8,7 @@ import { IntrospectConfig, TypeMapEntry } from "../config";
 type sql_identifier = string;
 // type cardinal_number = number;
 // type character_data = string;
-type yes_or_no = 'YES' | 'NO';
+type yes_or_no = "YES" | "NO";
 
 interface ColumnsRow {
 	// udt_catalog : sql_identifier;
@@ -23,7 +23,7 @@ interface ColumnsRow {
 }
 
 function yesOrNoToBoolean(yesOrNo: yes_or_no): boolean {
-	return yesOrNo === 'YES';
+	return yesOrNo === "YES";
 }
 
 /* Potential columns:
@@ -35,32 +35,38 @@ function yesOrNoToBoolean(yesOrNo: yes_or_no): boolean {
  views
  */
 
-function getColumnTypeScriptType(tableName: string, column: ColumnMetadata, typeMaps: IntrospectConfig['types']): TypeMapEntry & { importName?: string } {
-	let isArray = column.type.startsWith('_');
-	let tsTypeEntry = typeMaps.columns.get([tableName, column.name].join('.'));
+function getColumnTypeScriptType(
+	tableName: string,
+	column: ColumnMetadata,
+	typeMaps: IntrospectConfig["types"]
+): TypeMapEntry & { importName?: string } {
+	let isArray = column.type.startsWith("_");
+	let tsTypeEntry = typeMaps.columns.get([tableName, column.name].join("."));
 	let newTypeName;
 
 	if (!tsTypeEntry) {
-		const sanitisedType = column.type.replace(/^_/, ''); // Remove the array character
+		const sanitisedType = column.type.replace(/^_/, ""); // Remove the array character
 		tsTypeEntry = typeMaps.global.get(sanitisedType);
 		if (!tsTypeEntry) {
 			tsTypeEntry = typeMaps.enums.get(sanitisedType);
 			if (!tsTypeEntry) {
-				throw new UnrecognisedColumnTypeError(`No mapping defined for column type: "${ column.type }"`);
+				throw new UnrecognisedColumnTypeError(
+					`No mapping defined for column type: "${column.type}"`
+				);
 			}
 		}
 		if (isArray) {
-			newTypeName = `Array<${ tsTypeEntry.type }>`;
+			newTypeName = `Array<${tsTypeEntry.type}>`;
 		}
 	}
 
 	if (column.isNullable) {
-		newTypeName = tsTypeEntry.type + ' | null';
+		newTypeName = tsTypeEntry.type + " | null";
 	}
 	return {
 		...tsTypeEntry,
 		type: newTypeName || tsTypeEntry.type,
-		importName: tsTypeEntry.type
+		importName: tsTypeEntry.type,
 	};
 }
 
@@ -74,7 +80,7 @@ export class ColumnMetadata {
 		public readonly type: string,
 		public readonly isNullable: boolean,
 		public readonly hasDefault: boolean,
-		typeMaps: IntrospectConfig['types']
+		typeMaps: IntrospectConfig["types"]
 	) {
 		this.tsType = getColumnTypeScriptType(tableName, this, typeMaps);
 	}
@@ -88,8 +94,7 @@ export class TableMetadata {
 		public readonly schema: string,
 		public readonly name: string,
 		public readonly primaryKeys: string[] = []
-	) {
-	}
+	) {}
 }
 
 const enumQuery = `SELECT
@@ -136,23 +141,45 @@ async function populateEnumTypes(client: Queryable, config: IntrospectConfig) {
 	}[] = result.rows;
 	for (const row of rows) {
 		config.types.enums.set(row.name, {
-			type: row.value
+			type: row.value,
 		});
 	}
 }
 
-async function populateColumnTypes(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, config: IntrospectConfig): Promise<void> {
-	const result: QueryResult = await client.query(columnMetadataQuery, [config.schema, config.ignoredTables]);
+async function populateColumnTypes(
+	client: Queryable,
+	tablesMetadata: DefaultMap<string, TableMetadata>,
+	config: IntrospectConfig
+): Promise<void> {
+	const result: QueryResult = await client.query(columnMetadataQuery, [
+		config.schema,
+		config.ignoredTables,
+	]);
 	const rows: ColumnsRow[] = result.rows;
 	for (const row of rows) {
 		const tableMetadata = tablesMetadata.get(row.table_name);
-		const column = new ColumnMetadata(row.table_name, row.column_name, row.udt_name, yesOrNoToBoolean(row.is_nullable), row.column_default !== null, config.types);
+		const column = new ColumnMetadata(
+			row.table_name,
+			row.column_name,
+			row.udt_name,
+			yesOrNoToBoolean(row.is_nullable),
+			row.column_default !== null,
+			config.types
+		);
 		tableMetadata.columns.push(column);
 	}
 }
 
-async function populatePrimaryKeys(client: Queryable, tablesMetadata: DefaultMap<string, TableMetadata>, config: IntrospectConfig): Promise<void> {
-	const result: QueryResult = await client.query(constraintQuery, [config.schema, 'PRIMARY KEY', config.ignoredTables]);
+async function populatePrimaryKeys(
+	client: Queryable,
+	tablesMetadata: DefaultMap<string, TableMetadata>,
+	config: IntrospectConfig
+): Promise<void> {
+	const result: QueryResult = await client.query(constraintQuery, [
+		config.schema,
+		"PRIMARY KEY",
+		config.ignoredTables,
+	]);
 	const rows: Array<{
 		table_schema: string;
 		table_name: string;
@@ -166,8 +193,14 @@ async function populatePrimaryKeys(client: Queryable, tablesMetadata: DefaultMap
 	}
 }
 
-export async function getTableMetadata(client: Queryable, config: IntrospectConfig): Promise<DefaultMap<string, TableMetadata>> {
-	const tablesMetadata: DefaultMap<string, TableMetadata> = new DefaultMap<string, TableMetadata>((key: string) => new TableMetadata(config.schema, key));
+export async function getTableMetadata(
+	client: Queryable,
+	config: IntrospectConfig
+): Promise<DefaultMap<string, TableMetadata>> {
+	const tablesMetadata: DefaultMap<string, TableMetadata> = new DefaultMap<
+		string,
+		TableMetadata
+	>((key: string) => new TableMetadata(config.schema, key));
 	await populateEnumTypes(client, config);
 	await populateColumnTypes(client, tablesMetadata, config);
 	await populatePrimaryKeys(client, tablesMetadata, config);

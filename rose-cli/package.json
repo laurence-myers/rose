@@ -1,53 +1,53 @@
 {
-  "name": "@rosepg/rose-cli",
-  "version": "0.0.23",
-  "description": "CLI for rose, a type-safe query builder DSL, data mapper, and mini ORM for PostgreSQL",
-  "main": "index.js",
-  "bin": {
-    "rose": "./cli/introspect.js"
-  },
-  "scripts": {
-    "check:all": "yarn check:tsc && yarn check:lint && yarn check:prettier && yarn test",
-    "check:lint": "eslint . --ext .ts --max-warnings=0 --report-unused-disable-directives",
-    "check:prettier": "prettier --check .",
-    "check:tsc": "tsc --noEmit",
-    "format": "prettier --write .",
-    "package": "rimraf ./package && tsc -p tsconfig_package.json && ts-node tools/package.ts",
-    "publish:npm": "yarn run check:all && yarn run package && cd package && yarn publish --non-interactive --access public",
-    "start": "ts-node src/cli/introspect.ts",
-    "test": "nyc mocha",
-    "watch": "tsc -w --pretty"
-  },
-  "keywords": [],
-  "author": "Laurence Dougal Myers <laurencedougalmyers@gmail.com>",
-  "license": "MIT",
-  "engines": {
-    "yarn": "1.x"
-  },
-  "dependencies": {
-    "@sinclair/typebox": "^0.12.7",
-    "ajv": "^7.0.3",
-    "camelcase": "5.3.1",
-    "pg": "^8.5.1",
-    "tscodegendsl": "^0.0.5"
-  },
-  "devDependencies": {
-    "@istanbuljs/nyc-config-typescript": "1.0.1",
-    "@types/app-root-path": "1.2.4",
-    "@types/mocha": "7.0.1",
-    "@types/node": "12",
-    "@types/pg": "7.14.3",
-    "@typescript-eslint/eslint-plugin": "4.8.1",
-    "@typescript-eslint/parser": "4.8.1",
-    "app-root-path": "3.0.0",
-    "eslint": "7.14.0",
-    "eslint-plugin-unused-imports": "1.0.0",
-    "mocha": "7.0.1",
-    "nyc": "15.1.0",
-    "prettier": "^2.3.2",
-    "rimraf": "3.0.2",
-    "source-map-support": "0.5.19",
-    "ts-node": "9.0.0",
-    "typescript": "4.1.2"
-  }
+	"name": "@rosepg/rose-cli",
+	"version": "0.0.23",
+	"description": "CLI for rose, a type-safe query builder DSL, data mapper, and mini ORM for PostgreSQL",
+	"main": "index.js",
+	"bin": {
+		"rose": "./cli/introspect.js"
+	},
+	"scripts": {
+		"check:all": "yarn check:tsc && yarn check:lint && yarn check:prettier && yarn test",
+		"check:lint": "eslint . --ext .ts --max-warnings=0 --report-unused-disable-directives",
+		"check:prettier": "prettier --check .",
+		"check:tsc": "tsc --noEmit",
+		"format": "prettier --write .",
+		"package": "rimraf ./package && tsc -p tsconfig_package.json && ts-node tools/package.ts",
+		"publish:npm": "yarn run check:all && yarn run package && cd package && yarn publish --non-interactive --access public",
+		"start": "ts-node src/cli/introspect.ts",
+		"test": "nyc mocha",
+		"watch": "tsc -w --pretty"
+	},
+	"keywords": [],
+	"author": "Laurence Dougal Myers <laurencedougalmyers@gmail.com>",
+	"license": "MIT",
+	"engines": {
+		"yarn": "1.x"
+	},
+	"dependencies": {
+		"@sinclair/typebox": "^0.12.7",
+		"ajv": "^7.0.3",
+		"camelcase": "5.3.1",
+		"pg": "^8.5.1",
+		"tscodegendsl": "^0.0.5"
+	},
+	"devDependencies": {
+		"@istanbuljs/nyc-config-typescript": "1.0.1",
+		"@types/app-root-path": "1.2.4",
+		"@types/mocha": "7.0.1",
+		"@types/node": "12",
+		"@types/pg": "7.14.3",
+		"@typescript-eslint/eslint-plugin": "4.8.1",
+		"@typescript-eslint/parser": "4.8.1",
+		"app-root-path": "3.0.0",
+		"eslint": "7.14.0",
+		"eslint-plugin-unused-imports": "1.0.0",
+		"mocha": "7.0.1",
+		"nyc": "15.1.0",
+		"prettier": "^2.3.2",
+		"rimraf": "3.0.2",
+		"source-map-support": "0.5.19",
+		"ts-node": "9.0.0",
+		"typescript": "4.1.2"
+	}
 }

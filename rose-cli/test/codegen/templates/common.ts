@@ -1,4 +1,7 @@
-import { sanitizeColumnName, sanitizeTableName } from "../../../src/codegen/templates/common";
+import {
+	sanitizeColumnName,
+	sanitizeTableName,
+} from "../../../src/codegen/templates/common";
 import * as assert from "assert";
 
 describe(`Common template functions`, () => {

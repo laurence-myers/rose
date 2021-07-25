@@ -1,7 +1,10 @@
 import { DefaultMap } from "../lang";
 import { TypeMapEntry } from "../config";
 
-const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<string, string>(() => "any", <[string, string][]>[
+const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<
+	string,
+	string
+>(() => "any", <[string, string][]>[
 	["bigint", "string"], // 8 bytes, can't be represented as a FP number
 	["bigserial", "string"], // 8 bytes, can't be represented as a FP number
 	["bit", "number"], // bit string?
@@ -11,7 +14,7 @@ const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<stri
 	["bpchar", "string"],
 	["bytea", "Buffer"],
 	["char", "string"],
-	["\"char\"", "string"], // https://www.postgresql.org/docs/13/datatype-character.html#DATATYPE-CHARACTER-SPECIAL-TABLE
+	['"char"', "string"], // https://www.postgresql.org/docs/13/datatype-character.html#DATATYPE-CHARACTER-SPECIAL-TABLE
 	["character varying", "string"],
 	["character", "string"],
 	["cidr", "string"],
@@ -31,7 +34,10 @@ const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<stri
 	["int8", "string"], // 8 bytes, can't be represented as a FP number
 	["int8range", "any"], // ?
 	["integer", "number"],
-	["interval", "{ years?: number; months?: number; days?: number; hours?: number; minutes?: number; seconds?: number; milliseconds?: number; toPostgres(): string; toISO(): string; toISOString(): string }"],
+	[
+		"interval",
+		"{ years?: number; months?: number; days?: number; hours?: number; minutes?: number; seconds?: number; milliseconds?: number; toPostgres(): string; toISO(): string; toISOString(): string }",
+	],
 	["json", "object"], // would be nice to make this more explicit
 	["jsonb", "object"], // would be nice to make this more explicit
 	["line", "any"], // ?
@@ -75,7 +81,7 @@ export const defaultPostgresTypeMap = (function () {
 	const map: Map<string, TypeMapEntry> = new Map();
 	for (const entry of POSTGRES_TO_TYPESCRIPT_TYPE_MAP.entries()) {
 		map.set(entry[0], {
-			type: entry[1]
+			type: entry[1],
 		});
 	}
 	return map;

@@ -4,44 +4,47 @@ import { makeDirs } from "../lang";
 import { getTableMetadata, TableMetadata } from "../codegen/dbmetadata";
 import { generateTableCode } from "../codegen/generators";
 import { mergeConfigWithDefaults, parseConfig } from "../config";
-import fs = require('fs');
-import path = require('path');
+import fs = require("fs");
+import path = require("path");
 
 enum ExitCode {
 	Okay,
 	UnhandledError,
 	ErrorInCleanup,
-	InvalidArguments
+	InvalidArguments,
 }
 
-function generateInterfacesAndMetamodel(tablesMetadata: Map<string, TableMetadata>, options: CliOptions): void {
+function generateInterfacesAndMetamodel(
+	tablesMetadata: Map<string, TableMetadata>,
+	options: CliOptions
+): void {
 	for (const tableMetadata of tablesMetadata.values()) {
 		const content = generateTableCode(tableMetadata);
 		const rootDir = options.outDir;
 		makeDirs(rootDir);
-		const outName = path.join(rootDir, `${ tableMetadata.niceName }.ts`);
+		const outName = path.join(rootDir, `${tableMetadata.niceName}.ts`);
 		fs.writeFileSync(outName, content);
 	}
 }
 
 const cliOptionsConfig = [
 	{
-		long: 'url',
-		short: 'u',
-		description: 'The database URL',
+		long: "url",
+		short: "u",
+		description: "The database URL",
 		required: true,
 	},
 	{
-		long: 'out',
-		short: 'o',
-		description: 'The output directory',
+		long: "out",
+		short: "o",
+		description: "The output directory",
 		required: true,
 	},
 	{
-		long: 'config',
-		short: 'c',
-		description: 'The config file',
-		required: false
+		long: "config",
+		short: "c",
+		description: "The config file",
+		required: false,
 	},
 	// {
 	// 	long: 'help',
@@ -59,13 +62,13 @@ interface CliOptions {
 
 function parseArgs(args: string[]): CliOptions | Error {
 	let rawOptions: {
-		[K in typeof cliOptionsConfig[number]['long']]?: string;
+		[K in typeof cliOptionsConfig[number]["long"]]?: string;
 	} = {};
 
 	for (let i = 0; i < args.length; i++) {
 		const arg = args[i];
 		for (const option of cliOptionsConfig) {
-			if (arg === '--' + option.long || arg === '-' + option.short) {
+			if (arg === "--" + option.long || arg === "-" + option.short) {
 				rawOptions[option.long] = args[++i];
 			}
 		}
@@ -73,14 +76,14 @@ function parseArgs(args: string[]): CliOptions | Error {
 
 	for (const option of cliOptionsConfig) {
 		if (option.required && !rawOptions[option.long]) {
-			return new Error(`Please provide the required option "${ option.long }"`);
+			return new Error(`Please provide the required option "${option.long}"`);
 		}
 	}
 
 	return {
 		url: rawOptions.url!,
 		outDir: rawOptions.out!,
-		configFileName: rawOptions.config
+		configFileName: rawOptions.config,
 	};
 }
 
@@ -113,17 +116,24 @@ async function main(rawArgs: string[]): Promise<ExitCode> {
 	try {
 		const args = parseArgs(rawArgs);
 		if (isCliOptions(args)) {
-			const config = mergeConfigWithDefaults(args.configFileName ? await parseConfig(args.configFileName) : undefined);
+			const config = mergeConfigWithDefaults(
+				args.configFileName ? await parseConfig(args.configFileName) : undefined
+			);
 			client = new Client(args.url);
 			await client.connect();
 			console.log(`Querying the database...`);
-			const tablesMetadata: Map<string, TableMetadata> = await getTableMetadata(client, config);
-			console.log(`Generating interfaces and metamodels for ${ tablesMetadata.size } tables...`);
+			const tablesMetadata: Map<string, TableMetadata> = await getTableMetadata(
+				client,
+				config
+			);
+			console.log(
+				`Generating interfaces and metamodels for ${tablesMetadata.size} tables...`
+			);
 			generateInterfacesAndMetamodel(tablesMetadata, args);
 			console.log("Done!");
 			return ExitCode.Okay;
 		} else {
-			console.error(`Invalid arguments: ${ args.message }`);
+			console.error(`Invalid arguments: ${args.message}`);
 			console.log(getHelpString());
 			return ExitCode.InvalidArguments;
 		}
@@ -140,6 +150,6 @@ async function main(rawArgs: string[]): Promise<ExitCode> {
 if (require.main === module) {
 	//noinspection JSIgnoredPromiseFromCall
 	main(process.argv.slice(2))
-		.then((exitCode) => process.exitCode = exitCode)
-		.catch(() => process.exitCode = 999);
+		.then((exitCode) => (process.exitCode = exitCode))
+		.catch(() => (process.exitCode = 999));
 }

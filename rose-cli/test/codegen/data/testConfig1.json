@@ -1,22 +1,19 @@
 {
-  "ignore": [
-    "foo",
-    "bar"
-  ],
-  "types": {
-    "global": {
-      "int8": "BigInt",
-      "circle": {
-        "type": "Circle",
-        "from": "../circle.ts"
-      }
-    },
-    "columns": {
-      "foo.bar": "Buffer",
-      "baz.qux": {
-        "type": "Square",
-        "from": "../square.ts"
-      }
-    }
-  }
+	"ignore": ["foo", "bar"],
+	"types": {
+		"global": {
+			"int8": "BigInt",
+			"circle": {
+				"type": "Circle",
+				"from": "../circle.ts"
+			}
+		},
+		"columns": {
+			"foo.bar": "Buffer",
+			"baz.qux": {
+				"type": "Square",
+				"from": "../square.ts"
+			}
+		}
+	}
 }
