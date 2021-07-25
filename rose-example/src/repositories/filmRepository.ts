@@ -37,9 +37,12 @@ export class FilmRepository {
     const P = new ParamsWrapper<Params>();
 
     return select(selector)
-      .join(
-        innerJoin(QFilmActor).on(QFilmActor.filmId.eq(QFilm.filmId)),
-        innerJoin(QActor).on(QActor.actorId.eq(QFilmActor.actorId))
+      .from(
+        QFilm.$table
+          .innerJoin(QFilmActor)
+          .on(QFilmActor.filmId.eq(QFilm.filmId))
+          .innerJoin(QActor)
+          .on(QActor.actorId.eq(QFilmActor.actorId))
       )
       .where(
         and(
@@ -92,7 +95,7 @@ export class FilmRepository {
             )
           )
           .limit(constant(1))
-          .toSubQuery()
+          .toNode()
       )
       .finalise(P);
   })();
