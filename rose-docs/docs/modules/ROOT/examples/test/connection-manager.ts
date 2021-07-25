@@ -4,10 +4,10 @@ import {
 	matchesRegexp,
 	Queryable,
 	select,
-	withParams
-} from '@rosepg/rose';
+	withParams,
+} from "@rosepg/rose";
 import { FilmAllColumns, QFilm } from "../generated/db/Film";
-import { Pool, PoolClient } from 'pg';
+import { Pool, PoolClient } from "pg";
 
 describe(`Connection Manager`, () => {
 	it(`can implement concrete classes`, async () => {
@@ -15,21 +15,18 @@ describe(`Connection Manager`, () => {
 		// This is some sort of repository that provides an interface to your database.
 		// The exact implementation is not important for this example.
 		class FilmRepository {
-			protected static getFilmsByTitleQuery = withParams<{ name: string }>()((p) =>
-				select(FilmAllColumns)
-					.where(
-						matchesRegexp(QFilm.title.col(), p.name)
-					)
-					.finalise(p)
-			)
+			protected static getFilmsByTitleQuery = withParams<{ name: string }>()(
+				(p) =>
+					select(FilmAllColumns)
+						.where(matchesRegexp(QFilm.title.col(), p.name))
+						.finalise(p)
+			);
 
-			constructor(
-				protected readonly client: Queryable
-			) {}
+			constructor(protected readonly client: Queryable) {}
 
 			public getFilmsByName() {
 				return FilmRepository.getFilmsByTitleQuery.execute(this.client, {
-					name: 'red'
+					name: "red",
 				});
 			}
 		}
