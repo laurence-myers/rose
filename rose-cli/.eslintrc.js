@@ -10,11 +10,12 @@ module.exports = {
         project: 'tsconfig.json',
         sourceType: 'module', // Allows for the use of imports
     },
-    // extends: [
+    extends: [
     //     'eslint:recommended',
     //     'plugin:@typescript-eslint/eslint-recommended',
     //     'plugin:@typescript-eslint/recommended',
-    // ],
+        'prettier'
+    ],
     rules: {
         '@typescript-eslint/type-annotation-spacing': 'warn',
         '@typescript-eslint/no-for-in-array': 'error',
