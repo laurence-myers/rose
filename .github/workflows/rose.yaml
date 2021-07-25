@@ -3,8 +3,34 @@ name: Rose CI
 on: [push]
 
 jobs:
-  build:
+  test-node-versions:
+    runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x, 16.x]
+
+    env:
+      CI: true
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Test rose
+        run: |
+          cd rose
+          yarn install --frozen-lockfile
+          yarn run test
+      - name: Test rose-cli
+        run: |
+          cd rose-cli
+          yarn install --frozen-lockfile
+          yarn run test
+
+  build:
     runs-on: ubuntu-latest
 
     strategy:
