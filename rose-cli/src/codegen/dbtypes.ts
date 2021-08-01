@@ -25,7 +25,7 @@ const POSTGRES_TO_TYPESCRIPT_TYPE_MAP: Map<string, string> = new DefaultMap<
 	["double precision", "number"],
 	["float4", "number"],
 	["float8", "number"],
-	["hstore", "{ [key : string] : string }"],
+	["hstore", "string"],
 	["inet", "string"],
 	["int", "number"],
 	["int2", "number"],
