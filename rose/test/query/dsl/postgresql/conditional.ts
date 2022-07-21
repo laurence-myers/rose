@@ -18,7 +18,7 @@ describe(`Conditional Expressions`, function () {
 			const actual = new SqlAstWalker(node).toSql();
 
 			// Verify
-			const expected = `CASE WHEN "project"."status" = $1 THEN $2 ELSE $3`;
+			const expected = `CASE WHEN "project"."status" = $1 THEN $2 ELSE $3 END`;
 			assert.deepEqual(actual.sql, expected);
 		});
 	});
@@ -33,7 +33,7 @@ describe(`Conditional Expressions`, function () {
 			const actual = new SqlAstWalker(node).toSql();
 
 			// Verify
-			const expected = `CASE "status" WHEN $1 THEN $2 ELSE $3`;
+			const expected = `CASE "status" WHEN $1 THEN $2 ELSE $3 END`;
 			assert.deepEqual(actual.sql, expected);
 		});
 	});

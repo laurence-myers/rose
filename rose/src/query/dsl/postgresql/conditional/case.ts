@@ -6,6 +6,7 @@ import {
 } from "../../../ast";
 import { Clone } from "../../../../lang";
 import { createNaturalSyntaxFunctionNode } from "../common";
+import { literal } from "../../core";
 
 export class MultiCaseBuilder {
 	protected readonly cases: {
@@ -49,6 +50,10 @@ export class MultiCaseBuilder {
 				value: this.elseResult,
 			});
 		}
+		args.push({
+			key: "",
+			value: literal('END')
+		});
 		return createNaturalSyntaxFunctionNode("CASE", args, true);
 	}
 }
@@ -102,6 +107,10 @@ export class SimpleCaseBuilder {
 				value: this.elseResult,
 			});
 		}
+		args.push({
+			key: "",
+			value: literal('END')
+		});
 		return createNaturalSyntaxFunctionNode("CASE", args, true);
 	}
 }
