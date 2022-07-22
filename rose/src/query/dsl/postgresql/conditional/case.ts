@@ -51,8 +51,7 @@ export class MultiCaseBuilder {
 			});
 		}
 		args.push({
-			key: "",
-			value: literal('END')
+			value: literal("END"),
 		});
 		return createNaturalSyntaxFunctionNode("CASE", args, true);
 	}
@@ -108,8 +107,7 @@ export class SimpleCaseBuilder {
 			});
 		}
 		args.push({
-			key: "",
-			value: literal('END')
+			value: literal("END"),
 		});
 		return createNaturalSyntaxFunctionNode("CASE", args, true);
 	}
