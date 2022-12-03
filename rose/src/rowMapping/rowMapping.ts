@@ -3,7 +3,7 @@ import { RowMappingError, UnsupportedOperationError } from "../errors";
 import { DefaultMap, isMap, last, SettingMap } from "../lang";
 import { MappedQuerySelector, QueryOutput } from "../query/typeMapping";
 import { QuerySelector } from "../query/querySelector";
-import { defaultRowHasher } from "./rowHasher";
+import { getDefaultRowHasher, RowHasher } from "./rowHasher";
 
 interface Aliases {
 	input: string;
@@ -106,10 +106,11 @@ type NestedObject = any;
 function mergeNested(
 	objects: NestedObject[],
 	parentNestedSchema: NestedSchema,
-	hashMap: SettingMap<string, any>
+	hashMap: SettingMap<string, any>,
+	hasher: RowHasher
 ): void {
 	for (const obj of objects) {
-		const hash = defaultRowHasher(obj, parentNestedSchema.parentValues);
+		const hash = hasher(obj, parentNestedSchema.parentValues);
 		const objToUpdate = hashMap.getOrSet(hash, obj);
 		for (const [key, value] of parentNestedSchema.nested.entries()) {
 			const propertyValue = obj[key];
@@ -118,7 +119,7 @@ function mergeNested(
 				nestedMap = new SettingMap<string, any>();
 				objToUpdate[key] = nestedMap;
 			}
-			mergeNested(propertyValue, value, nestedMap);
+			mergeNested(propertyValue, value, nestedMap, hasher);
 		}
 	}
 }
@@ -137,18 +138,19 @@ function convertMapsToArrays(
 	return output;
 }
 
-export function mapRowsToClass<T extends QuerySelector>(
+export async function mapRowsToClass<T extends QuerySelector>(
 	outputExpressions: SelectOutputExpression[],
 	rows: NestedObject[]
-): MappedQuerySelector<T>[] {
+): Promise<MappedQuerySelector<T>[]> {
 	const convertedRows = rows.map(
 		(row): MappedQuerySelector<T> =>
 			mapRowToClass<T>(outputExpressions, row) as MappedQuerySelector<T>
 	);
 	const nestedSchema = extractNestedSchema(outputExpressions);
 	if (nestedSchema.nested.size > 0) {
+		const hasher = await getDefaultRowHasher();
 		const hashMap = new SettingMap<string, any>();
-		mergeNested(convertedRows, nestedSchema, hashMap);
+		mergeNested(convertedRows, nestedSchema, hashMap, hasher);
 		return convertMapsToArrays(hashMap, nestedSchema);
 	} else {
 		return convertedRows;

@@ -1,4 +1,5 @@
 import * as crypto from "crypto";
+import type { XXHashAPI } from "xxhash-wasm";
 import { MissingDependencyError } from "../errors";
 
 export interface RowHasher<TDataClass = Record<string, any>> {
@@ -7,34 +8,44 @@ export interface RowHasher<TDataClass = Record<string, any>> {
 
 const seed = Date.now();
 
-let metrohash: typeof import("metrohash") | undefined;
+let xxhash: XXHashAPI | undefined;
 
-export let defaultRowHasher = metrohashRowHasher;
+export let defaultRowHasher: RowHasher | undefined;
 
-try {
-	metrohash = require("metrohash");
-} catch (err) {
-	console.warn(
-		`Failed to import metrohash, default nested row hashing will fallback to SHA256.`
-	);
-	defaultRowHasher = sha256RowHasher;
+export async function getDefaultRowHasher(): Promise<RowHasher> {
+	if (!defaultRowHasher) {
+		try {
+			const xxhashModule = await require("xxhash-wasm");
+			xxhash = await (xxhashModule as unknown as () => Promise<XXHashAPI>)();
+			defaultRowHasher = xxhashRowHasher;
+		} catch (err) {
+			console.warn(
+				`Failed to import xxhash-wasm, default nested row hashing will fallback to SHA256.`
+			);
+			defaultRowHasher = sha256RowHasher;
+		}
+	}
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	return defaultRowHasher!;
 }
 
-export function metrohashRowHasher<TDataClass>(
+function xxhashRowHasher<TDataClass>(
 	row: TDataClass,
 	propertiesToHash: string[]
 ) {
-	if (!metrohash) {
-		throw new MissingDependencyError(`metrohash could not be imported`);
+	if (!xxhash) {
+		throw new MissingDependencyError(
+			`xxhash-wasm is not initialized, or could not be imported`
+		);
 	}
-	const hash = new metrohash.MetroHash128(seed);
+	const hash = xxhash.create64(BigInt(seed));
 	for (const key of propertiesToHash) {
 		hash.update(`${key}=${(<any>row)[key]};`);
 	}
-	return hash.digest();
+	return hash.digest().toString(16);
 }
 
-export function sha256RowHasher<TDataClass>(
+function sha256RowHasher<TDataClass>(
 	row: TDataClass,
 	propertiesToHash: string[]
 ) {

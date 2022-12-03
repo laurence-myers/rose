@@ -80,7 +80,7 @@ describe("Row mapping", function () {
 
 		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
 
-		assert.equal(result.userName, "Phileas Fogg");
+		assert.strictEqual(result.userName, "Phileas Fogg");
 	});
 
 	it("Can map a nested sub-query", function () {
@@ -113,7 +113,7 @@ describe("Row mapping", function () {
 
 		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
 
-		assert.deepEqual(result, {
+		assert.deepStrictEqual(result, {
 			id: 123,
 			users: [
 				{
@@ -162,7 +162,7 @@ describe("Row mapping", function () {
 
 		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
 
-		assert.deepEqual(result, {
+		assert.deepStrictEqual(result, {
 			id: 123,
 			users: [
 				{
@@ -215,7 +215,7 @@ describe("Row mapping", function () {
 
 		const result = mapRowToClass<typeof querySelect>(outputExpressions, row);
 
-		assert.deepEqual(result, {
+		assert.deepStrictEqual(result, {
 			id: 123,
 			locations: [
 				{
@@ -230,23 +230,7 @@ describe("Row mapping", function () {
 		});
 	});
 
-	it("Can map multiple rows with deeply nested sub-queries", function () {
-		const querySelectDeeplyNested = {
-			id: QUsers.id,
-		};
-
-		const querySelectNested = {
-			id: QLocations.id,
-
-			users: selectNestedMany(querySelectDeeplyNested),
-		};
-
-		const querySelect = {
-			id: QAgencies.id,
-
-			locations: selectNestedMany(querySelectNested),
-		};
-
+	it("Can map multiple rows with deeply nested sub-queries", async function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
@@ -297,9 +281,9 @@ describe("Row mapping", function () {
 			}
 		}
 
-		const result = mapRowsToClass(outputExpressions, rows);
+		const result = await mapRowsToClass(outputExpressions, rows);
 
-		assert.deepEqual(result, [
+		assert.deepStrictEqual(result, [
 			{
 				id: 102,
 				locations: [
@@ -357,23 +341,7 @@ describe("Row mapping", function () {
 		]);
 	});
 
-	it("Can map multiple rows with deeply nested sub-queries and similar values", function () {
-		const querySelectDeeplyNested = {
-			id: QUsers.id,
-		};
-
-		const querySelectNested = {
-			id: QLocations.id,
-
-			users: selectNestedMany(querySelectDeeplyNested),
-		};
-
-		const querySelect = {
-			id: QAgencies.id,
-
-			locations: selectNestedMany(querySelectNested),
-		};
-
+	it("Can map multiple rows with deeply nested sub-queries and similar values", async function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
@@ -424,9 +392,9 @@ describe("Row mapping", function () {
 			}
 		}
 
-		const result = mapRowsToClass(outputExpressions, rows);
+		const result = await mapRowsToClass(outputExpressions, rows);
 
-		assert.deepEqual(result, [
+		assert.deepStrictEqual(result, [
 			{
 				id: 2,
 				locations: [
@@ -484,17 +452,7 @@ describe("Row mapping", function () {
 		]);
 	});
 
-	it("Can map a nested sub-query with multiple rows", function () {
-		const querySelectNested = {
-			id: QUsers.id,
-		};
-
-		const querySelect = {
-			id: QLocations.id,
-
-			users: selectNestedMany(querySelectNested),
-		};
-
+	it("Can map a nested sub-query with multiple rows", async function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
@@ -523,9 +481,9 @@ describe("Row mapping", function () {
 			},
 		];
 
-		const result = mapRowsToClass(outputExpressions, rows);
+		const result = await mapRowsToClass(outputExpressions, rows);
 
-		assert.deepEqual(result, [
+		assert.deepStrictEqual(result, [
 			{
 				id: 123,
 				users: [
@@ -548,7 +506,7 @@ describe("Row mapping", function () {
 		]);
 	});
 
-	it("Can map a nested sub-query with loooots of rows", function () {
+	it("Can map a nested sub-query with loooots of rows", async function () {
 		const querySelectNested = {
 			id: QUsers.id,
 		};
@@ -581,17 +539,17 @@ describe("Row mapping", function () {
 			});
 		}
 
-		const result = mapRowsToClass<typeof querySelect>(outputExpressions, rows);
+		const result = await mapRowsToClass<typeof querySelect>(
+			outputExpressions,
+			rows
+		);
 
-		assert.deepEqual(result.length, 1);
-		assert.deepEqual(result[0].id, 123);
-		assert.deepEqual(result[0].users.length, numNested);
+		assert.deepStrictEqual(result.length, 1);
+		assert.deepStrictEqual(result[0].id, 123);
+		assert.deepStrictEqual(result[0].users.length, numNested);
 	});
 
-	it("Preserves order of the rows", function () {
-		const querySelect = {
-			id: QUsers.id,
-		};
+	it("Preserves order of the rows", async function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
@@ -608,9 +566,9 @@ describe("Row mapping", function () {
 			rows.push(row);
 		}
 
-		const result = mapRowsToClass(outputExpressions, rows);
+		const result = await mapRowsToClass(outputExpressions, rows);
 
-		assert.deepEqual(result, [
+		assert.deepStrictEqual(result, [
 			{
 				id: 5,
 			},
@@ -629,15 +587,9 @@ describe("Row mapping", function () {
 		]);
 	});
 
-	it("Preserves order of the rows with nesting", function () {
+	it("Preserves order of the rows with nesting", async function () {
 		const querySelectNested = {
 			id: QUsers.id,
-		};
-
-		const querySelect = {
-			id: QLocations.id,
-
-			users: selectNestedMany(querySelectNested),
 		};
 
 		const outputExpressions: SelectOutputExpression[] = [
@@ -674,9 +626,9 @@ describe("Row mapping", function () {
 			expectedRows.push(expectedRow);
 		}
 
-		const result = mapRowsToClass(outputExpressions, rows);
+		const result = await mapRowsToClass(outputExpressions, rows);
 
-		assert.deepEqual(result, expectedRows);
+		assert.deepStrictEqual(result, expectedRows);
 	});
 
 	it("Can map from function expressions", function () {
