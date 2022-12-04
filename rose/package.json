@@ -45,8 +45,5 @@
 		"source-map-support": "0.5.19",
 		"ts-node": "9.0.0",
 		"typescript": "4.1.2"
-	},
-	"optionalDependencies": {
-		"xxhash-wasm": "^1.0.2"
 	}
 }
