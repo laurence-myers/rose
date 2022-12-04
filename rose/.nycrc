@@ -1,10 +1,5 @@
 {
-    "extends": "@istanbuljs/nyc-config-typescript",
-    "include": [
-        "src/**/*.ts"
-    ],
-    "reporter": [
-        "html",
-        "json"
-    ]
+	"extends": "@istanbuljs/nyc-config-typescript",
+	"include": ["src/**/*.ts"],
+	"reporter": ["html", "json"]
 }

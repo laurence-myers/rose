@@ -59,8 +59,8 @@ export class ImmutableMap<K, V> implements ReadonlyMap<K, V> {
 	}
 }
 
-export function convertObjectToMap<K extends string, V>(
-	values: { [key in K]: V }
-) {
+export function convertObjectToMap<K extends string, V>(values: {
+	[key in K]: V;
+}) {
 	return new ImmutableMap(Object.entries(values));
 }
