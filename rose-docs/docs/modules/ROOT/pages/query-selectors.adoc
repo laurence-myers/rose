@@ -76,3 +76,52 @@ perform a second query to retrieve nested data, and join it with the parent data
 
 Another option is to use PostgreSQL's JSON(B) functions to construct objects.
 ====
+
+=== RowHasher
+
+"Parent" objects are determined by hashing the non-nested properties together.
+
+The default hashing function uses the MD5 algorithm. You can replace the hashing function with a faster implementation,
+making use of a library like [metrohash](https://www.npmjs.com/package/metrohash) or
+[xxhash](https://www.npmjs.com/package/xxhash-wasm).
+
+Replace the default RowHasher function, by calling `setDefaultRowHasher()`.
+
+Here's how to use xxhash-wasm:
+
+```typescript
+import * as xxhashModule from "xxhash-wasm";
+import * as R from '@rosepg/rose';
+
+const xxhashModule = await require("xxhash-wasm");
+
+async function initialiseRose() {
+    // The WASM module must be loaded asynchronously
+    const xxhash = await xxhashModule();
+
+    // At the time of writing, the types for xxhash-wasm were incorrect. You might need to use a type assertion like this.
+    //const xxhash = await (xxhashModule as unknown as () => Promise<xxhashModule.XXHashAPI>)();
+
+    const seed = BigInt(Date.now());
+
+    // Define our RowHasher implementation
+    function xxhashRowHasher<TDataClass>(
+        row: TDataClass,
+        propertiesToHash: string[]
+    ) {
+        const hash = xxhash.create64(seed);
+        for (const key of propertiesToHash) {
+            hash.update(`${key}=${(<any>row)[key]};`);
+        }
+        return hash.digest().toString(16);
+    }
+
+    R.setDefaultRowHasher(xxhashRowHasher);
+}
+
+// Elsewhere, in your app's startup code...
+async function startApp() {
+    await initialiseRose();
+    // ...
+}
+```
