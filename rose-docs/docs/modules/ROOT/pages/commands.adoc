@@ -47,7 +47,6 @@ select(/* ... */).from(
     .on(QActor.actorId.eq(QFilmActor.actorId))
 )
 ----
-2. asdf
 
 There are also DSL functions to help you construct "from" and "join" items.
 
