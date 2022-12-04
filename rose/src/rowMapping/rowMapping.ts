@@ -138,17 +138,17 @@ function convertMapsToArrays(
 	return output;
 }
 
-export async function mapRowsToClass<T extends QuerySelector>(
+export function mapRowsToClass<T extends QuerySelector>(
 	outputExpressions: SelectOutputExpression[],
 	rows: NestedObject[]
-): Promise<MappedQuerySelector<T>[]> {
+): MappedQuerySelector<T>[] {
 	const convertedRows = rows.map(
 		(row): MappedQuerySelector<T> =>
 			mapRowToClass<T>(outputExpressions, row) as MappedQuerySelector<T>
 	);
 	const nestedSchema = extractNestedSchema(outputExpressions);
 	if (nestedSchema.nested.size > 0) {
-		const hasher = await getDefaultRowHasher();
+		const hasher = getDefaultRowHasher();
 		const hashMap = new SettingMap<string, any>();
 		mergeNested(convertedRows, nestedSchema, hashMap, hasher);
 		return convertMapsToArrays(hashMap, nestedSchema);

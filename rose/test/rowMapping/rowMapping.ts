@@ -230,7 +230,7 @@ describe("Row mapping", function () {
 		});
 	});
 
-	it("Can map multiple rows with deeply nested sub-queries", async function () {
+	it("Can map multiple rows with deeply nested sub-queries", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
@@ -281,7 +281,7 @@ describe("Row mapping", function () {
 			}
 		}
 
-		const result = await mapRowsToClass(outputExpressions, rows);
+		const result = mapRowsToClass(outputExpressions, rows);
 
 		assert.deepStrictEqual(result, [
 			{
@@ -341,7 +341,7 @@ describe("Row mapping", function () {
 		]);
 	});
 
-	it("Can map multiple rows with deeply nested sub-queries and similar values", async function () {
+	it("Can map multiple rows with deeply nested sub-queries and similar values", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
@@ -392,7 +392,7 @@ describe("Row mapping", function () {
 			}
 		}
 
-		const result = await mapRowsToClass(outputExpressions, rows);
+		const result = mapRowsToClass(outputExpressions, rows);
 
 		assert.deepStrictEqual(result, [
 			{
@@ -452,7 +452,7 @@ describe("Row mapping", function () {
 		]);
 	});
 
-	it("Can map a nested sub-query with multiple rows", async function () {
+	it("Can map a nested sub-query with multiple rows", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
@@ -481,7 +481,7 @@ describe("Row mapping", function () {
 			},
 		];
 
-		const result = await mapRowsToClass(outputExpressions, rows);
+		const result = mapRowsToClass(outputExpressions, rows);
 
 		assert.deepStrictEqual(result, [
 			{
@@ -506,7 +506,7 @@ describe("Row mapping", function () {
 		]);
 	});
 
-	it("Can map a nested sub-query with loooots of rows", async function () {
+	it("Can map a nested sub-query with loooots of rows", function () {
 		const querySelectNested = {
 			id: QUsers.id,
 		};
@@ -539,17 +539,14 @@ describe("Row mapping", function () {
 			});
 		}
 
-		const result = await mapRowsToClass<typeof querySelect>(
-			outputExpressions,
-			rows
-		);
+		const result = mapRowsToClass<typeof querySelect>(outputExpressions, rows);
 
 		assert.deepStrictEqual(result.length, 1);
 		assert.deepStrictEqual(result[0].id, 123);
 		assert.deepStrictEqual(result[0].users.length, numNested);
 	});
 
-	it("Preserves order of the rows", async function () {
+	it("Preserves order of the rows", function () {
 		const outputExpressions: SelectOutputExpression[] = [
 			alias(["id"], {
 				type: "columnReferenceNode",
@@ -566,7 +563,7 @@ describe("Row mapping", function () {
 			rows.push(row);
 		}
 
-		const result = await mapRowsToClass(outputExpressions, rows);
+		const result = mapRowsToClass(outputExpressions, rows);
 
 		assert.deepStrictEqual(result, [
 			{
@@ -587,7 +584,7 @@ describe("Row mapping", function () {
 		]);
 	});
 
-	it("Preserves order of the rows with nesting", async function () {
+	it("Preserves order of the rows with nesting", function () {
 		const querySelectNested = {
 			id: QUsers.id,
 		};
@@ -626,7 +623,7 @@ describe("Row mapping", function () {
 			expectedRows.push(expectedRow);
 		}
 
-		const result = await mapRowsToClass(outputExpressions, rows);
+		const result = mapRowsToClass(outputExpressions, rows);
 
 		assert.deepStrictEqual(result, expectedRows);
 	});

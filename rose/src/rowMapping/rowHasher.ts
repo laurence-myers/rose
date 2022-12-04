@@ -1,55 +1,36 @@
 import * as crypto from "crypto";
-import type { XXHashAPI } from "xxhash-wasm";
-import { MissingDependencyError } from "../errors";
 
+/**
+ * RowHasher is used to identify parent objects of nested objects within a query result.
+ * It takes the row, and the names of properties on the row to hash. The hasher should iterate through the property
+ * names and add the property values to the hash.
+ * It should return a hex string representing the hash.
+ * The default hashing algorithm is MD5.
+ * You can replace the hashing function with your own implementation for a significant speedup, e.g. using
+ * metrohash or xxhash (xxhash-wasm).
+ */
 export interface RowHasher<TDataClass = Record<string, any>> {
 	(row: TDataClass, propertiesToHash: string[]): string;
 }
 
-const seed = Date.now();
+let defaultRowHasher: RowHasher = md5RowHasher;
 
-let xxhash: XXHashAPI | undefined;
-
-export let defaultRowHasher: RowHasher | undefined;
-
-export async function getDefaultRowHasher(): Promise<RowHasher> {
-	if (!defaultRowHasher) {
-		try {
-			const xxhashModule = await require("xxhash-wasm");
-			xxhash = await (xxhashModule as unknown as () => Promise<XXHashAPI>)();
-			defaultRowHasher = xxhashRowHasher;
-		} catch (err) {
-			console.warn(
-				`Failed to import xxhash-wasm, default nested row hashing will fallback to SHA256.`
-			);
-			defaultRowHasher = sha256RowHasher;
-		}
-	}
-	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	return defaultRowHasher!;
+/**
+ * Returns the hashing function used for "nested" objects within query results.
+ */
+export function getDefaultRowHasher(): RowHasher {
+	return defaultRowHasher;
 }
 
-function xxhashRowHasher<TDataClass>(
-	row: TDataClass,
-	propertiesToHash: string[]
-) {
-	if (!xxhash) {
-		throw new MissingDependencyError(
-			`xxhash-wasm is not initialized, or could not be imported`
-		);
-	}
-	const hash = xxhash.create64(BigInt(seed));
-	for (const key of propertiesToHash) {
-		hash.update(`${key}=${(<any>row)[key]};`);
-	}
-	return hash.digest().toString(16);
+/**
+ * Sets the hashing function used for "nested" objects within query results.
+ */
+export function setDefaultRowHasher(rowHasher: RowHasher) {
+	defaultRowHasher = rowHasher;
 }
 
-function sha256RowHasher<TDataClass>(
-	row: TDataClass,
-	propertiesToHash: string[]
-) {
-	const hash = crypto.createHash("sha256");
+function md5RowHasher<TDataClass>(row: TDataClass, propertiesToHash: string[]) {
+	const hash = crypto.createHash("md5");
 	for (const key of propertiesToHash) {
 		hash.update(`${key}=${(<any>row)[key]};`);
 	}
