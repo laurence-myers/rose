@@ -223,6 +223,61 @@ perform a second query to retrieve nested data, and join it with the parent data
 </tr>
 </table>
 </div>
+<div class="sect2">
+<h3 id="_rowhasher"><a class="anchor" href="#_rowhasher"></a>RowHasher</h3>
+<div class="paragraph">
+<p>"Parent" objects are determined by hashing the non-nested properties together.</p>
+</div>
+<div class="paragraph">
+<p>The default hashing function uses the MD5 algorithm. You can replace the hashing function with a faster implementation,
+making use of a library like [metrohash](<a href="https://www.npmjs.com/package/metrohash" class="bare">https://www.npmjs.com/package/metrohash</a>) or
+[xxhash](<a href="https://www.npmjs.com/package/xxhash-wasm" class="bare">https://www.npmjs.com/package/xxhash-wasm</a>).</p>
+</div>
+<div class="paragraph">
+<p>Replace the default RowHasher function, by calling <code>setDefaultRowHasher()</code>.</p>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s how to use xxhash-wasm:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-typescript hljs" data-lang="typescript">import * as xxhashModule from "xxhash-wasm";
+import * as R from '@rosepg/rose';
+
+const xxhashModule = await require("xxhash-wasm");
+
+async function initialiseRose() {
+    // The WASM module must be loaded asynchronously
+    const xxhash = await xxhashModule();
+
+    // At the time of writing, the types for xxhash-wasm were incorrect. You might need to use a type assertion like this.
+    //const xxhash = await (xxhashModule as unknown as () =&gt; Promise&lt;xxhashModule.XXHashAPI&gt;)();
+
+    const seed = BigInt(Date.now());
+
+    // Define our RowHasher implementation
+    function xxhashRowHasher&lt;TDataClass&gt;(
+        row: TDataClass,
+        propertiesToHash: string[]
+    ) {
+        const hash = xxhash.create64(seed);
+        for (const key of propertiesToHash) {
+            hash.update(`${key}=${(&lt;any&gt;row)[key]};`);
+        }
+        return hash.digest().toString(16);
+    }
+
+    R.setDefaultRowHasher(xxhashRowHasher);
+}
+
+// Elsewhere, in your app's startup code...
+async function startApp() {
+    await initialiseRose();
+    // ...
+}</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 </article>
