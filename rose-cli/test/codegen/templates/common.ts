@@ -16,7 +16,7 @@ describe(`Common template functions`, () => {
 	});
 
 	describe(`sanitizeTableName()`, () => {
-		it(`Captilises the first letter`, () => {
+		it(`Capitalises the first letter`, () => {
 			const expected = `CustomerAddress`;
 
 			const result = sanitizeTableName(`customer_address`);

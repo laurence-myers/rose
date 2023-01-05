@@ -106,6 +106,22 @@ describe(`Code generators`, () => {
 				false,
 				typeMaps
 			);
+			yield new ColumnMetadata(
+				tableName,
+				"array_type",
+				"_text",
+				false,
+				false,
+				typeMaps
+			);
+			yield new ColumnMetadata(
+				tableName,
+				"array_type_nullable",
+				"_text",
+				true,
+				false,
+				typeMaps
+			);
 		}
 
 		it(`should support integer, string, and date column types, with nulls`, async () => {

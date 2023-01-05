@@ -42,27 +42,26 @@ function getColumnTypeScriptType(
 ): TypeMapEntry & { importName?: string } {
 	let isArray = column.type.startsWith("_");
 	let tsTypeEntry = typeMaps.columns.get([tableName, column.name].join("."));
-	let newTypeName;
 
 	if (!tsTypeEntry) {
 		const sanitisedType = column.type.replace(/^_/, ""); // Remove the array character
 		tsTypeEntry = typeMaps.global.get(sanitisedType);
 		if (!tsTypeEntry) {
 			tsTypeEntry = typeMaps.enums.get(sanitisedType);
-			if (!tsTypeEntry) {
-				throw new UnrecognisedColumnTypeError(
-					`No mapping defined for column type: "${column.type}"`
-				);
-			}
 		}
-		if (isArray) {
-			newTypeName = `Array<${tsTypeEntry.type}>`;
-		}
+	}
+	if (!tsTypeEntry) {
+		throw new UnrecognisedColumnTypeError(
+			`No mapping defined for column type: "${column.type}"`
+		);
 	}
 
+	let newTypeName = isArray ? `Array<${tsTypeEntry.type}>` : tsTypeEntry.type;
+
 	if (column.isNullable) {
-		newTypeName = tsTypeEntry.type + " | null";
+		newTypeName = newTypeName + " | null";
 	}
+
 	return {
 		...tsTypeEntry,
 		type: newTypeName || tsTypeEntry.type,
